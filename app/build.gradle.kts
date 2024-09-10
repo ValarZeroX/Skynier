@@ -79,4 +79,6 @@ dependencies {
     implementation(libs.androidx.foundation)
     //拖曳效果
     implementation(libs.reorderable)
+    //color pick
+    implementation(libs.compose.colorpicker)
 }

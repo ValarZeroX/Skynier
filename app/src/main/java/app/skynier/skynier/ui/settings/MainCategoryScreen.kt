@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -24,7 +25,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -62,9 +66,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -83,6 +90,12 @@ import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import com.github.skydoves.colorpicker.compose.AlphaSlider
+import com.github.skydoves.colorpicker.compose.AlphaTile
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
+import com.github.skydoves.colorpicker.compose.ColorEnvelope
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -199,6 +212,12 @@ fun AddMainCategory(
 ) {
     val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
     var name by rememberSaveable { mutableStateOf(initialName) }
+    var hexCode by rememberSaveable {
+        mutableStateOf("009EEC")
+    }
+//    var tempHexCode by remember { mutableStateOf(hexCode) }
+    val controller = rememberColorPickerController()
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -222,14 +241,14 @@ fun AddMainCategory(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center // Center the label
                 ) {
                 Box(
                     modifier = Modifier
                         .size(46.dp) // Set the size of the circular background
                         .background(
-                            Color(android.graphics.Color.parseColor("#009EEC")),
+                            Color(android.graphics.Color.parseColor("#${hexCode}")),
                             CircleShape
                         )
                         .clickable {
@@ -257,7 +276,7 @@ fun AddMainCategory(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center // Center the label
                 ) {
                     if (name.isEmpty()) {
@@ -276,9 +295,58 @@ fun AddMainCategory(
                     )
                 }
 
+                HsvColorPicker(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(10.dp),
+                    controller = controller,
+                    onColorChanged = { colorEnvelope: ColorEnvelope ->
+                        // do something
+                        hexCode = colorEnvelope.hexCode
+                        Log.d("colorEnvelope", colorEnvelope.hexCode)
+                    },
+                    initialColor = Color(android.graphics.Color.parseColor("#${hexCode}")),
+                )
+                AlphaSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+//                Row(
+//                    horizontalArrangement = Arrangement.Center,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(top = 16.dp)
+//                ) {
+//                    OutlinedTextField(
+//                        value = hexCode.takeLast(6).uppercase(),
+//                        onValueChange = { newText ->
+//                            if (newText.isEmpty() || newText.matches(Regex("^#[0-9A-Fa-f]{6}$"))) {
+//                                hexCode = newText
+//                            }
+//                        },
+//                        leadingIcon = { Text(text = "#")},
+//                        placeholder = { Text(text = hexCode)},
+//                        modifier = Modifier
+//                            .weight(1f)
+//                            .padding(end = 5.dp)
+//                    )
+//                }
                 Row(
                     horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(stringResource(id = R.string.cancel))
@@ -287,7 +355,7 @@ fun AddMainCategory(
                     Button(
                         onClick = {
                             if (name.isNotEmpty()) {
-                                onAdd(name)
+                                onAdd(name, hexCode, selectedIcon)
                             }
                         }
                     ) {

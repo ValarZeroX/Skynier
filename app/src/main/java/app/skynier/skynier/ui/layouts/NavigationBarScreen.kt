@@ -21,15 +21,19 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import app.skynier.skynier.R
 
 @Composable
 fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: MutableState<Int>) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     Box {
         NavigationBar {
             NavigationBarItem(
@@ -79,18 +83,21 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
                 }
             )
         }
-        FloatingActionButton(
-            onClick = {
-                selectedItemIndex.value = 5
-                navController.navigate("add_record")
-            },
-            shape = CircleShape,
-            modifier = Modifier
-                .align(Alignment.TopEnd) // 定位到導航欄的中間上方
-                .offset(y = (-90).dp, x = (-20).dp) // 向上移動一點，使按鈕懸浮在導航欄上
-                .size(66.dp)
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add Record")
+        val excludedRoutes = setOf("main_category", "icon")
+        if (currentRoute !in excludedRoutes) {
+            FloatingActionButton(
+                onClick = {
+                    selectedItemIndex.value = 5
+                    navController.navigate("add_record")
+                },
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(y = (-90).dp, x = (-20).dp)
+                    .size(66.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Record")
+            }
         }
     }
 }
