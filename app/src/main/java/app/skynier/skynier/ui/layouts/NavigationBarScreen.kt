@@ -1,4 +1,4 @@
-package app.skynier.skynier.layouts
+package app.skynier.skynier.ui.layouts
 
 
 import androidx.compose.foundation.layout.Box

@@ -2,4 +2,22 @@
 <resources>
     <string name="app_name">Skynier</string>
     <string name="tab_setting">设定</string>
+    <string name="category">类别</string>
+    <string name="main_category">主类别</string>
+    <string name="sub_category">子类别</string>
+    <string name="category_food">食物</string>
+    <string name="category_transportation">交通</string>
+    <string name="category_travel">旅行</string>
+    <string name="category_shopping">购物</string>
+    <string name="category_entertainment">娱乐</string>
+    <string name="category_finance">金融</string>
+    <string name="category_social">社交</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="add">新增</string>
+    <string name="income">收入</string>
+    <string name="expense">支出</string>
+    <string name="transfer">转帐</string>
 </resources>

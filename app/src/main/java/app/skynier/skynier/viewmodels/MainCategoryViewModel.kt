@@ -33,6 +33,13 @@ class MainCategoryViewModel(private val repository: MainCategoryRepository) : Vi
         }
     }
 
+    fun loadMainCategoriesByMainCategoryId(categoryId: Int) {
+        viewModelScope.launch {
+            val mainCategoryList = repository.getAllMainCategoriesByCategoryId(categoryId)
+            _mainCategories.value = mainCategoryList
+        }
+    }
+
     // 插入新主类目
     fun insertMainCategory(mainCategory: MainCategoryEntity) {
         viewModelScope.launch {
@@ -55,6 +62,14 @@ class MainCategoryViewModel(private val repository: MainCategoryRepository) : Vi
             repository.deleteMainCategory(mainCategory)
             loadAllMainCategories() // 删除后刷新数据
         }
+    }
+
+    fun updateMainCategoryOrder(newOrder: List<MainCategoryEntity>) = viewModelScope.launch {
+        newOrder.forEachIndexed { index, mainCategory ->
+            mainCategory.mainCategorySort = index
+        }
+        repository.updateAll(newOrder)
+        _mainCategories.value = newOrder
     }
 }
 

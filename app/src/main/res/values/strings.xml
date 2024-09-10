@@ -1,4 +1,22 @@
 <resources>
     <string name="app_name">Skynier</string>
     <string name="tab_setting">Settings</string>
+    <string name="category">Category</string>
+    <string name="main_category">Main Category</string>
+    <string name="sub_category">Subcategory</string>
+    <string name="category_food">Food</string>
+    <string name="category_transportation">Transportation</string>
+    <string name="category_travel">Travel</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_finance">Finance</string>
+    <string name="category_social">Social</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="add">Add</string>
+    <string name="income">Income</string>
+    <string name="expense">Expense</string>
+    <string name="transfer">Transfer</string>
 </resources>

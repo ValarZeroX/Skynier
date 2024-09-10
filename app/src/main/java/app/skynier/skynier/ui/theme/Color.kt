@@ -2,6 +2,10 @@ package app.skynier.skynier.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+var Red = Color(0xFFDC3545)
+var Blue = Color(0xFF009EEC)
+var Gray = Color(0xFF808080)
+
 val primaryLight = Color(0xFF8F4C35)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFFFDBD0)

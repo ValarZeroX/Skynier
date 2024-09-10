@@ -2,6 +2,7 @@ package app.skynier.skynier.repository
 
 import app.skynier.skynier.database.dao.MainCategoryDao
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.SubCategoryEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -35,10 +36,22 @@ class MainCategoryRepository(private val mainCategoryDao: MainCategoryDao) {
         }
     }
 
+    suspend fun getAllMainCategoriesByCategoryId(categoryId: Int): List<MainCategoryEntity> {
+        return withContext(Dispatchers.IO) {
+            mainCategoryDao.getAllMainCategoriesByCategoryId(categoryId)
+        }
+    }
+
+
+
     // 获取所有主类别记录
     suspend fun getAllMainCategories(): List<MainCategoryEntity> {
         return withContext(Dispatchers.IO) {
             mainCategoryDao.getAllMainCategories()
         }
+    }
+
+    suspend fun updateAll(mainCategory: List<MainCategoryEntity>) {
+        mainCategoryDao.updateAll(mainCategory)
     }
 }

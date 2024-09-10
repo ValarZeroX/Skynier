@@ -23,6 +23,12 @@ interface MainCategoryDao {
     @Query("SELECT * FROM main_category WHERE mainCategoryId = :id")
     suspend fun getMainCategoryById(id: Int): MainCategoryEntity?
 
-    @Query("SELECT * FROM main_category")
+    @Query("SELECT * FROM main_category ORDER BY mainCategorySort")
     suspend fun getAllMainCategories(): List<MainCategoryEntity>
+
+    @Query("SELECT * FROM main_category WHERE categoryId = :categoryId ORDER BY mainCategorySort")
+    suspend fun getAllMainCategoriesByCategoryId(categoryId: Int): List<MainCategoryEntity>
+
+    @Update
+    suspend fun updateAll(mainCategory: List<MainCategoryEntity>)
 }

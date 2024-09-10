@@ -1,4 +1,4 @@
-package app.skynier.skynier.record
+package app.skynier.skynier.ui.record
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
