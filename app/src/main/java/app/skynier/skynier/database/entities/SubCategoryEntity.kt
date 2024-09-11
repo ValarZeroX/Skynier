@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
     tableName = "sub_category",
 )
 data class SubCategoryEntity(
-    @PrimaryKey val subCategoryId: Int, //子類別編號
+    @PrimaryKey(autoGenerate = true) val subCategoryId: Int = 0, //子類別編號
     val mainCategoryId: Int, //主類別編號
     val subCategoryNameKey: String, // 子類別語系Key
     val subCategoryIcon: String, //子類別圖示名稱

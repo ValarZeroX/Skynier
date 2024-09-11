@@ -111,18 +111,22 @@ fun MainCategoryScreen(
     subCategoryViewModel: SubCategoryViewModel
 ) {
     val categories = categoryViewModel.categories.observeAsState(emptyList())
-    var selectedTabCategoryIndex by remember { mutableIntStateOf(0) }
+    var selectedTabCategoryIndex by rememberSaveable { mutableIntStateOf(0) }
 
 
     val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
+    Log.d("first", "$mainCategories")
     // 載入資料
+    LaunchedEffect(selectedTabCategoryIndex) {
+        Log.d("Tab Change", "Selected Tab Index: $selectedTabCategoryIndex")
+        mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabCategoryIndex + 1)
+    }
     LaunchedEffect(Unit) {
-        mainCategoryViewModel.loadAllMainCategories()
         categoryViewModel.loadAllCategories()
     }
 
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
-    var newCategoryName by rememberSaveable { mutableStateOf("") }
+    val newCategoryName by rememberSaveable { mutableStateOf("") }
 
     val lazyListState = rememberLazyListState()
     val reorderableLazyColumnState = rememberReorderableLazyListState(
@@ -156,34 +160,33 @@ fun MainCategoryScreen(
                         }
                         Tab(
                             selected = selectedTabCategoryIndex == index,
-                            onClick = { selectedTabCategoryIndex = index },
+                            onClick = {
+                                selectedTabCategoryIndex = index
+                            },
                             text = { Text(text = displayName) }
                         )
                     }
                 }
-                when (selectedTabCategoryIndex) {
-                    0 ->
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(),
-                            state = lazyListState
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = lazyListState
+                ) {
+                    itemsIndexed(
+                        mainCategories.value,
+                        key = { _, category -> category.mainCategoryId }) { _, category ->
+                        ReorderableItem(
+                            reorderableLazyColumnState,
+                            category.mainCategoryId
                         ) {
-                            itemsIndexed(
-                                mainCategories.value,
-                                key = { _, category -> category.mainCategoryId }) { _, category ->
-                                ReorderableItem(
-                                    reorderableLazyColumnState,
-                                    category.mainCategoryId
-                                ) {
-                                    MainCategoryItem(
-                                        category,
-                                        this
-                                    )
-                                }
-                            }
+                            MainCategoryItem(
+                                navController,
+                                skynierViewModel,
+                                category,
+                                this,
+                                mainCategoryViewModel
+                            )
                         }
-
-                    1 -> Text("Content for Tab 2")
-                    2 -> Text("Content for Tab 3")
+                    }
                 }
             }
         }
@@ -193,8 +196,21 @@ fun MainCategoryScreen(
             navController,
             skynierViewModel,
             onDismiss = { showAddDialog = false },
-            onAdd = { _ ->
-//                    stockMarketViewModel.insert(StockMarket(stockMarketName = name, stockMarketSort = stockMarketList.size + 1))
+            onAdd = { name, hexCode, selectedIcon ->
+                val selectedIconKey =
+                    SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
+                val displayedHexCode = hexCode.takeLast(6).uppercase()
+                val mainCategorySort = mainCategories.value.size + 1
+                mainCategoryViewModel.insertMainCategory(
+                    MainCategoryEntity(
+                        categoryId = selectedTabCategoryIndex + 1,
+                        mainCategoryIcon = selectedIconKey ?: "Restaurant",
+                        mainCategoryNameKey = name,
+                        mainCategoryBackgroundColor = displayedHexCode,
+                        mainCategoryIconColor = "FFFFFF",
+                        mainCategorySort = mainCategorySort,
+                    )
+                )
                 showAddDialog = false
             },
             initialName = newCategoryName
@@ -207,17 +223,19 @@ fun AddMainCategory(
     navController: NavHostController,
     skynierViewModel: SkynierViewModel,
     onDismiss: () -> Unit,
-    onAdd: (String) -> Unit,
+    onAdd: (String, String, CategoryIcon?) -> Unit,
     initialName: String
 ) {
     val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
+    val displayIcon = selectedIcon ?: SharedOptions.iconMap["Restaurant"] // 使用預設
+
     var name by rememberSaveable { mutableStateOf(initialName) }
     var hexCode by rememberSaveable {
         mutableStateOf("009EEC")
     }
 //    var tempHexCode by remember { mutableStateOf(hexCode) }
     val controller = rememberColorPickerController()
-
+    val untitled = stringResource(id = R.string.untitled)
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -244,35 +262,28 @@ fun AddMainCategory(
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center // Center the label
                 ) {
-                Box(
-                    modifier = Modifier
-                        .size(46.dp) // Set the size of the circular background
-                        .background(
-                            Color(android.graphics.Color.parseColor("#${hexCode}")),
-                            CircleShape
-                        )
-                        .clickable {
-                            navController.navigate("icon")
-                        }, // Set background color and shape
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (selectedIcon != null) {
-                        Icon(
-                            imageVector = selectedIcon!!.icon, // 顯示選擇的圖示
-                            contentDescription = "Icon",
-                            modifier = Modifier.size(24.dp),
-                            tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Filled.Restaurant, // Access the icon from CategoryIcon
-                            contentDescription = "Icon",
-                            modifier = Modifier.size(24.dp), // Set icon size
-                            tint = Color(android.graphics.Color.parseColor("#FBFBFB")) // Set icon color
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp) // Set the size of the circular background
+                            .background(
+                                Color(android.graphics.Color.parseColor("#${hexCode}")),
+                                CircleShape
+                            )
+                            .clickable {
+                                navController.navigate("icon")
+                            }, // Set background color and shape
+                        contentAlignment = Alignment.Center
+                    ) {
+                        displayIcon?.let {
+                            Icon(
+                                imageVector = it.icon,
+                                contentDescription = "Icon",
+                                modifier = Modifier.size(24.dp),
+                                tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
+                            )
+                        }
                     }
                 }
-                    }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -280,18 +291,21 @@ fun AddMainCategory(
                     contentAlignment = Alignment.Center // Center the label
                 ) {
                     if (name.isEmpty()) {
-                        Text(text = "名稱", color = Gray) // Display label text when empty
+                        Text(text = untitled, color = Gray) // Display label text when empty
                     }
                     BasicTextField(
                         value = name,
                         onValueChange = { newName ->
-                            if (newName.length <= 20) {
+                            if (newName.length <= 60) {
                                 name = newName
                             }
                         },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     )
                 }
 
@@ -302,9 +316,7 @@ fun AddMainCategory(
                         .padding(10.dp),
                     controller = controller,
                     onColorChanged = { colorEnvelope: ColorEnvelope ->
-                        // do something
                         hexCode = colorEnvelope.hexCode
-                        Log.d("colorEnvelope", colorEnvelope.hexCode)
                     },
                     initialColor = Color(android.graphics.Color.parseColor("#${hexCode}")),
                 )
@@ -354,9 +366,10 @@ fun AddMainCategory(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            if (name.isNotEmpty()) {
-                                onAdd(name, hexCode, selectedIcon)
+                            if (name.isEmpty()) {
+                                name = untitled
                             }
+                            onAdd(name, hexCode, displayIcon)
                         }
                     ) {
                         Text(stringResource(id = R.string.add))
@@ -368,7 +381,14 @@ fun AddMainCategory(
 }
 
 @Composable
-fun MainCategoryItem(category: MainCategoryEntity, scope: ReorderableCollectionItemScope) {
+fun MainCategoryItem(
+    navController: NavHostController,
+    skynierViewModel: SkynierViewModel,
+    category: MainCategoryEntity,
+    scope: ReorderableCollectionItemScope,
+    mainCategoryViewModel: MainCategoryViewModel
+) {
+
     val categoryIcon = SharedOptions.iconMap[category.mainCategoryIcon]
     val context = LocalContext.current
     val resourceId =
@@ -377,6 +397,13 @@ fun MainCategoryItem(category: MainCategoryEntity, scope: ReorderableCollectionI
         context.getString(resourceId) // 如果語系字串存在，顯示語系的值
     } else {
         category.mainCategoryNameKey // 如果語系字串不存在，顯示原始值
+    }
+
+    var showEditDialog by rememberSaveable { mutableStateOf(false) }
+    fun editCategory() {
+        skynierViewModel.updateSelectedIcon(categoryIcon!!)
+        skynierViewModel.selectedCategoryToEdit = category
+        showEditDialog = true
     }
 
     var checked by remember { mutableStateOf(false) }
@@ -394,6 +421,7 @@ fun MainCategoryItem(category: MainCategoryEntity, scope: ReorderableCollectionI
                         .fillMaxHeight()
                         .background(Blue)
                         .clickable {
+                            editCategory()
 //                            stockViewModel.updateSelectedAccount(item)
 //                            navController.navigate("editAccountScreen")
                         }
@@ -482,6 +510,160 @@ fun MainCategoryItem(category: MainCategoryEntity, scope: ReorderableCollectionI
         )
     }
     HorizontalDivider()
+    // 彈出編輯對話框
+    if (showEditDialog) {
+        EditMainCategory(
+            navController = navController,
+            skynierViewModel = skynierViewModel,
+            onDismiss = { showEditDialog = false },
+            onUpdate = { updatedCategory ->
+                mainCategoryViewModel.updateMainCategory(updatedCategory)
+                showEditDialog = false
+            },
+            categoryIcon = categoryIcon
+        )
+    }
+}
+
+@Composable
+fun EditMainCategory(
+    navController: NavHostController,
+    skynierViewModel: SkynierViewModel,
+    onDismiss: () -> Unit,
+    onUpdate: (MainCategoryEntity) -> Unit,
+    categoryIcon: CategoryIcon?,
+) {
+    val category = skynierViewModel.selectedCategoryToEdit
+    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
+    Log.d("selectedIcon", "$selectedIcon")
+    Log.d("categoryIcon", "$categoryIcon")
+    val displayIcon = selectedIcon ?: categoryIcon // 使用預設
+    var name by rememberSaveable { mutableStateOf(category!!.mainCategoryNameKey) }
+    var hexCode by rememberSaveable { mutableStateOf(category!!.mainCategoryBackgroundColor) }
+    val controller = rememberColorPickerController()
+    val untitled = stringResource(id = R.string.untitled)
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // 標題
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "編輯主類別", modifier = Modifier.padding(bottom = 8.dp))
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp) // Set the size of the circular background
+                            .background(
+                                Color(android.graphics.Color.parseColor("#${hexCode}")),
+                                CircleShape
+                            )
+                            .clickable {
+                                navController.navigate("icon")
+                            }, // Set background color and shape
+                        contentAlignment = Alignment.Center
+                    ) {
+                        displayIcon?.let {
+                            Icon(
+                                imageVector = it.icon, // Display the selected icon
+                                contentDescription = "Icon",
+                                modifier = Modifier.size(24.dp),
+                                tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
+                            )
+                        }
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    if (name.isEmpty()) {
+                        Text(text = untitled, color = Gray) // Display label text when empty
+                    }
+                    BasicTextField(
+                        value = name,
+                        onValueChange = { newName ->
+                            if (newName.length <= 60) {
+                                name = newName
+                            }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                // 顏色選擇
+                HsvColorPicker(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(10.dp),
+                    controller = controller,
+                    onColorChanged = { colorEnvelope ->
+                        hexCode = colorEnvelope.hexCode
+                    },
+                    initialColor = Color(android.graphics.Color.parseColor("#$hexCode")),
+                )
+                AlphaSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                // 保存按鈕
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val selectedIconKey =
+                                SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
+                            val updatedCategory = category!!.copy(
+                                mainCategoryNameKey = name,
+                                mainCategoryBackgroundColor = hexCode.takeLast(6).uppercase(),
+                                mainCategoryIcon = selectedIconKey?: "Restaurant"
+                            )
+                            onUpdate(updatedCategory)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.confirm))
+                    }
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

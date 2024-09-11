@@ -44,7 +44,7 @@ class MainCategoryViewModel(private val repository: MainCategoryRepository) : Vi
     fun insertMainCategory(mainCategory: MainCategoryEntity) {
         viewModelScope.launch {
             repository.insertMainCategory(mainCategory)
-            loadAllMainCategories() // 插入后刷新数据
+            loadMainCategoriesByMainCategoryId(mainCategory.categoryId) // 插入后刷新数据
         }
     }
 
@@ -52,7 +52,7 @@ class MainCategoryViewModel(private val repository: MainCategoryRepository) : Vi
     fun updateMainCategory(mainCategory: MainCategoryEntity) {
         viewModelScope.launch {
             repository.updateMainCategory(mainCategory)
-            loadAllMainCategories() // 更新后刷新数据
+            loadMainCategoriesByMainCategoryId(mainCategory.categoryId) // 更新后刷新数据
         }
     }
 
@@ -60,7 +60,7 @@ class MainCategoryViewModel(private val repository: MainCategoryRepository) : Vi
     fun deleteMainCategory(mainCategory: MainCategoryEntity) {
         viewModelScope.launch {
             repository.deleteMainCategory(mainCategory)
-            loadAllMainCategories() // 删除后刷新数据
+            loadMainCategoriesByMainCategoryId(mainCategory.categoryId) // 删除后刷新数据
         }
     }
 

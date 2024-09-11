@@ -60,15 +60,12 @@ abstract class AppDatabase : RoomDatabase() {
                 if (categoryDao.getAllCategories().isEmpty()) {
                     val defaultCategory = listOf(
                         CategoryEntity(
-                            categoryId = 1,
                             categoryIdNameKey = "expense",
                         ),
                         CategoryEntity(
-                            categoryId = 2,
                             categoryIdNameKey = "income",
                         ),
                         CategoryEntity(
-                            categoryId = 3,
                             categoryIdNameKey = "transfer",
                         )
                     )
@@ -77,7 +74,6 @@ abstract class AppDatabase : RoomDatabase() {
                 if (mainCategoryDao.getAllMainCategories().isEmpty()) {
                     val defaultMainCategory = listOf(
                         MainCategoryEntity(
-                            mainCategoryId = 1,
                             categoryId = 1,
                             mainCategoryNameKey = "category_food",
                             mainCategoryIcon = "Restaurant",
@@ -86,7 +82,6 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategorySort = 0,
                         ),
                         MainCategoryEntity(
-                            mainCategoryId = 2,
                             categoryId = 1,
                             mainCategoryNameKey = "category_transportation",
                             mainCategoryIcon = "Commute",
@@ -95,7 +90,6 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategorySort = 1,
                         ),
                         MainCategoryEntity(
-                            mainCategoryId = 3,
                             categoryId = 1,
                             mainCategoryNameKey = "category_travel",
                             mainCategoryIcon = "FlightTakeoff",
@@ -104,7 +98,6 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategorySort = 2,
                         ),
                         MainCategoryEntity(
-                            mainCategoryId = 4,
                             categoryId = 1,
                             mainCategoryNameKey = "category_social",
                             mainCategoryIcon = "Forum",
@@ -113,7 +106,6 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategorySort = 3,
                         ),
                         MainCategoryEntity(
-                            mainCategoryId = 5,
                             categoryId = 1,
                             mainCategoryNameKey = "category_social",
                             mainCategoryIcon = "Group",
@@ -122,7 +114,6 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategorySort = 4,
                         ),
                         MainCategoryEntity(
-                            mainCategoryId = 6,
                             categoryId = 1,
                             mainCategoryNameKey = "category_social",
                             mainCategoryIcon = "Group",

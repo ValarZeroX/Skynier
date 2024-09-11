@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
     tableName = "main_category",
 )
 data class MainCategoryEntity(
-    @PrimaryKey val mainCategoryId: Int, //主類別編號
+    @PrimaryKey(autoGenerate = true) val mainCategoryId: Int = 0, //主類別編號
     val categoryId: Int, //類別編號
     val mainCategoryNameKey: String, // 主類別語系Key
     val mainCategoryIcon: String, //主類別圖示名稱
