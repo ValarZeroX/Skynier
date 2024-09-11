@@ -115,10 +115,8 @@ fun MainCategoryScreen(
 
 
     val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
-    Log.d("first", "$mainCategories")
     // 載入資料
     LaunchedEffect(selectedTabCategoryIndex) {
-        Log.d("Tab Change", "Selected Tab Index: $selectedTabCategoryIndex")
         mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabCategoryIndex + 1)
     }
     LaunchedEffect(Unit) {
@@ -192,7 +190,7 @@ fun MainCategoryScreen(
         }
     }
     if (showAddDialog) {
-        AddMainCategory(
+        AddCategory(
             navController,
             skynierViewModel,
             onDismiss = { showAddDialog = false },
@@ -219,7 +217,7 @@ fun MainCategoryScreen(
 }
 
 @Composable
-fun AddMainCategory(
+fun AddCategory(
     navController: NavHostController,
     skynierViewModel: SkynierViewModel,
     onDismiss: () -> Unit,
@@ -472,6 +470,9 @@ fun MainCategoryItem(
         }
     ) {
         ListItem(
+            modifier = Modifier.clickable {
+                navController.navigate("sub_category/${category.mainCategoryId}/${displayName}")
+            },
             headlineContent = { Text(text = displayName) },
             supportingContent = { Text("Secondary text") },
             trailingContent = {
@@ -542,6 +543,15 @@ fun EditMainCategory(
     var hexCode by rememberSaveable { mutableStateOf(category!!.mainCategoryBackgroundColor) }
     val controller = rememberColorPickerController()
     val untitled = stringResource(id = R.string.untitled)
+
+    val context = LocalContext.current
+    val resourceId =
+        context.resources.getIdentifier(name, "string", context.packageName)
+    name = if (resourceId != 0) {
+        context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+    } else {
+        name // 如果語系字串不存在，顯示原始值
+    }
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,

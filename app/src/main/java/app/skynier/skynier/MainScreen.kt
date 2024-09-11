@@ -28,6 +28,7 @@ import app.skynier.skynier.ui.record.AddRecordScreen
 import app.skynier.skynier.ui.settings.IconScreen
 import app.skynier.skynier.ui.settings.MainCategoryScreen
 import app.skynier.skynier.ui.settings.SettingsScreen
+import app.skynier.skynier.ui.settings.SubCategoryScreen
 import app.skynier.skynier.ui.settings.ThemeScreen
 import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
@@ -127,6 +128,20 @@ fun Navigation(
                 subCategoryViewModel
             )
         }
+        composable("sub_category/{mainCategoryId}/{mainCategoryName}") { backStackEntry ->
+            val mainCategoryId = backStackEntry.arguments?.getString("mainCategoryId")
+            val mainCategoryName = backStackEntry.arguments?.getString("mainCategoryName")
+            SubCategoryScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                mainCategoryId?.toInt() ?: 0,
+                mainCategoryName?.toString()?: "",
+            )
+        }
+
         composable("icon") { IconScreen(navController, skynierViewModel) }
     }
 }

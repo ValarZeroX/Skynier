@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.repository.SubCategoryRepository
 import kotlinx.coroutines.launch
@@ -62,6 +63,14 @@ class SubCategoryViewModel(private val repository: SubCategoryRepository) : View
             repository.deleteSubCategory(subCategory)
             loadAllSubCategories() // 刪除後刷新數據
         }
+    }
+
+    fun updateSubCategoryOrder(newOrder: List<SubCategoryEntity>) = viewModelScope.launch {
+        newOrder.forEachIndexed { index, subCategory ->
+            subCategory.subCategorySort = index
+        }
+        repository.updateAll(newOrder)
+        _subCategories.value = newOrder
     }
 }
 

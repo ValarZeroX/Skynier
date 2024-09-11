@@ -1,6 +1,7 @@
 package app.skynier.skynier.repository
 
 import app.skynier.skynier.database.dao.SubCategoryDao
+import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,5 +48,9 @@ class SubCategoryRepository(private val subCategoryDao: SubCategoryDao) {
         return withContext(Dispatchers.IO) {
             subCategoryDao.getSubCategoriesByMainCategoryId(mainCategoryId)
         }
+    }
+
+    suspend fun updateAll(subCategory: List<SubCategoryEntity>) {
+        subCategoryDao.updateAll(subCategory)
     }
 }
