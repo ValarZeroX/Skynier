@@ -101,7 +101,7 @@ fun IconScreen(
                                 Icon(
                                     imageVector = categoryIcon.icon, // Access the icon from CategoryIcon
                                     contentDescription = categoryIcon.category,
-                                    modifier = Modifier.size(24.dp), // Set icon size
+                                    modifier = Modifier.size(28.dp), // Set icon size
                                     tint = Color(android.graphics.Color.parseColor("#FFFFFF")) // Set icon color
                                 )
                             }

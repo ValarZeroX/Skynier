@@ -276,7 +276,7 @@ fun AddCategory(
                             Icon(
                                 imageVector = it.icon,
                                 contentDescription = "Icon",
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(28.dp),
                                 tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
                             )
                         }
@@ -400,7 +400,7 @@ fun MainCategoryItem(
     var showEditDialog by rememberSaveable { mutableStateOf(false) }
     fun editCategory() {
         skynierViewModel.updateSelectedIcon(categoryIcon!!)
-        skynierViewModel.selectedCategoryToEdit = category
+        skynierViewModel.selectedMainCategoryToEdit = category
         showEditDialog = true
     }
 
@@ -502,7 +502,7 @@ fun MainCategoryItem(
                         Icon(
                             imageVector = it.icon, // Access the icon from CategoryIcon
                             contentDescription = category.mainCategoryNameKey,
-                            modifier = Modifier.size(24.dp), // Set icon size
+                            modifier = Modifier.size(28.dp), // Set icon size
                             tint = Color(android.graphics.Color.parseColor("#${category.mainCategoryIconColor}")) // Set icon color
                         )
                     }
@@ -534,7 +534,7 @@ fun EditMainCategory(
     onUpdate: (MainCategoryEntity) -> Unit,
     categoryIcon: CategoryIcon?,
 ) {
-    val category = skynierViewModel.selectedCategoryToEdit
+    val category = skynierViewModel.selectedMainCategoryToEdit
     val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
     Log.d("selectedIcon", "$selectedIcon")
     Log.d("categoryIcon", "$categoryIcon")
@@ -589,7 +589,7 @@ fun EditMainCategory(
                             Icon(
                                 imageVector = it.icon, // Display the selected icon
                                 contentDescription = "Icon",
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(28.dp),
                                 tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
                             )
                         }

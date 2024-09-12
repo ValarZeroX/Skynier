@@ -45,7 +45,7 @@ class SubCategoryViewModel(private val repository: SubCategoryRepository) : View
     fun insertSubCategory(subCategory: SubCategoryEntity) {
         viewModelScope.launch {
             repository.insertSubCategory(subCategory)
-            loadAllSubCategories() // 插入後刷新數據
+            loadSubCategoriesByMainCategoryId(subCategory.mainCategoryId) // 插入後刷新數據
         }
     }
 
@@ -53,7 +53,7 @@ class SubCategoryViewModel(private val repository: SubCategoryRepository) : View
     fun updateSubCategory(subCategory: SubCategoryEntity) {
         viewModelScope.launch {
             repository.updateSubCategory(subCategory)
-            loadAllSubCategories() // 更新後刷新數據
+            loadSubCategoriesByMainCategoryId(subCategory.mainCategoryId) // 更新後刷新數據
         }
     }
 
@@ -61,7 +61,7 @@ class SubCategoryViewModel(private val repository: SubCategoryRepository) : View
     fun deleteSubCategory(subCategory: SubCategoryEntity) {
         viewModelScope.launch {
             repository.deleteSubCategory(subCategory)
-            loadAllSubCategories() // 刪除後刷新數據
+            loadSubCategoriesByMainCategoryId(subCategory.mainCategoryId) // 刪除後刷新數據
         }
     }
 

@@ -1,13 +1,17 @@
 package app.skynier.skynier.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,21 +20,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,19 +53,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
+import app.skynier.skynier.library.CategoryIcon
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.SwipeBox
 import app.skynier.skynier.ui.theme.Blue
+import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.ui.theme.Red
 import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import com.github.skydoves.colorpicker.compose.AlphaSlider
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -99,16 +116,17 @@ fun SubCategoryScreen(
             ) {
                 itemsIndexed(
                     subCategories.value,
-                    key = { _, category -> category.mainCategoryId }) { _, category ->
+                    key = { _, category -> category.subCategoryId }) { _, category ->
                     ReorderableItem(
                         reorderableLazyColumnState,
-                        category.mainCategoryId
+                        category.subCategoryId
                     ) {
                         SubCategoryItem(
                             navController,
                             skynierViewModel,
                             category,
                             this,
+                            subCategoryViewModel
                         )
                     }
                 }
@@ -148,6 +166,7 @@ fun SubCategoryItem(
     skynierViewModel: SkynierViewModel,
     category: SubCategoryEntity,
     scope: ReorderableCollectionItemScope,
+    subCategoryViewModel: SubCategoryViewModel,
 ) {
 
     val categoryIcon = SharedOptions.iconMap[category.subCategoryIcon]
@@ -161,11 +180,11 @@ fun SubCategoryItem(
     }
 
     var showEditDialog by rememberSaveable { mutableStateOf(false) }
-//    fun editCategory() {
-//        skynierViewModel.updateSelectedIcon(categoryIcon!!)
-//        skynierViewModel.selectedCategoryToEdit = category
-//        showEditDialog = true
-//    }
+    fun editCategory() {
+        skynierViewModel.updateSelectedIcon(categoryIcon!!)
+        skynierViewModel.selectedSubCategoryToEdit = category
+        showEditDialog = true
+    }
 
     var checked by remember { mutableStateOf(false) }
     SwipeBox(
@@ -182,7 +201,7 @@ fun SubCategoryItem(
                         .fillMaxHeight()
                         .background(Blue)
                         .clickable {
-//                            editCategory()
+                            editCategory()
 //                            stockViewModel.updateSelectedAccount(item)
 //                            navController.navigate("editAccountScreen")
                         }
@@ -265,7 +284,7 @@ fun SubCategoryItem(
                         Icon(
                             imageVector = it.icon, // Access the icon from CategoryIcon
                             contentDescription = category.subCategoryNameKey,
-                            modifier = Modifier.size(24.dp), // Set icon size
+                            modifier = Modifier.size(28.dp), // Set icon size
                             tint = Color(android.graphics.Color.parseColor("#${category.subCategoryIconColor}")) // Set icon color
                         )
                     }
@@ -275,18 +294,166 @@ fun SubCategoryItem(
     }
     HorizontalDivider()
     // 彈出編輯對話框
-//    if (showEditDialog) {
-//        EditMainCategory(
-//            navController = navController,
-//            skynierViewModel = skynierViewModel,
-//            onDismiss = { showEditDialog = false },
-//            onUpdate = { updatedCategory ->
-//                mainCategoryViewModel.updateMainCategory(updatedCategory)
-//                showEditDialog = false
-//            },
-//            categoryIcon = categoryIcon
-//        )
-//    }
+    if (showEditDialog) {
+        EditSubCategory(
+            navController = navController,
+            skynierViewModel = skynierViewModel,
+            onDismiss = { showEditDialog = false },
+            onUpdate = { updatedCategory ->
+                subCategoryViewModel.updateSubCategory(updatedCategory)
+                showEditDialog = false
+            },
+            categoryIcon = categoryIcon
+        )
+    }
+}
+
+@Composable
+fun EditSubCategory(
+    navController: NavHostController,
+    skynierViewModel: SkynierViewModel,
+    onDismiss: () -> Unit,
+    onUpdate: (SubCategoryEntity) -> Unit,
+    categoryIcon: CategoryIcon?,
+) {
+    val category = skynierViewModel.selectedSubCategoryToEdit
+    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
+    val displayIcon = selectedIcon ?: categoryIcon // 使用預設
+    var name by rememberSaveable { mutableStateOf(category!!.subCategoryNameKey) }
+    var hexCode by rememberSaveable { mutableStateOf(category!!.subCategoryBackgroundColor) }
+    val controller = rememberColorPickerController()
+    val untitled = stringResource(id = R.string.untitled)
+
+    val context = LocalContext.current
+    val resourceId =
+        context.resources.getIdentifier(name, "string", context.packageName)
+    name = if (resourceId != 0) {
+        context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+    } else {
+        name // 如果語系字串不存在，顯示原始值
+    }
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // 標題
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "編輯子類別", modifier = Modifier.padding(bottom = 8.dp))
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp) // Set the size of the circular background
+                            .background(
+                                Color(android.graphics.Color.parseColor("#${hexCode}")),
+                                CircleShape
+                            )
+                            .clickable {
+                                navController.navigate("icon")
+                            }, // Set background color and shape
+                        contentAlignment = Alignment.Center
+                    ) {
+                        displayIcon?.let {
+                            Icon(
+                                imageVector = it.icon, // Display the selected icon
+                                contentDescription = "Icon",
+                                modifier = Modifier.size(28.dp),
+                                tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
+                            )
+                        }
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    if (name.isEmpty()) {
+                        Text(text = untitled, color = Gray) // Display label text when empty
+                    }
+                    BasicTextField(
+                        value = name,
+                        onValueChange = { newName ->
+                            if (newName.length <= 60) {
+                                name = newName
+                            }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                // 顏色選擇
+                HsvColorPicker(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(10.dp),
+                    controller = controller,
+                    onColorChanged = { colorEnvelope ->
+                        hexCode = colorEnvelope.hexCode
+                    },
+                    initialColor = Color(android.graphics.Color.parseColor("#$hexCode")),
+                )
+                AlphaSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                // 保存按鈕
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val selectedIconKey =
+                                SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
+                            val updatedCategory = category!!.copy(
+                                subCategoryNameKey = name,
+                                subCategoryBackgroundColor = hexCode.takeLast(6).uppercase(),
+                                subCategoryIcon = selectedIconKey?: "Restaurant"
+                            )
+                            onUpdate(updatedCategory)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.confirm))
+                    }
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

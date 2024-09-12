@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.library.CategoryIcon
 
 class SkynierViewModel: ViewModel() {
@@ -23,10 +24,16 @@ class SkynierViewModel: ViewModel() {
         _selectedIcon.value = newIcon
     }
 
-    var selectedCategoryToEdit: MainCategoryEntity? by mutableStateOf(null)
+    var selectedMainCategoryToEdit: MainCategoryEntity? by mutableStateOf(null)
 
     fun updateSelectedCategory(category: MainCategoryEntity) {
-        selectedCategoryToEdit = category
+        selectedMainCategoryToEdit = category
+    }
+
+    var selectedSubCategoryToEdit: SubCategoryEntity? by mutableStateOf(null)
+
+    fun updateSelectedCategory(category: SubCategoryEntity) {
+        selectedSubCategoryToEdit = category
     }
 }
 

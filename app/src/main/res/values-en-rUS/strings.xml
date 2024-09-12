@@ -12,6 +12,7 @@
     <string name="category_entertainment">Entertainment</string>
     <string name="category_finance">Finance</string>
     <string name="category_social">Social</string>
+    <string name="category_activities">Activities</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="cancel">Cancel</string>

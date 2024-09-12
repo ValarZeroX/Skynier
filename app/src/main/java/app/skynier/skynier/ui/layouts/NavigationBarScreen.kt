@@ -83,7 +83,7 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
                 }
             )
         }
-        val excludedRoutes = setOf("main_category", "icon")
+        val excludedRoutes = setOf("main_category", "icon", "sub_category/{mainCategoryId}/{mainCategoryName}")
         if (currentRoute !in excludedRoutes) {
             FloatingActionButton(
                 onClick = {
