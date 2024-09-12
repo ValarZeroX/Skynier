@@ -128,9 +128,11 @@ fun Navigation(
                 subCategoryViewModel
             )
         }
-        composable("sub_category/{mainCategoryId}/{mainCategoryName}") { backStackEntry ->
+        composable("sub_category/{mainCategoryId}/{mainCategoryName}/{mainCategoryBackgroundColor}/{mainCategoryIconColor}") { backStackEntry ->
             val mainCategoryId = backStackEntry.arguments?.getString("mainCategoryId")
             val mainCategoryName = backStackEntry.arguments?.getString("mainCategoryName")
+            val mainCategoryBackgroundColor = backStackEntry.arguments?.getString("mainCategoryBackgroundColor")
+            val mainCategoryIconColor = backStackEntry.arguments?.getString("mainCategoryIconColor")
             SubCategoryScreen(
                 navController,
                 skynierViewModel,
@@ -139,6 +141,8 @@ fun Navigation(
                 subCategoryViewModel,
                 mainCategoryId?.toInt() ?: 0,
                 mainCategoryName?.toString()?: "",
+                mainCategoryBackgroundColor?.toString()?: "000000",
+                mainCategoryIconColor?.toString()?: "FBFBFB",
             )
         }
 

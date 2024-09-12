@@ -72,6 +72,7 @@ import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import com.github.skydoves.colorpicker.compose.AlphaSlider
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
+import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import sh.calvin.reorderable.ReorderableCollectionItemScope
@@ -88,6 +89,8 @@ fun SubCategoryScreen(
     subCategoryViewModel: SubCategoryViewModel,
     mainCategoryId: Int,
     mainCategoryName: String,
+    mainCategoryBackgroundColor: String,
+    mainCategoryIconColor: String,
 ) {
     val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
     LaunchedEffect(Unit) {
@@ -126,7 +129,9 @@ fun SubCategoryScreen(
                             skynierViewModel,
                             category,
                             this,
-                            subCategoryViewModel
+                            subCategoryViewModel,
+                            mainCategoryBackgroundColor,
+                            mainCategoryIconColor
                         )
                     }
                 }
@@ -134,7 +139,7 @@ fun SubCategoryScreen(
         }
     }
     if (showAddDialog) {
-        AddCategory(
+        AddSubCategory(
             navController,
             skynierViewModel,
             onDismiss = { showAddDialog = false },
@@ -155,7 +160,9 @@ fun SubCategoryScreen(
                 )
                 showAddDialog = false
             },
-            initialName = newCategoryName
+            initialName = newCategoryName,
+            mainCategoryBackgroundColor,
+            mainCategoryIconColor
         )
     }
 }
@@ -167,6 +174,8 @@ fun SubCategoryItem(
     category: SubCategoryEntity,
     scope: ReorderableCollectionItemScope,
     subCategoryViewModel: SubCategoryViewModel,
+    mainCategoryBackgroundColor: String,
+    mainCategoryIconColor: String,
 ) {
 
     val categoryIcon = SharedOptions.iconMap[category.subCategoryIcon]
@@ -275,7 +284,7 @@ fun SubCategoryItem(
                         modifier = Modifier
                             .size(46.dp) // Set the size of the circular background
                             .background(
-                                Color(android.graphics.Color.parseColor("#${category.subCategoryBackgroundColor}")),
+                                Color(android.graphics.Color.parseColor("#${mainCategoryBackgroundColor}")),
                                 CircleShape
                             ), // Set background color and shape
                         contentAlignment = Alignment.Center
@@ -285,7 +294,7 @@ fun SubCategoryItem(
                             imageVector = it.icon, // Access the icon from CategoryIcon
                             contentDescription = category.subCategoryNameKey,
                             modifier = Modifier.size(28.dp), // Set icon size
-                            tint = Color(android.graphics.Color.parseColor("#${category.subCategoryIconColor}")) // Set icon color
+                            tint = Color(android.graphics.Color.parseColor("#${mainCategoryIconColor}")) // Set icon color
                         )
                     }
                 }
@@ -303,8 +312,123 @@ fun SubCategoryItem(
                 subCategoryViewModel.updateSubCategory(updatedCategory)
                 showEditDialog = false
             },
-            categoryIcon = categoryIcon
+            categoryIcon = categoryIcon,
+            mainCategoryBackgroundColor = mainCategoryBackgroundColor,
+            mainCategoryIconColor = mainCategoryIconColor
         )
+    }
+}
+
+@Composable
+fun AddSubCategory(
+    navController: NavHostController,
+    skynierViewModel: SkynierViewModel,
+    onDismiss: () -> Unit,
+    onAdd: (String, String, CategoryIcon?) -> Unit,
+    initialName: String,
+    mainCategoryBackgroundColor: String,
+    mainCategoryIconColor: String,
+) {
+    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
+    val displayIcon = selectedIcon ?: SharedOptions.iconMap["Restaurant"] // 使用預設
+
+    var name by rememberSaveable { mutableStateOf(initialName) }
+    val untitled = stringResource(id = R.string.untitled)
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Text(
+                        text = "新增主類別",
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                HorizontalDivider()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp) // Set the size of the circular background
+                            .background(
+                                Color(android.graphics.Color.parseColor("#${mainCategoryBackgroundColor}")),
+                                CircleShape
+                            )
+                            .clickable {
+                                navController.navigate("icon")
+                            }, // Set background color and shape
+                        contentAlignment = Alignment.Center
+                    ) {
+                        displayIcon?.let {
+                            Icon(
+                                imageVector = it.icon,
+                                contentDescription = "Icon",
+                                modifier = Modifier.size(28.dp),
+                                tint = Color(android.graphics.Color.parseColor("#${mainCategoryIconColor}"))
+                            )
+                        }
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    if (name.isEmpty()) {
+                        Text(text = untitled, color = Gray) // Display label text when empty
+                    }
+                    BasicTextField(
+                        value = name,
+                        onValueChange = { newName ->
+                            if (newName.length <= 60) {
+                                name = newName
+                            }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (name.isEmpty()) {
+                                name = untitled
+                            }
+                            onAdd(name, mainCategoryBackgroundColor, displayIcon)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.add))
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -315,12 +439,14 @@ fun EditSubCategory(
     onDismiss: () -> Unit,
     onUpdate: (SubCategoryEntity) -> Unit,
     categoryIcon: CategoryIcon?,
+    mainCategoryBackgroundColor: String,
+    mainCategoryIconColor: String
 ) {
     val category = skynierViewModel.selectedSubCategoryToEdit
     val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
     val displayIcon = selectedIcon ?: categoryIcon // 使用預設
     var name by rememberSaveable { mutableStateOf(category!!.subCategoryNameKey) }
-    var hexCode by rememberSaveable { mutableStateOf(category!!.subCategoryBackgroundColor) }
+//    var hexCode by rememberSaveable { mutableStateOf(category!!.subCategoryBackgroundColor) }
     val controller = rememberColorPickerController()
     val untitled = stringResource(id = R.string.untitled)
 
@@ -357,7 +483,7 @@ fun EditSubCategory(
                         modifier = Modifier
                             .size(46.dp) // Set the size of the circular background
                             .background(
-                                Color(android.graphics.Color.parseColor("#${hexCode}")),
+                                Color(android.graphics.Color.parseColor("#${mainCategoryBackgroundColor}")),
                                 CircleShape
                             )
                             .clickable {
@@ -370,7 +496,7 @@ fun EditSubCategory(
                                 imageVector = it.icon, // Display the selected icon
                                 contentDescription = "Icon",
                                 modifier = Modifier.size(28.dp),
-                                tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
+                                tint = Color(android.graphics.Color.parseColor("#${mainCategoryIconColor}"))
                             )
                         }
                     }
@@ -399,32 +525,32 @@ fun EditSubCategory(
                         )
                     )
                 }
-                // 顏色選擇
-                HsvColorPicker(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(10.dp),
-                    controller = controller,
-                    onColorChanged = { colorEnvelope ->
-                        hexCode = colorEnvelope.hexCode
-                    },
-                    initialColor = Color(android.graphics.Color.parseColor("#$hexCode")),
-                )
-                AlphaSlider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                        .height(14.dp),
-                    controller = controller,
-                )
-                BrightnessSlider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                        .height(14.dp),
-                    controller = controller,
-                )
+//                // 顏色選擇
+//                HsvColorPicker(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(150.dp)
+//                        .padding(10.dp),
+//                    controller = controller,
+//                    onColorChanged = { colorEnvelope ->
+//                        hexCode = colorEnvelope.hexCode
+//                    },
+//                    initialColor = Color(android.graphics.Color.parseColor("#$hexCode")),
+//                )
+//                AlphaSlider(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(10.dp)
+//                        .height(14.dp),
+//                    controller = controller,
+//                )
+//                BrightnessSlider(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(10.dp)
+//                        .height(14.dp),
+//                    controller = controller,
+//                )
                 // 保存按鈕
                 Row(
                     horizontalArrangement = Arrangement.End,
@@ -442,7 +568,7 @@ fun EditSubCategory(
                                 SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
                             val updatedCategory = category!!.copy(
                                 subCategoryNameKey = name,
-                                subCategoryBackgroundColor = hexCode.takeLast(6).uppercase(),
+                                subCategoryBackgroundColor = mainCategoryBackgroundColor,
                                 subCategoryIcon = selectedIconKey?: "Restaurant"
                             )
                             onUpdate(updatedCategory)

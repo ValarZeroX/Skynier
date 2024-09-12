@@ -332,26 +332,6 @@ fun AddCategory(
                         .height(14.dp),
                     controller = controller,
                 )
-//                Row(
-//                    horizontalArrangement = Arrangement.Center,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(top = 16.dp)
-//                ) {
-//                    OutlinedTextField(
-//                        value = hexCode.takeLast(6).uppercase(),
-//                        onValueChange = { newText ->
-//                            if (newText.isEmpty() || newText.matches(Regex("^#[0-9A-Fa-f]{6}$"))) {
-//                                hexCode = newText
-//                            }
-//                        },
-//                        leadingIcon = { Text(text = "#")},
-//                        placeholder = { Text(text = hexCode)},
-//                        modifier = Modifier
-//                            .weight(1f)
-//                            .padding(end = 5.dp)
-//                    )
-//                }
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier
@@ -471,7 +451,7 @@ fun MainCategoryItem(
     ) {
         ListItem(
             modifier = Modifier.clickable {
-                navController.navigate("sub_category/${category.mainCategoryId}/${displayName}")
+                navController.navigate("sub_category/${category.mainCategoryId}/${displayName}/${category.mainCategoryBackgroundColor}/${category.mainCategoryIconColor}")
             },
             headlineContent = { Text(text = displayName) },
             supportingContent = { Text("Secondary text") },

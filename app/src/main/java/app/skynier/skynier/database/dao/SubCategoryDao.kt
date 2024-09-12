@@ -32,5 +32,4 @@ interface SubCategoryDao {
 
     @Update
     suspend fun updateAll(subCategory: List<SubCategoryEntity>)
-
 }
