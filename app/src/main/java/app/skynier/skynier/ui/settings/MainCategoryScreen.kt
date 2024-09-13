@@ -1,5 +1,6 @@
 package app.skynier.skynier.ui.settings
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -79,6 +80,7 @@ import androidx.navigation.NavHostController
 import app.skynier.skynier.Navigation
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.library.CategoryIcon
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.SwipeBox
@@ -135,6 +137,13 @@ fun MainCategoryScreen(
         }
         mainCategoryViewModel.updateMainCategoryOrder(updatedList)
     }
+
+    // 觀察子類別
+    val subCategoriesByMainCategory by subCategoryViewModel.subCategoriesByMainCategory.observeAsState(emptyMap())
+    LaunchedEffect(Unit) {
+        subCategoryViewModel.loadAllSubCategoriesAndGroupByMainCategory()
+    }
+
     Scaffold(
         topBar = {
             MainCategoryScreenHeader(navController, onAddClick = { showAddDialog = true })
@@ -181,7 +190,8 @@ fun MainCategoryScreen(
                                 skynierViewModel,
                                 category,
                                 this,
-                                mainCategoryViewModel
+                                mainCategoryViewModel,
+                                subCategoriesByMainCategory,
                             )
                         }
                     }
@@ -249,7 +259,7 @@ fun AddCategory(
                     contentAlignment = Alignment.Center // Center the label
                 ) {
                     Text(
-                        text = "新增主類別",
+                        text = stringResource(id = R.string.add_main_category),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -364,7 +374,8 @@ fun MainCategoryItem(
     skynierViewModel: SkynierViewModel,
     category: MainCategoryEntity,
     scope: ReorderableCollectionItemScope,
-    mainCategoryViewModel: MainCategoryViewModel
+    mainCategoryViewModel: MainCategoryViewModel,
+    subCategoriesByMainCategory : Map<Int, List<SubCategoryEntity>>,
 ) {
 
     val categoryIcon = SharedOptions.iconMap[category.mainCategoryIcon]
@@ -382,6 +393,26 @@ fun MainCategoryItem(
         skynierViewModel.updateSelectedIcon(categoryIcon!!)
         skynierViewModel.selectedMainCategoryToEdit = category
         showEditDialog = true
+    }
+
+    val subCategoriesForThisMainCategory = subCategoriesByMainCategory[category.mainCategoryId] ?: emptyList()
+
+    val subcategoryCount = subCategoriesForThisMainCategory.size
+    val subcategoryDisplay = subCategoriesForThisMainCategory.take(3)
+        .joinToString(", ") { subCategory ->
+            // 獲取語系或顯示原始名稱
+            val resourceKey = context.resources.getIdentifier(subCategory.subCategoryNameKey, "string", context.packageName)
+            if (resourceKey != 0) {
+                context.getString(resourceKey)
+            } else {
+                subCategory.subCategoryNameKey
+            }
+        }
+
+    val subcategoryText = if (subcategoryCount > 3) {
+        "$subcategoryDisplay...($subcategoryCount)"
+    } else {
+        subcategoryDisplay
     }
 
     var checked by remember { mutableStateOf(false) }
@@ -454,7 +485,7 @@ fun MainCategoryItem(
                 navController.navigate("sub_category/${category.mainCategoryId}/${displayName}/${category.mainCategoryBackgroundColor}/${category.mainCategoryIconColor}")
             },
             headlineContent = { Text(text = displayName) },
-            supportingContent = { Text("Secondary text") },
+            supportingContent = { Text(text = subcategoryText) },
             trailingContent = {
                 IconButton(onClick = { /*TODO*/ },
                     modifier = with(scope) {
@@ -516,8 +547,6 @@ fun EditMainCategory(
 ) {
     val category = skynierViewModel.selectedMainCategoryToEdit
     val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
-    Log.d("selectedIcon", "$selectedIcon")
-    Log.d("categoryIcon", "$categoryIcon")
     val displayIcon = selectedIcon ?: categoryIcon // 使用預設
     var name by rememberSaveable { mutableStateOf(category!!.mainCategoryNameKey) }
     var hexCode by rememberSaveable { mutableStateOf(category!!.mainCategoryBackgroundColor) }
@@ -545,7 +574,7 @@ fun EditMainCategory(
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "編輯主類別", modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = stringResource(id = R.string.edit_main_category), modifier = Modifier.padding(bottom = 8.dp))
                 }
                 Box(
                     modifier = Modifier
@@ -643,7 +672,7 @@ fun EditMainCategory(
                             val updatedCategory = category!!.copy(
                                 mainCategoryNameKey = name,
                                 mainCategoryBackgroundColor = hexCode.takeLast(6).uppercase(),
-                                mainCategoryIcon = selectedIconKey?: "Restaurant"
+                                mainCategoryIcon = selectedIconKey ?: "Restaurant"
                             )
                             onUpdate(updatedCategory)
                         }
@@ -661,7 +690,7 @@ fun EditMainCategory(
 fun MainCategoryScreenHeader(navController: NavHostController, onAddClick: () -> Unit) {
     CenterAlignedTopAppBar(
         title = {
-            Text("主類別")
+            Text(stringResource(id = R.string.category_main))
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {

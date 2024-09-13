@@ -349,7 +349,7 @@ fun AddSubCategory(
                     contentAlignment = Alignment.Center // Center the label
                 ) {
                     Text(
-                        text = "新增主類別",
+                        text = stringResource(id = R.string.add_sub_category),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -471,7 +471,7 @@ fun EditSubCategory(
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "編輯子類別", modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = stringResource(id = R.string.edit_sub_category), modifier = Modifier.padding(bottom = 8.dp))
                 }
                 Box(
                     modifier = Modifier

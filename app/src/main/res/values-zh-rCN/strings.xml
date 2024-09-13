@@ -60,6 +60,14 @@
     <string name="category_medicine">药物</string>
     <string name="category_maintenance_fee">维修费</string>
     <string name="category_internet_bill">网络费</string>
+    <string name="category_salary">工资</string>
+    <string name="category_bonus">奖金</string>
+    <string name="category_side_job">副业</string>
+    <string name="category_interest">利息</string>
+    <string name="category_investment">投资</string>
+    <string name="category_withdrawal">提款</string>
+    <string name="category_deposit">存款</string>
+    <string name="category_exchange">兑换</string>
     <string name="delete">删除</string>
     <string name="edit">编辑</string>
     <string name="cancel">取消</string>
@@ -69,4 +77,12 @@
     <string name="expense">支出</string>
     <string name="transfer">转帐</string>
     <string name="untitled">无标题</string>
+    <string name="category_main">主类别</string>
+    <string name="category_sub">子类别</string>
+    <string name="edit_main_category">编辑主类别</string>
+    <string name="add_main_category">新增主类别</string>
+    <string name="delete_main_category">删除主类别</string>
+    <string name="edit_sub_category">编辑子类别</string>
+    <string name="add_sub_category">新增子类别</string>
+    <string name="delete_sub_category">删除子类别</string>
 </resources>

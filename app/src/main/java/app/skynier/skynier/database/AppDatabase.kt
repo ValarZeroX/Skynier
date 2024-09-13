@@ -116,7 +116,7 @@ abstract class AppDatabase : RoomDatabase() {
                         MainCategoryEntity(
                             categoryId = 1,
                             mainCategoryNameKey = "category_finance",
-                            mainCategoryIcon = "Payments",
+                            mainCategoryIcon = "AccountBalance",
                             mainCategoryBackgroundColor = "B89E14",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 5,
@@ -133,7 +133,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 2,
                             mainCategoryNameKey = "category_work",
                             mainCategoryIcon = "Work",
-                            mainCategoryBackgroundColor = "EA7500",
+                            mainCategoryBackgroundColor = "DAA520",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 0,
                         ),
@@ -141,9 +141,17 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 2,
                             mainCategoryNameKey = "category_finance",
                             mainCategoryIcon = "AccountBalance",
-                            mainCategoryBackgroundColor = "EA7500",
+                            mainCategoryBackgroundColor = "625B57",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 1,
+                        ),
+                        MainCategoryEntity(
+                            categoryId = 3,
+                            mainCategoryNameKey = "transfer",
+                            mainCategoryIcon = "SyncAlt",
+                            mainCategoryBackgroundColor = "3CB371",
+                            mainCategoryIconColor = "FBFBFB",
+                            mainCategorySort = 0,
                         ),
                     )
                     defaultMainCategory.forEach { mainCategoryDao.insertMainCategory(it) }
@@ -493,6 +501,86 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategoryBackgroundColor = "7373B9",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 7
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 8,
+                            subCategoryNameKey = "category_salary",
+                            subCategoryIcon = "Paid",
+                            subCategoryBackgroundColor = "DAA520",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 0
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 8,
+                            subCategoryNameKey = "category_bonus",
+                            subCategoryIcon = "Money",
+                            subCategoryBackgroundColor = "DAA520",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 1
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 8,
+                            subCategoryNameKey = "category_side_job",
+                            subCategoryIcon = "Store",
+                            subCategoryBackgroundColor = "DAA520",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 2
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 9 ,
+                            subCategoryNameKey = "category_stock",
+                            subCategoryIcon = "TrendingUp",
+                            subCategoryBackgroundColor = "625B57",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 0
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 9 ,
+                            subCategoryNameKey = "category_interest",
+                            subCategoryIcon = "Savings",
+                            subCategoryBackgroundColor = "625B57",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 1
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 9 ,
+                            subCategoryNameKey = "category_investment",
+                            subCategoryIcon = "Payments",
+                            subCategoryBackgroundColor = "625B57",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 2
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 10 ,
+                            subCategoryNameKey = "transfer",
+                            subCategoryIcon = "SyncAlt",
+                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 0
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 10 ,
+                            subCategoryNameKey = "category_withdrawal",
+                            subCategoryIcon = "Atm",
+                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 1
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 10 ,
+                            subCategoryNameKey = "category_deposit",
+                            subCategoryIcon = "LocalAtm",
+                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 2
+                        ),
+                        SubCategoryEntity(
+                            mainCategoryId = 10 ,
+                            subCategoryNameKey = "category_exchange",
+                            subCategoryIcon = "CurrencyExchange",
+                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryIconColor = "FBFBFB",
+                            subCategorySort = 3
                         ),
                     )
                     defaultSubCategory.forEach { subCategoryDao.insertSubCategory(it) }

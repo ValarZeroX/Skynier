@@ -59,6 +59,14 @@
     <string name="category_medicine">Medicine</string>
     <string name="category_maintenance_fee">Maintenance Fee</string>
     <string name="category_internet_bill">Internet Bill</string>
+    <string name="category_salary">Salary</string>
+    <string name="category_bonus">Bonus</string>
+    <string name="category_side_job">Side Job</string>
+    <string name="category_interest">Interest</string>
+    <string name="category_investment">Investment</string>
+    <string name="category_withdrawal">Withdrawal</string>
+    <string name="category_deposit">Deposit</string>
+    <string name="category_exchange">Exchange</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="cancel">Cancel</string>
@@ -68,4 +76,12 @@
     <string name="expense">Expense</string>
     <string name="transfer">Transfer</string>
     <string name="untitled">Untitled</string>
+    <string name="category_main">Main Category</string>
+    <string name="category_sub">Sub Category</string>
+    <string name="edit_main_category">Edit Main Category</string>
+    <string name="add_main_category">Add Main Category</string>
+    <string name="delete_main_category">Delete Main Category</string>
+    <string name="edit_sub_category">Edit Sub Category</string>
+    <string name="add_sub_category">Add Sub Category</string>
+    <string name="delete_sub_category">Delete Sub Category</string>
 </resources>

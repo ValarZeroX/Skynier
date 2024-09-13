@@ -72,6 +72,19 @@ class SubCategoryViewModel(private val repository: SubCategoryRepository) : View
         repository.updateAll(newOrder)
         _subCategories.value = newOrder
     }
+
+    private val _subCategoriesByMainCategory = MutableLiveData<Map<Int, List<SubCategoryEntity>>>()
+    val subCategoriesByMainCategory: LiveData<Map<Int, List<SubCategoryEntity>>> get() = _subCategoriesByMainCategory
+
+    // 加載所有子類別，並按照 mainCategoryId 進行分類
+    fun loadAllSubCategoriesAndGroupByMainCategory() {
+        viewModelScope.launch {
+            val subCategoryList = repository.getAllSubCategories()
+            // 依照 mainCategoryId 進行分組
+            val groupedSubCategories = subCategoryList.groupBy { it.mainCategoryId }
+            _subCategoriesByMainCategory.value = groupedSubCategories
+        }
+    }
 }
 
 class SubCategoryViewModelFactory(private val repository: SubCategoryRepository) : ViewModelProvider.Factory {

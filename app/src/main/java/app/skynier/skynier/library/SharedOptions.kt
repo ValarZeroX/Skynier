@@ -203,6 +203,7 @@ import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.Stroller
 import androidx.compose.material.icons.filled.Subway
 import androidx.compose.material.icons.filled.Surfing
+import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.Tablet
 import androidx.compose.material.icons.filled.TabletAndroid
@@ -402,13 +403,13 @@ object SharedOptions {
         "HeadsetMic" to CategoryIcon(Icons.Filled.HeadsetMic, "category_shopping"), //耳機麥克風
         "HeadphonesBattery" to CategoryIcon(Icons.Filled.HeadphonesBattery, "category_shopping"), //耳機電池
         "Power" to CategoryIcon(Icons.Filled.Power, "category_shopping"), //插頭
-        "SdCard" to CategoryIcon(Icons.Filled.SdCard, "category_finance"), //SdCard
+        "SdCard" to CategoryIcon(Icons.Filled.SdCard, "category_shopping"), //SdCard
         "Router" to CategoryIcon(Icons.Filled.Router, "category_shopping"), //路由
         "Wifi" to CategoryIcon(Icons.Filled.Wifi, "category_shopping"), //Wifi
         "SystemUpdate" to CategoryIcon(Icons.Filled.SystemUpdate, "category_shopping"), //系統更新
         "BrowserUpdated" to CategoryIcon(Icons.Filled.BrowserUpdated, "category_shopping"), //瀏覽器更新
         "GetApp" to CategoryIcon(Icons.Filled.GetApp, "category_shopping"), //下載App
-        "QrCode" to CategoryIcon(Icons.Filled.QrCode, "category_finance"), //QrCode
+        "QrCode" to CategoryIcon(Icons.Filled.QrCode, "category_shopping"), //QrCode
 
         "AccountBalance" to CategoryIcon(Icons.Filled.AccountBalance, "category_finance"), //金融
         "Paid" to CategoryIcon(Icons.Filled.Paid, "category_finance"), //薪資
@@ -436,6 +437,7 @@ object SharedOptions {
         "BusinessCenter" to CategoryIcon(Icons.Filled.BusinessCenter, "category_finance"), //商務中心
         "Receipt" to CategoryIcon(Icons.Filled.Receipt, "category_finance"), //收據
         "ShowChart" to CategoryIcon(Icons.AutoMirrored.Filled.ShowChart, "category_finance"), //顯示圖表
+        "SyncAlt" to CategoryIcon(Icons.Filled.SyncAlt, "category_finance"), //轉帳
 
         "Vaccines" to CategoryIcon(Icons.Filled.Vaccines, "category_health"), //疫苗
         "Medication" to CategoryIcon(Icons.Filled.Medication, "category_health"), //藥物
