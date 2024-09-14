@@ -42,7 +42,7 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
                 selected = selectedItemIndex.value == 0,
                 onClick = {
                     selectedItemIndex.value = 0
-                    navController.navigate("home")
+                    navController.navigate("account")
                 }
             )
             NavigationBarItem(
@@ -83,12 +83,19 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
                 }
             )
         }
-        val excludedRoutes = setOf("main_category", "icon", "sub_category/{mainCategoryId}/{mainCategoryName}/{mainCategoryBackgroundColor}/{mainCategoryIconColor}", "add_record")
+        val excludedRoutes = setOf(
+            "main_category",
+            "icon",
+            "sub_category/{mainCategoryId}/{mainCategoryName}/{mainCategoryBackgroundColor}/{mainCategoryIconColor}",
+            "record_add",
+            "account_add",
+            "account_category"
+        )
         if (currentRoute !in excludedRoutes) {
             FloatingActionButton(
                 onClick = {
                     selectedItemIndex.value = 5
-                    navController.navigate("add_record")
+                    navController.navigate("record_add")
                 },
                 shape = CircleShape,
                 modifier = Modifier

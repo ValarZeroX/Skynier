@@ -85,4 +85,10 @@
     <string name="edit_sub_category">編輯子類別</string>
     <string name="add_sub_category">新增子類別</string>
     <string name="delete_sub_category">刪除子類別</string>
+    <string name="account_category">帳戶類別</string>
+    <string name="account_category_cash">現金</string>
+    <string name="account_category_credit_card">信用卡</string>
+    <string name="account_category_bank">銀行</string>
+    <string name="account_category_securities">證券</string>
+    <string name="account_category_uncategorized">未分類</string>
 </resources>

@@ -6,10 +6,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import app.skynier.skynier.database.dao.AccountCategoryDao
+import app.skynier.skynier.database.dao.AccountDao
 import app.skynier.skynier.database.dao.CategoryDao
+import app.skynier.skynier.database.dao.CurrencyDao
 import app.skynier.skynier.database.dao.MainCategoryDao
 import app.skynier.skynier.database.dao.SubCategoryDao
+import app.skynier.skynier.database.entities.AccountCategoryEntity
+import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.CategoryEntity
+import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 import kotlinx.coroutines.CoroutineScope
@@ -17,14 +23,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [CategoryEntity::class, MainCategoryEntity::class, SubCategoryEntity::class],
+    entities = [AccountEntity::class,AccountCategoryEntity::class, CategoryEntity::class, CurrencyEntity::class, MainCategoryEntity::class, SubCategoryEntity::class],
     version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun accountDao(): AccountDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun currencyDao(): CurrencyDao
     abstract fun mainCategoryDao(): MainCategoryDao
     abstract fun subCategoryDao(): SubCategoryDao
+    abstract fun accountCategoryDao(): AccountCategoryDao
 
     companion object {
         @Volatile
@@ -51,12 +60,12 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onCreate(db)
                 INSTANCE?.let { database ->
                     CoroutineScope(Dispatchers.IO).launch {
-                        populateDatabase(database.mainCategoryDao(), database.categoryDao(), database.subCategoryDao())
+                        populateDatabase(database.mainCategoryDao(), database.categoryDao(), database.subCategoryDao(), database.accountCategoryDao())
                     }
                 }
             }
 
-            suspend fun populateDatabase(mainCategoryDao: MainCategoryDao, categoryDao: CategoryDao, subCategoryDao: SubCategoryDao) {
+            suspend fun populateDatabase(mainCategoryDao: MainCategoryDao, categoryDao: CategoryDao, subCategoryDao: SubCategoryDao, accountCategoryDao: AccountCategoryDao) {
                 if (categoryDao.getAllCategories().isEmpty()) {
                     val defaultCategory = listOf(
                         CategoryEntity(
@@ -70,6 +79,31 @@ abstract class AppDatabase : RoomDatabase() {
                         )
                     )
                     defaultCategory.forEach { categoryDao.insertCategory(it) }
+                }
+                if (accountCategoryDao.getAllAccountCategories().isEmpty()) {
+                    val defaultAccountCategory = listOf(
+                        AccountCategoryEntity(
+                            accountCategoryNameKey = "account_category_cash",
+                            accountCategorySort = 0
+                        ),
+                        AccountCategoryEntity(
+                            accountCategoryNameKey = "account_category_bank",
+                            accountCategorySort = 1
+                        ),
+                        AccountCategoryEntity(
+                            accountCategoryNameKey = "account_category_credit_card",
+                            accountCategorySort = 2
+                        ),
+                        AccountCategoryEntity(
+                            accountCategoryNameKey = "account_category_securities",
+                            accountCategorySort = 3
+                        ),
+                        AccountCategoryEntity(
+                            accountCategoryNameKey = "account_category_uncategorized",
+                            accountCategorySort = 4
+                        ),
+                    )
+                    defaultAccountCategory.forEach { accountCategoryDao.insertAccountCategory(it) }
                 }
                 if (mainCategoryDao.getAllMainCategories().isEmpty()) {
                     val defaultMainCategory = listOf(

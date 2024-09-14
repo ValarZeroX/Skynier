@@ -19,9 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import app.skynier.skynier.R
 
 @Composable
 fun SettingsScreen(
@@ -54,6 +56,20 @@ fun SettingsScreen(
                         },
                         modifier = Modifier.clickable {
                             navController.navigate("main_category")
+                        }
+                    )
+                }
+                item {
+                    ListItem(
+                        headlineContent = { Text(stringResource(id = R.string.account_category)) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = stringResource(id = R.string.account_category),
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            navController.navigate("account_category")
                         }
                     )
                 }

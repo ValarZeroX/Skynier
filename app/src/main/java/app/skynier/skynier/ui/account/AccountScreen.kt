@@ -1,4 +1,4 @@
-package app.skynier.skynier.ui.record
+package app.skynier.skynier.ui.account
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,32 +14,44 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
-import app.skynier.skynier.R
 import app.skynier.skynier.ui.settings.MainCategoryScreenHeader
+import app.skynier.skynier.viewmodels.AccountViewModel
+import app.skynier.skynier.viewmodels.CategoryViewModel
+import app.skynier.skynier.viewmodels.CurrencyViewModel
+import app.skynier.skynier.viewmodels.MainCategoryViewModel
+import app.skynier.skynier.viewmodels.SkynierViewModel
+import app.skynier.skynier.viewmodels.SubCategoryViewModel
 
 @Composable
-fun AddRecordScreen(navController: NavHostController) {
+fun AccountScreen(
+    navController: NavHostController,
+    skynierViewModel: SkynierViewModel,
+    categoryViewModel: CategoryViewModel,
+    mainCategoryViewModel: MainCategoryViewModel,
+    subCategoryViewModel: SubCategoryViewModel,
+    accountViewModel: AccountViewModel,
+    currencyViewModel: CurrencyViewModel
+) {
     Scaffold(
         topBar = {
-            AddRecordScreenHeader(navController)
+            AccountScreenHeader(navController)
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             Column {
-            }
 
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddRecordScreenHeader(navController: NavHostController) {
+fun AccountScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
-            Text("新增記錄")
+            Text("帳戶總覽")
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
@@ -52,14 +64,13 @@ fun AddRecordScreenHeader(navController: NavHostController) {
         },
         actions = {
             IconButton(onClick = {
-
+                navController.navigate("account_add")
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = "Add"
                 )
             }
-
         }
     )
 }

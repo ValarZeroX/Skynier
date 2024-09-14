@@ -3,34 +3,31 @@ package app.skynier.skynier
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import app.skynier.skynier.ui.account.AccountAddScreen
+import app.skynier.skynier.ui.account.AccountScreen
 import app.skynier.skynier.ui.layouts.NavigationBarScreen
-import app.skynier.skynier.ui.record.AddRecordScreen
+import app.skynier.skynier.ui.record.RecordAddScreen
+import app.skynier.skynier.ui.settings.AccountCategoryScreen
 import app.skynier.skynier.ui.settings.IconScreen
 import app.skynier.skynier.ui.settings.MainCategoryScreen
 import app.skynier.skynier.ui.settings.SettingsScreen
 import app.skynier.skynier.ui.settings.SubCategoryScreen
 import app.skynier.skynier.ui.settings.ThemeScreen
+import app.skynier.skynier.viewmodels.AccountCategoryViewModel
+import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
+import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
@@ -41,6 +38,9 @@ fun MainScreen(
     categoryViewModel: CategoryViewModel,
     mainCategoryViewModel: MainCategoryViewModel,
     subCategoryViewModel: SubCategoryViewModel,
+    accountViewModel: AccountViewModel,
+    currencyViewModel: CurrencyViewModel,
+    accountCategoryViewModel: AccountCategoryViewModel,
 ) {
     val selectedItemIndex = rememberSaveable { mutableIntStateOf(0) }
     val navController = rememberNavController()
@@ -59,7 +59,10 @@ fun MainScreen(
                 skynierViewModel,
                 categoryViewModel,
                 mainCategoryViewModel,
-                subCategoryViewModel
+                subCategoryViewModel,
+                accountViewModel,
+                currencyViewModel,
+                accountCategoryViewModel
             )
         }
     }
@@ -112,13 +115,23 @@ fun Navigation(
     categoryViewModel: CategoryViewModel,
     mainCategoryViewModel: MainCategoryViewModel,
     subCategoryViewModel: SubCategoryViewModel,
+    accountViewModel: AccountViewModel,
+    currencyViewModel: CurrencyViewModel,
+    accountCategoryViewModel: AccountCategoryViewModel,
 ) {
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") { HomeScreen() }
+    NavHost(navController = navController, startDestination = "account") {
         composable("report") { ReportScreen() }
         composable("settings") { SettingsScreen(navController) }
         composable("theme") { ThemeScreen(navController) }
-        composable("add_record") { AddRecordScreen(navController) }
+        composable("record_add") {
+            RecordAddScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+            )
+        }
         composable("main_category") {
             MainCategoryScreen(
                 navController,
@@ -131,7 +144,8 @@ fun Navigation(
         composable("sub_category/{mainCategoryId}/{mainCategoryName}/{mainCategoryBackgroundColor}/{mainCategoryIconColor}") { backStackEntry ->
             val mainCategoryId = backStackEntry.arguments?.getString("mainCategoryId")
             val mainCategoryName = backStackEntry.arguments?.getString("mainCategoryName")
-            val mainCategoryBackgroundColor = backStackEntry.arguments?.getString("mainCategoryBackgroundColor")
+            val mainCategoryBackgroundColor =
+                backStackEntry.arguments?.getString("mainCategoryBackgroundColor")
             val mainCategoryIconColor = backStackEntry.arguments?.getString("mainCategoryIconColor")
             SubCategoryScreen(
                 navController,
@@ -140,23 +154,52 @@ fun Navigation(
                 mainCategoryViewModel,
                 subCategoryViewModel,
                 mainCategoryId?.toInt() ?: 0,
-                mainCategoryName?.toString()?: "",
-                mainCategoryBackgroundColor?.toString()?: "000000",
-                mainCategoryIconColor?.toString()?: "FBFBFB",
+                mainCategoryName?.toString() ?: "",
+                mainCategoryBackgroundColor?.toString() ?: "000000",
+                mainCategoryIconColor?.toString() ?: "FBFBFB",
             )
         }
-
         composable("icon") { IconScreen(navController, skynierViewModel) }
+        composable("account") {
+            AccountScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                accountViewModel,
+                currencyViewModel
+            )
+        }
+        composable("account_add") {
+            AccountAddScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                accountViewModel,
+                currencyViewModel
+            )
+        }
+        composable("account_category") {
+            AccountCategoryScreen(
+                navController,
+                skynierViewModel,
+                accountViewModel,
+                accountCategoryViewModel
+            )
+        }
     }
 }
 
-@Composable
-fun HomeScreen() {
-    Text(
-        text = "在 WordPress 網站展示漂亮的中文字型，一直是每位網站管理者優先處理的工作之一，在 google fonts – 如何為佈景主題新增中文字型這一篇文章，已經跟大家分享了如何的幫自",
-        style = MaterialTheme.typography.bodyLarge
-    )
-}
+//@Composable
+//fun HomeScreen() {
+//    Text(
+//        text = "在 WordPress 網站展示漂亮的中文字型，一直是每位網站管理者優先處理的工作之一，在 google fonts – 如何為佈景主題新增中文字型這一篇文章，已經跟大家分享了如何的幫自",
+//        style = MaterialTheme.typography.bodyLarge
+//    )
+//}
 
 @Composable
 fun ReportScreen() {

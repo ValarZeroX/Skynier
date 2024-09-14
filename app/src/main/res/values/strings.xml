@@ -84,4 +84,10 @@
     <string name="edit_sub_category">Edit Sub Category</string>
     <string name="add_sub_category">Add Sub Category</string>
     <string name="delete_sub_category">Delete Sub Category</string>
+    <string name="account_category">Account Category</string>
+    <string name="account_category_cash">Cash</string>
+    <string name="account_category_credit_card">Credit Card</string>
+    <string name="account_category_bank">Bank</string>
+    <string name="account_category_securities">Securities</string>
+    <string name="account_category_uncategorized">Uncategorized</string>
 </resources>
