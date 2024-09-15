@@ -91,4 +91,6 @@
     <string name="account_category_bank">銀行</string>
     <string name="account_category_securities">證券</string>
     <string name="account_category_uncategorized">未分類</string>
+    <string name="edit_account_category">編輯帳戶類別</string>
+    <string name="add_account_category">新增帳戶類別</string>
 </resources>

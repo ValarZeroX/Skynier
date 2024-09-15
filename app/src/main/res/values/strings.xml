@@ -90,4 +90,6 @@
     <string name="account_category_bank">Bank</string>
     <string name="account_category_securities">Securities</string>
     <string name="account_category_uncategorized">Uncategorized</string>
+    <string name="edit_account_category">Edit Account Category</string>
+    <string name="add_account_category">Add Account Category</string>
 </resources>

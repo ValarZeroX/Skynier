@@ -100,6 +100,8 @@ fun AccountCategoryScreen(
     }
 
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showEditDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedAccountCategory by remember { mutableStateOf<AccountCategoryEntity?>(null) } // 保存選中的AccountCategoryEntity
 
     Scaffold(
         topBar = {
@@ -141,9 +143,8 @@ fun AccountCategoryScreen(
                                             .fillMaxHeight()
                                             .background(Blue)
                                             .clickable {
-//                                                editCategory()
-//                            stockViewModel.updateSelectedAccount(item)
-//                            navController.navigate("editAccountScreen")
+                                                selectedAccountCategory = accountCategories
+                                               showEditDialog = true
                                             }
                                     ) {
                                         Column(
@@ -225,6 +226,16 @@ fun AccountCategoryScreen(
                     }
                 )
             }
+            if (showEditDialog) {
+                EditAccountCategory(
+                    accountCategory = selectedAccountCategory!!,
+                    onDismiss = { showEditDialog = false },
+                    onUpdate = { updatedAccountCategory ->
+                        accountCategoryViewModel.updateAccountCategory(updatedAccountCategory)
+                        showEditDialog = false
+                    }
+                )
+            }
         }
     }
 }
@@ -251,7 +262,7 @@ fun AddAccountCategory(
                     contentAlignment = Alignment.Center // Center the label
                 ) {
                     Text(
-                        text = "新增帳戶類別",
+                        text = stringResource(id = R.string.add_account_category),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -300,6 +311,95 @@ fun AddAccountCategory(
                         }
                     ) {
                         Text(stringResource(id = R.string.add))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EditAccountCategory(
+    accountCategory: AccountCategoryEntity, // 要編輯的帳戶類別
+    onDismiss: () -> Unit,
+    onUpdate: (AccountCategoryEntity) -> Unit,
+) {
+    var name by rememberSaveable { mutableStateOf(accountCategory.accountCategoryNameKey) }
+    val untitled = stringResource(id = R.string.untitled)
+    val context = LocalContext.current
+    val resourceId =
+        context.resources.getIdentifier(name, "string", context.packageName)
+    name = if (resourceId != 0) {
+        context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+    } else {
+        name // 如果語系字串不存在，顯示原始值
+    }
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.edit_account_category),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                HorizontalDivider()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    if (name.isEmpty()) {
+                        Text(text = untitled, color = Gray) // Display label text when empty
+                    }
+                    BasicTextField(
+                        value = name,
+                        onValueChange = { newName ->
+                            if (newName.length <= 60) {
+                                name = newName
+                            }
+                        },
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (name.isEmpty()) {
+                                name = untitled
+                            }
+                            onUpdate(
+                                accountCategory.copy(accountCategoryNameKey = name)
+                            )
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.confirm))
                     }
                 }
             }
