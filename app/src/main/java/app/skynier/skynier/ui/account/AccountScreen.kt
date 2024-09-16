@@ -51,7 +51,7 @@ fun AccountScreen(
 fun AccountScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
-            Text("帳戶總覽")
+            Text("資產總覽")
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {

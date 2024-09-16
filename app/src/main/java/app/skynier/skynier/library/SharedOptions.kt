@@ -236,6 +236,12 @@ data class CategoryIcon(
     val category: String
 )
 object SharedOptions {
+    val currencyCodes = listOf(
+        "AUD", "BRL", "CAD", "CHF", "CZK", "DKK", "EUR", "GBP", "HKD", "HUF",
+        "ILS", "JPY", "MXN", "MYR", "NOK", "NZD", "PHP", "PLN", "RMB", "RUB",
+        "SEK", "SGD", "THB", "TRY", "TWD", "USD"
+    )
+
     val iconMap = mapOf(
         "BreakfastDining" to CategoryIcon(Icons.Filled.BreakfastDining, "category_food"), //早餐
         "BrunchDining" to CategoryIcon(Icons.Filled.BrunchDining, "category_food"), //早午餐

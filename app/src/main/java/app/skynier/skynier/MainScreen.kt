@@ -179,7 +179,8 @@ fun Navigation(
                 mainCategoryViewModel,
                 subCategoryViewModel,
                 accountViewModel,
-                currencyViewModel
+                currencyViewModel,
+                accountCategoryViewModel
             )
         }
         composable("account_category") {
