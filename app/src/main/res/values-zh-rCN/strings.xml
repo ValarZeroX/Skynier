@@ -119,4 +119,9 @@
     <string name="currency_try">新土耳其里拉</string>
     <string name="currency_twd">新台币</string>
     <string name="currency_usd">美元</string>
+    <string name="asset">资产</string>
+    <string name="add_asset">新增资产</string>
+    <string name="balance">余额</string>
+    <string name="currency">币别</string>
+    <string name="asset_overview">资产总览</string>
 </resources>

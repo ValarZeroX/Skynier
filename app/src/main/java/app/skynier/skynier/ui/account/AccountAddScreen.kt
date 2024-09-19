@@ -57,6 +57,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.AccountCategoryEntity
+import app.skynier.skynier.database.entities.AccountEntity
+import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.library.CategoryIcon
 import app.skynier.skynier.library.CurrencyUtils
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.ui.theme.Gray
@@ -67,6 +70,11 @@ import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import com.github.skydoves.colorpicker.compose.AlphaSlider
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
+import com.github.skydoves.colorpicker.compose.ColorEnvelope
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
 @Composable
 fun AccountAddScreen(
@@ -79,18 +87,19 @@ fun AccountAddScreen(
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
 ) {
-    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
-    val displayIcon = selectedIcon ?: SharedOptions.iconMap["Restaurant"] // 使用預設
+//    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
+    var displayIcon = SharedOptions.iconMap["AccountBalance"] // 使用預設
     var hexCode by rememberSaveable {
         mutableStateOf("009EEC")
     }
 
     var name by rememberSaveable { mutableStateOf("") }
     val untitled = stringResource(id = R.string.untitled)
-
+    val account = accountViewModel.accounts.observeAsState(emptyList())
     val accountCategories = accountCategoryViewModel.accountCategories.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         accountCategoryViewModel.loadAllAccountCategories()
+        accountViewModel.loadAllAccounts()
     }
     var selectedCategory by rememberSaveable { mutableStateOf("現金") }
     var selectedAccountCategoryId by rememberSaveable { mutableIntStateOf(1) }
@@ -108,9 +117,34 @@ fun AccountAddScreen(
     var balance by rememberSaveable { mutableStateOf("0") }
     val numericRegex = Regex("^-?\\d*\\.?\\d*$")
 
+    var showEditIconDialog by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
-            AccountAddScreenHeader(navController)
+            AccountAddScreenHeader(
+                navController,
+                onAddClick = {
+                    val initialBalanceDouble = balance.toDoubleOrNull() ?: 0.0
+                    val accountIconKey = SharedOptions.iconMap.entries.find { it.value == displayIcon }?.key ?: "AccountBalance"
+                    val displayedHexCode = hexCode.takeLast(6).uppercase()
+                    if (name.isEmpty()){
+                        name = untitled
+                    }
+                    accountViewModel.insertAccount(
+                        AccountEntity(
+                            accountName = name,
+                            accountCategoryId = selectedAccountCategoryId,
+                            currency = selectedCurrency,
+                            initialBalance = initialBalanceDouble,
+                            accountIcon = accountIconKey,
+                            accountBackgroundColor = displayedHexCode,
+                            accountIconColor = "FBFBFB",
+                            accountSort = account.value.size +1
+
+                        )
+                    )
+                }
+            )
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -129,7 +163,8 @@ fun AccountAddScreen(
                                 CircleShape
                             )
                             .clickable {
-                                navController.navigate("icon")
+                                showEditIconDialog = true
+//                                navController.navigate("icon")
                             }, // Set background color and shape
                         contentAlignment = Alignment.Center
                     ) {
@@ -199,7 +234,7 @@ fun AccountAddScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "幣別",
+                        text = stringResource(id = R.string.currency),
                         modifier = Modifier.padding(start = 16.dp).weight(1f)
                     )
                     Box(
@@ -220,7 +255,7 @@ fun AccountAddScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "餘額",
+                        text = stringResource(id = R.string.balance),
                         modifier = Modifier.padding(start = 16.dp).weight(1f)
                     )
                     Box(
@@ -259,7 +294,20 @@ fun AccountAddScreen(
                         )
                     }
                 }
-
+                if (showEditIconDialog) {
+                    IconPickerDialog(
+                        navController,
+                        skynierViewModel,
+                        onDismiss = { showEditIconDialog = false },
+                        onAdd = { newHexCode, newIcon ->
+                            hexCode = newHexCode
+                            displayIcon = newIcon
+                            showEditIconDialog = false
+                        },
+                        displayIcon,
+                        hexCode
+                    )
+                }
                 // 當需要顯示類別選擇器時彈出Dialog
                 if (showCategoryPicker) {
                     CategoryPickerDialog(
@@ -312,7 +360,7 @@ fun CategoryPickerDialog(
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "帳戶類別", modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = stringResource(id = R.string.account_category), modifier = Modifier.padding(bottom = 8.dp))
                 }
                 HorizontalDivider()
                 LazyColumn(
@@ -464,12 +512,125 @@ fun CurrencyPickerDialog(
     }
 }
 
+@Composable
+fun IconPickerDialog(
+    navController: NavHostController,
+    skynierViewModel: SkynierViewModel,
+    onDismiss: () -> Unit,
+    onAdd: (String, CategoryIcon?) -> Unit,
+    initialIcon: CategoryIcon?,
+    initialHexCode: String
+) {
+    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
+    val displayIcon = selectedIcon ?: SharedOptions.iconMap["AccountBalance"] // 使用預設
+//    var displayIcon by rememberSaveable { mutableStateOf(initialIcon) }
+    var hexCode by rememberSaveable { mutableStateOf(initialHexCode) }
+    val controller = rememberColorPickerController()
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.add_main_category),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                HorizontalDivider()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center // Center the label
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(46.dp) // Set the size of the circular background
+                            .background(
+                                Color(android.graphics.Color.parseColor("#${hexCode}")),
+                                CircleShape
+                            )
+                            .clickable {
+                                navController.navigate("icon")
+                            }, // Set background color and shape
+                        contentAlignment = Alignment.Center
+                    ) {
+                        displayIcon?.let {
+                            Icon(
+                                imageVector = it.icon,
+                                contentDescription = "Icon",
+                                modifier = Modifier.size(28.dp),
+                                tint = Color(android.graphics.Color.parseColor("#FBFBFB"))
+                            )
+                        }
+                    }
+                }
+                HsvColorPicker(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(10.dp),
+                    controller = controller,
+                    onColorChanged = { colorEnvelope: ColorEnvelope ->
+                        hexCode = colorEnvelope.hexCode
+                    },
+                    initialColor = Color(android.graphics.Color.parseColor("#${hexCode}")),
+                )
+                AlphaSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(14.dp),
+                    controller = controller,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            onAdd(hexCode, displayIcon)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.confirm))
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountAddScreenHeader(navController: NavHostController) {
+fun AccountAddScreenHeader(
+    navController: NavHostController,
+    onAddClick: () -> Unit
+) {
     CenterAlignedTopAppBar(
         title = {
-            Text("新增資產")
+            Text(stringResource(id = R.string.add_asset))
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
@@ -482,11 +643,12 @@ fun AccountAddScreenHeader(navController: NavHostController) {
         },
         actions = {
             IconButton(onClick = {
+                onAddClick()
                 navController.popBackStack()
             }) {
                 Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add"
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "Check"
                 )
             }
         }

@@ -475,6 +475,7 @@ fun EditSubCategory(
                 ) {
                     Text(text = stringResource(id = R.string.edit_sub_category), modifier = Modifier.padding(bottom = 8.dp))
                 }
+                HorizontalDivider()
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

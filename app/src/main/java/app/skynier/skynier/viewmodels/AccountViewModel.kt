@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import app.skynier.skynier.database.entities.AccountEntity
+import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.repository.AccountRepository
 import kotlinx.coroutines.launch
 
@@ -54,6 +55,14 @@ class AccountViewModel(private val repository: AccountRepository) : ViewModel() 
             repository.deleteAccount(account)
             loadAllAccounts() // 刪除後刷新數據
         }
+    }
+
+    fun updateAccountOrder(newOrder: List<AccountEntity>) = viewModelScope.launch {
+        newOrder.forEachIndexed { index, account ->
+            account.accountSort = index
+        }
+        repository.updateAll(newOrder)
+        _accounts.value = newOrder
     }
 }
 

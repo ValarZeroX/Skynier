@@ -118,4 +118,9 @@
     <string name="currency_try">New Turkish Lira</string>
     <string name="currency_twd">New Taiwan Dollar</string>
     <string name="currency_usd">US Dollar</string>
+    <string name="asset">Asset</string>
+    <string name="add_asset">Add Asset</string>
+    <string name="balance">Balance</string>
+    <string name="currency">Currency</string>
+    <string name="asset_overview">Asset Overview</string>
 </resources>

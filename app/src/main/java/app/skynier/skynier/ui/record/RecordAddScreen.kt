@@ -12,6 +12,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +23,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
@@ -48,7 +51,29 @@ fun RecordAddScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             Column {
-
+                TabRow(selectedTabIndex = selectedTabIconIndex) {
+                    categories.value.forEachIndexed { index, value ->
+                        val context = LocalContext.current
+                        val resourceId =
+                            context.resources.getIdentifier(
+                                value.categoryIdNameKey,
+                                "string",
+                                context.packageName
+                            )
+                        val displayName = if (resourceId != 0) {
+                            context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                        } else {
+                            value.categoryIdNameKey // 如果語系字串不存在，顯示原始值
+                        }
+                        Tab(
+                            selected = selectedTabIconIndex == index,
+                            onClick = {
+                                selectedTabIconIndex = index
+                            },
+                            text = { Text(text = displayName) }
+                        )
+                    }
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package app.skynier.skynier.repository
 
 import app.skynier.skynier.database.dao.AccountDao
 import app.skynier.skynier.database.entities.AccountEntity
+import app.skynier.skynier.database.entities.MainCategoryEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -40,5 +41,9 @@ class AccountRepository(private val accountDao: AccountDao) {
         return withContext(Dispatchers.IO) {
             accountDao.getAllAccounts()
         }
+    }
+
+    suspend fun updateAll(account: List<AccountEntity>) {
+        accountDao.updateAll(account)
     }
 }

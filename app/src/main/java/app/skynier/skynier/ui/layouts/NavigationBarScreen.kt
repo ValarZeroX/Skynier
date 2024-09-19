@@ -37,8 +37,8 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
     Box {
         NavigationBar {
             NavigationBarItem(
-                icon = { Icon(Icons.Filled.AccountBalanceWallet, contentDescription = "Account") },
-                label = { Text("Accounts") },
+                icon = { Icon(Icons.Filled.AccountBalanceWallet, contentDescription = "Asset") },
+                label = { Text(stringResource(id = R.string.asset)) },
                 selected = selectedItemIndex.value == 0,
                 onClick = {
                     selectedItemIndex.value = 0

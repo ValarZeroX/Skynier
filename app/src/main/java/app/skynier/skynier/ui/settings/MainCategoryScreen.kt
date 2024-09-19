@@ -578,6 +578,7 @@ fun EditMainCategory(
                 ) {
                     Text(text = stringResource(id = R.string.edit_main_category), modifier = Modifier.padding(bottom = 8.dp))
                 }
+                HorizontalDivider()
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Delete
 import app.skynier.skynier.database.entities.AccountEntity
+import app.skynier.skynier.database.entities.MainCategoryEntity
 
 @Dao
 interface AccountDao {
@@ -33,4 +34,7 @@ interface AccountDao {
     // 根據幣別獲取帳戶
     @Query("SELECT * FROM account WHERE currency = :currencyCode")
     suspend fun getAccountsByCurrency(currencyCode: String): List<AccountEntity>
+
+    @Update
+    suspend fun updateAll(account: List<AccountEntity>)
 }
