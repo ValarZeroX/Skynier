@@ -123,4 +123,5 @@
     <string name="balance">Balance</string>
     <string name="currency">Currency</string>
     <string name="asset_overview">Asset Overview</string>
+    <string name="amount">Amount</string>
 </resources>

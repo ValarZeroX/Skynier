@@ -124,4 +124,5 @@
     <string name="balance">餘額</string>
     <string name="currency">幣別</string>
     <string name="asset_overview">資產總覽</string>
+    <string name="amount">金額</string>
 </resources>
