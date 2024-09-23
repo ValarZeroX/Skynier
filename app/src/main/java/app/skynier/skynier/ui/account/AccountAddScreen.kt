@@ -101,7 +101,8 @@ fun AccountAddScreen(
         accountCategoryViewModel.loadAllAccountCategories()
         accountViewModel.loadAllAccounts()
     }
-    var selectedCategory by rememberSaveable { mutableStateOf("現金") }
+    val cash = stringResource(id = R.string.account_category_cash)
+    var selectedCategory by rememberSaveable { mutableStateOf(cash) }
     var selectedAccountCategoryId by rememberSaveable { mutableIntStateOf(1) }
     var showCategoryPicker by rememberSaveable { mutableStateOf(false) } // 控制Dialog是否顯示
 
@@ -163,6 +164,7 @@ fun AccountAddScreen(
                                 CircleShape
                             )
                             .clickable {
+                                skynierViewModel.updateSelectedIcon(displayIcon!!) // 将 displayIcon 设置为 selectedIcon
                                 showEditIconDialog = true
 //                                navController.navigate("icon")
                             }, // Set background color and shape
@@ -295,6 +297,7 @@ fun AccountAddScreen(
                     }
                 }
                 if (showEditIconDialog) {
+
                     IconPickerDialog(
                         navController,
                         skynierViewModel,
@@ -305,7 +308,8 @@ fun AccountAddScreen(
                             showEditIconDialog = false
                         },
                         displayIcon,
-                        hexCode
+                        hexCode,
+                        "AccountBalance"
                     )
                 }
                 // 當需要顯示類別選擇器時彈出Dialog
@@ -348,6 +352,7 @@ fun CategoryPickerDialog(
 ) {
     var selectedCategory by rememberSaveable { mutableStateOf(initialSelection) }
     var selectedAccountCategoryId by rememberSaveable { mutableIntStateOf(initialSelectionId) }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -375,14 +380,13 @@ fun CategoryPickerDialog(
                         } else {
                             category.accountCategoryNameKey // 如果語系字串不存在，顯示原始值
                         }
-                        val accountCategoryId= category.accountCategoryId
+                        val accountCategoryId = category.accountCategoryId
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
                                     selectedCategory = displayName // 更新選擇的類別
                                     selectedAccountCategoryId = accountCategoryId
-//                                    onCategorySelected(displayName, accountCategoryId) // 傳遞選中的類別
                                 }
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -408,7 +412,10 @@ fun CategoryPickerDialog(
                         Text(text = stringResource(id = R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { onCategorySelected(selectedCategory, selectedAccountCategoryId) }) {
+                    Button(onClick = {
+                        onCategorySelected(selectedCategory, selectedAccountCategoryId) // 傳遞選中的類別和ID
+                        onDismiss()
+                    }) {
                         Text(text = stringResource(id = R.string.confirm))
                     }
                 }
@@ -519,10 +526,11 @@ fun IconPickerDialog(
     onDismiss: () -> Unit,
     onAdd: (String, CategoryIcon?) -> Unit,
     initialIcon: CategoryIcon?,
-    initialHexCode: String
+    initialHexCode: String,
+    defaultIcon: String,
 ) {
     val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
-    val displayIcon = selectedIcon ?: SharedOptions.iconMap["AccountBalance"] // 使用預設
+    val displayIcon = selectedIcon ?: SharedOptions.iconMap[defaultIcon] // 使用預設
 //    var displayIcon by rememberSaveable { mutableStateOf(initialIcon) }
     var hexCode by rememberSaveable { mutableStateOf(initialHexCode) }
     val controller = rememberColorPickerController()

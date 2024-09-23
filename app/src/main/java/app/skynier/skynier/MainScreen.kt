@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.skynier.skynier.ui.account.AccountAddScreen
+import app.skynier.skynier.ui.account.AccountEditScreen
 import app.skynier.skynier.ui.account.AccountScreen
 import app.skynier.skynier.ui.layouts.NavigationBarScreen
 import app.skynier.skynier.ui.record.RecordAddScreen
@@ -188,6 +189,18 @@ fun Navigation(
                 navController,
                 skynierViewModel,
                 accountViewModel,
+                accountCategoryViewModel
+            )
+        }
+        composable("account_edit") {
+            AccountEditScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                accountViewModel,
+                currencyViewModel,
                 accountCategoryViewModel
             )
         }

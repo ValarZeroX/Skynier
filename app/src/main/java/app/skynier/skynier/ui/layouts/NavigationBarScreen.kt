@@ -89,7 +89,8 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
             "sub_category/{mainCategoryId}/{mainCategoryName}/{mainCategoryBackgroundColor}/{mainCategoryIconColor}",
             "record_add",
             "account_add",
-            "account_category"
+            "account_category",
+            "account_edit"
         )
         if (currentRoute !in excludedRoutes) {
             FloatingActionButton(

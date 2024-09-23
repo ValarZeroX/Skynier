@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.library.CategoryIcon
@@ -34,6 +35,14 @@ class SkynierViewModel: ViewModel() {
 
     fun updateSelectedCategory(category: SubCategoryEntity) {
         selectedSubCategoryToEdit = category
+    }
+
+    // 用於儲存選擇的帳戶
+    var selectedAccountToEdit: AccountEntity? by mutableStateOf(null)
+
+    // 設定選中的帳戶
+    fun updateSelectedAccount(account: AccountEntity) {
+        selectedAccountToEdit = account
     }
 }
 

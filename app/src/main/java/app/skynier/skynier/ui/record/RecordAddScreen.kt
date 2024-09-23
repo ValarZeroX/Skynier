@@ -3,7 +3,9 @@ package app.skynier.skynier.ui.record
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -73,6 +75,11 @@ fun RecordAddScreen(
                             text = { Text(text = displayName) }
                         )
                     }
+                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                ){
+
                 }
             }
         }

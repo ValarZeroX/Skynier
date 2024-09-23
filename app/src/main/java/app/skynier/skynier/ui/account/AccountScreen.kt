@@ -131,6 +131,8 @@ fun AccountScreen(
                                                 .fillMaxHeight()
                                                 .background(Blue)
                                                 .clickable {
+                                                    skynierViewModel.updateSelectedAccount(accounts)
+                                                    navController.navigate("account_edit")
 //                                                    selectedAccountCategory = accountCategories
 //                                                    showEditDialog = true
                                                 }
