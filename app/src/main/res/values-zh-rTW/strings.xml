@@ -125,4 +125,5 @@
     <string name="currency">幣別</string>
     <string name="asset_overview">資產總覽</string>
     <string name="amount">金額</string>
+    <string name="select_time">選擇時間</string>
 </resources>

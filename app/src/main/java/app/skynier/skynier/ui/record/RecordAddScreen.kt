@@ -1,28 +1,42 @@
 package app.skynier.skynier.ui.record
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,42 +44,120 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
+import app.skynier.skynier.database.entities.AccountEntity
+import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.SubCategoryEntity
+import app.skynier.skynier.library.DatePicker
+import app.skynier.skynier.library.SharedOptions
+import app.skynier.skynier.library.TimePicker
+import app.skynier.skynier.viewmodels.AccountCategoryViewModel
+import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordAddScreen(
     navController: NavHostController,
     skynierViewModel: SkynierViewModel,
     categoryViewModel: CategoryViewModel,
     mainCategoryViewModel: MainCategoryViewModel,
-    subCategoryViewModel: SubCategoryViewModel
+    subCategoryViewModel: SubCategoryViewModel,
+    accountCategoryViewModel: AccountCategoryViewModel,
+    accountViewModel: AccountViewModel,
 ) {
     val categories = categoryViewModel.categories.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         categoryViewModel.loadAllCategories()
     }
     var selectedTabIconIndex by remember { mutableIntStateOf(0) }
+    val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
+    val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
+    var selectedMainCategories by remember { mutableStateOf<MainCategoryEntity?>(null) }
+    var selectedSubCategories by remember { mutableStateOf<SubCategoryEntity?>(null) }
+    // 載入資料
+    LaunchedEffect(selectedTabIconIndex) {
+        mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
+    }
+
 
     val numericRegex = Regex("^-?\\d*\\.?\\d*$")
     var amount by remember {
         mutableStateOf("0")
     }
-    Log.d("categories", "$categories")
+
+    var asset by rememberSaveable { mutableStateOf("") }
+    var showAsset by rememberSaveable { mutableStateOf(false) }
+    var selectedAsset by remember { mutableStateOf<AccountEntity?>(null) }
+    val accounts = accountViewModel.accounts.observeAsState(emptyList())
+    LaunchedEffect(Unit) {
+        accountViewModel.loadAllAccounts()
+    }
+
+    var showCategory by rememberSaveable { mutableStateOf(false) }
+
+    //日期選擇棄
+    val initialDate = Calendar.getInstance().timeInMillis
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<Long?>(initialDate) }
+    val formattedDate = selectedDate?.let {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = it
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
+    } ?: "選擇日期"
+
+    //時間選擇器
+    val initialDateTime = System.currentTimeMillis()
+    val calendar = Calendar.getInstance().apply {
+        timeInMillis = initialDateTime
+    }
+    val initialHour = calendar.get(Calendar.HOUR_OF_DAY)
+    val initialMinute = calendar.get(Calendar.MINUTE)
+
+    var selectedTime by remember {
+        mutableStateOf(
+            TimePickerState(
+                initialHour = initialHour,
+                initialMinute = initialMinute,
+                is24Hour = true
+            )
+        )
+    }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val formatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+    val buttonText = run {
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, selectedTime.hour)
+            set(Calendar.MINUTE, selectedTime.minute)
+        }
+        formatter.format(cal.time)
+    }
+
     Scaffold(
         topBar = {
             RecordAddScreenHeader(navController)
@@ -153,6 +245,493 @@ fun RecordAddScreen(
                                 )
                             }
                         }
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.asset),
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 5.dp),
+                                onClick = {
+                                    showAsset = true
+                                }) {
+                                selectedAsset?.let {
+                                    val accountIcon = SharedOptions.iconMap[it.accountIcon]
+                                    Icon(
+                                        imageVector = accountIcon!!.icon,
+                                        contentDescription = it.accountIcon
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = it.accountName)
+                                }
+                            }
+                        }
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "類別",
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 5.dp),
+                                onClick = {
+                                    showCategory = true
+                                }) {
+                                selectedSubCategories?.let {
+                                    val mainIcon = SharedOptions.iconMap[it.subCategoryIcon]
+                                    Icon(
+                                        imageVector = mainIcon!!.icon,
+                                        contentDescription = it.subCategoryIcon
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    val context = LocalContext.current
+                                    val resourceId =
+                                        context.resources.getIdentifier(
+                                            it.subCategoryNameKey,
+                                            "string",
+                                            context.packageName
+                                        )
+                                    val displayName = if (resourceId != 0) {
+                                        context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                                    } else {
+                                        it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+                                    }
+                                    Text(text = displayName)
+                                }
+                            }
+                        }
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                modifier = Modifier.weight(1f).padding(start = 5.dp),
+                                onClick = {
+                                    showDatePicker = true
+                                }) {
+                                Text(formattedDate)
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Button(
+                                modifier = Modifier.weight(1f).padding(end = 5.dp),
+                                onClick = {
+                                    showTimePicker = true
+                                }) {
+                                Text(buttonText)
+                            }
+                        }
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "備註",
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                        }
+                    }
+                }
+                if (showAsset) {
+                    AssetDialog(
+                        accounts = accounts.value, // 传递账户列表
+                        onDismiss = { showAsset = false },
+                        onAssetSelected = { selectedAccount ->
+                            selectedAsset = selectedAccount // 更新选中的资产
+                            showAsset = false
+                        }
+                    )
+                }
+
+                if (showCategory) {
+                    CategoryDialog(
+                        mainCategories = mainCategories.value,
+                        subCategories = subCategories.value, // 从 ViewModel 中获取子分类数据
+                        subCategoryViewModel = subCategoryViewModel, // 传递 ViewModel，用于加载子分类
+                        onDismiss = { showCategory = false },
+//                        onMainCategoriesSelected = { selectedMainCategory ->
+//                            selectedMainCategories = selectedMainCategory
+//                            // 加载子分类
+//                            subCategoryViewModel.loadSubCategoriesByMainCategoryId(selectedMainCategory.mainCategoryId)
+//                        },
+                        onSubCategorySelected = { selectedSubCategory ->
+                            // 选择子分类后执行的操作
+                            selectedSubCategories = selectedSubCategory
+                            showCategory = false
+                        }
+                    )
+                }
+                if (showDatePicker) {
+                    DatePicker(
+                        selectedDate = selectedDate,
+                        onDateSelected = { date ->
+                            selectedDate = date
+                            showDatePicker = false
+                        },
+                        onDismiss = { showDatePicker = false }
+                    )
+                }
+                if (showTimePicker) {
+                    TimePicker(
+                        selectedTime = selectedTime,
+                        onDismiss = { showTimePicker = false },
+                        onConfirm = { time ->
+                            selectedTime = time
+                            showTimePicker = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryDialog(
+    mainCategories: List<MainCategoryEntity>,
+    subCategories: List<SubCategoryEntity>,
+    subCategoryViewModel: SubCategoryViewModel,
+    onDismiss: () -> Unit,
+    onSubCategorySelected: (SubCategoryEntity) -> Unit
+) {
+    var isShowingSubCategories by remember { mutableStateOf(false) }
+    var selectedMainCategoryId by remember { mutableStateOf<Int?>(null) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (isShowingSubCategories) "選擇子分類" else "選擇分類",
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                HorizontalDivider()
+
+                if (!isShowingSubCategories) {
+                    // 显示主分类列表
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(mainCategories) { mainCategory ->
+                            val context = LocalContext.current
+                            val resourceId =
+                                context.resources.getIdentifier(
+                                    mainCategory.mainCategoryNameKey,
+                                    "string",
+                                    context.packageName
+                                )
+                            val displayName = if (resourceId != 0) {
+                                context.getString(resourceId)
+                            } else {
+                                mainCategory.mainCategoryNameKey
+                            }
+                            val mainIcon = SharedOptions.iconMap[mainCategory.mainCategoryIcon]
+
+                            ListItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        // 加载子分类
+                                        subCategoryViewModel.loadSubCategoriesByMainCategoryId(
+                                            mainCategory.mainCategoryId
+                                        )
+                                        selectedMainCategoryId = mainCategory.mainCategoryId
+                                        isShowingSubCategories = true
+                                    },
+                                headlineContent = { Text(text = displayName) },
+                                leadingContent = {
+                                    mainIcon?.let {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .background(
+                                                    Color(android.graphics.Color.parseColor("#${mainCategory.mainCategoryBackgroundColor}")),
+                                                    CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = it.icon,
+                                                contentDescription = mainCategory.mainCategoryIcon,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = Color(android.graphics.Color.parseColor("#${mainCategory.mainCategoryIconColor}"))
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                } else {
+                    // 显示子分类列表
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(subCategories) { subCategory ->
+                            val subIcon = SharedOptions.iconMap[subCategory.subCategoryIcon]
+                            val context = LocalContext.current
+                            val resourceId =
+                                context.resources.getIdentifier(
+                                    subCategory.subCategoryNameKey,
+                                    "string",
+                                    context.packageName
+                                )
+                            val displayName = if (resourceId != 0) {
+                                context.getString(resourceId)
+                            } else {
+                                subCategory.subCategoryNameKey
+                            }
+                            ListItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onSubCategorySelected(subCategory)
+                                        onDismiss()
+                                    },
+                                headlineContent = { Text(text = displayName) },
+                                leadingContent = {
+                                    subIcon?.let {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .background(
+                                                    Color(android.graphics.Color.parseColor("#${subCategory.subCategoryBackgroundColor}")),
+                                                    CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = it.icon,
+                                                contentDescription = subCategory.subCategoryIconColor,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = Color(android.graphics.Color.parseColor("#${subCategory.subCategoryIconColor}"))
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                }
+
+                // 返回按钮和取消按钮
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    if (isShowingSubCategories) {
+                        TextButton(onClick = {
+                            isShowingSubCategories = false
+                        }) {
+                            Text(text = "返回")
+                        }
+                    }
+                    // 取消按钮
+                    TextButton(onClick = onDismiss) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                }
+            }
+        }
+    }
+}
+
+//@Composable
+//fun CategoryDialog(
+//    mainCategories: List<MainCategoryEntity>,
+//    onDismiss: () -> Unit,
+//    onMainCategoriesSelected: (MainCategoryEntity) -> Unit
+//){
+//    Dialog(onDismissRequest = onDismiss) {
+//        Surface(
+//            shape = MaterialTheme.shapes.medium,
+//            modifier = Modifier.padding(16.dp)
+//        ) {
+//            Column(modifier = Modifier.padding(16.dp)) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(vertical = 16.dp),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    Text(text = "選擇分類", modifier = Modifier.padding(bottom = 8.dp))
+//                }
+//                HorizontalDivider()
+//                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+//                    items(mainCategories) { mainCategory ->
+//                        val context = LocalContext.current
+//                        val resourceId =
+//                            context.resources.getIdentifier(
+//                                mainCategory.mainCategoryNameKey,
+//                                "string",
+//                                context.packageName
+//                            )
+//                        val displayName = if (resourceId != 0) {
+//                            context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+//                        } else {
+//                            mainCategory.mainCategoryNameKey // 如果語系字串不存在，顯示原始值
+//                        }
+//                        val mainIcon = SharedOptions.iconMap[mainCategory.mainCategoryIcon]
+//                        ListItem(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .clickable {
+//                                    onMainCategoriesSelected(mainCategory)
+//                                    onDismiss()
+//                                },
+//                            headlineContent = { Text(text = displayName) },
+//                            trailingContent = {
+//                            },
+//                            leadingContent = {
+//                                mainIcon?.let {
+//                                    Box(
+//                                        modifier = Modifier
+//                                            .size(46.dp)
+//                                            .background(
+//                                                Color(android.graphics.Color.parseColor("#${mainCategory.mainCategoryBackgroundColor}")),
+//                                                CircleShape
+//                                            ),
+//                                        contentAlignment = Alignment.Center
+//                                    ) {
+//                                        Icon(
+//                                            imageVector = it.icon,
+//                                            contentDescription = mainCategory.mainCategoryIcon,
+//                                            modifier = Modifier.size(28.dp), // Set icon size
+//                                            tint = Color(android.graphics.Color.parseColor("#${mainCategory.mainCategoryIconColor}"))
+//                                        )
+//                                    }
+//                                }
+//                            }
+//                        )
+//                        HorizontalDivider()
+//                    }
+//                }
+//                // 添加关闭按钮
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.End
+//                ) {
+//                    TextButton(onClick = onDismiss) {
+//                        Text(text = stringResource(id = R.string.cancel))
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+@Composable
+fun AssetDialog(
+    accounts: List<AccountEntity>,
+    onDismiss: () -> Unit,
+    onAssetSelected: (AccountEntity) -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "選擇資產", modifier = Modifier.padding(bottom = 8.dp))
+                }
+                HorizontalDivider()
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(accounts) { account ->
+                        val accountIcon = SharedOptions.iconMap[account.accountIcon]
+                        ListItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onAssetSelected(account)
+                                    onDismiss()
+                                },
+                            headlineContent = { Text(text = account.accountName) },
+                            supportingContent = {
+                                Row {
+                                    Text(text = account.currency)
+                                    Text(text = "$${account.initialBalance}")
+                                }
+                            },
+                            trailingContent = {
+                            },
+                            leadingContent = {
+                                accountIcon?.let {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .background(
+                                                Color(android.graphics.Color.parseColor("#${account.accountBackgroundColor}")),
+                                                CircleShape
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = it.icon,
+                                            contentDescription = account.accountIconColor,
+                                            modifier = Modifier.size(28.dp), // Set icon size
+                                            tint = Color(android.graphics.Color.parseColor("#${account.accountIconColor}"))
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
+                // 添加关闭按钮
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(text = stringResource(id = R.string.cancel))
                     }
                 }
             }

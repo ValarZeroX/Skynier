@@ -125,4 +125,5 @@
     <string name="currency">Currency</string>
     <string name="asset_overview">Asset Overview</string>
     <string name="amount">Amount</string>
+    <string name="select_time">Select Time</string>
 </resources>

@@ -131,6 +131,8 @@ fun Navigation(
                 categoryViewModel,
                 mainCategoryViewModel,
                 subCategoryViewModel,
+                accountCategoryViewModel,
+                accountViewModel,
             )
         }
         composable("main_category") {
