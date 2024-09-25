@@ -2,6 +2,7 @@ package app.skynier.skynier.ui.record
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -30,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -93,7 +96,7 @@ fun RecordAddScreen(
     var selectedTabIconIndex by remember { mutableIntStateOf(0) }
     val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
     val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
-    var selectedMainCategories by remember { mutableStateOf<MainCategoryEntity?>(null) }
+//    var selectedMainCategories by remember { mutableStateOf<MainCategoryEntity?>(null) }
     var selectedSubCategories by remember { mutableStateOf<SubCategoryEntity?>(null) }
     // 載入資料
     LaunchedEffect(selectedTabIconIndex) {
@@ -106,7 +109,7 @@ fun RecordAddScreen(
         mutableStateOf("0")
     }
 
-    var asset by rememberSaveable { mutableStateOf("") }
+    var remark by rememberSaveable { mutableStateOf("") }
     var showAsset by rememberSaveable { mutableStateOf(false) }
     var selectedAsset by remember { mutableStateOf<AccountEntity?>(null) }
     val accounts = accountViewModel.accounts.observeAsState(emptyList())
@@ -158,6 +161,16 @@ fun RecordAddScreen(
         formatter.format(cal.time)
     }
 
+    var selectedTransferAssetFrom by remember { mutableStateOf<AccountEntity?>(null) }
+    var selectedTransferAssetTo by remember { mutableStateOf<AccountEntity?>(null) }
+    var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
+    var showTransferAssetTo by rememberSaveable { mutableStateOf(false) }
+    var transferAmountFrom by remember {
+        mutableStateOf("0")
+    }
+    var transferAmountTo by remember {
+        mutableStateOf("0")
+    }
     Scaffold(
         topBar = {
             RecordAddScreenHeader(navController)
@@ -183,15 +196,157 @@ fun RecordAddScreen(
                             selected = selectedTabIconIndex == index,
                             onClick = {
                                 selectedTabIconIndex = index
+                                selectedSubCategories = null
+
                             },
                             text = { Text(text = displayName) }
                         )
                     }
                 }
-                LazyColumn(
+
+                Column(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    item {
+                    if (selectedTabIconIndex == 2) {
+                        Row(modifier = Modifier.padding(top = 16.dp)) {
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 16.dp),
+                                onClick = {
+                                    showTransferAssetFrom = true
+                                }) {
+                                selectedTransferAssetFrom?.let {
+                                    val accountIcon =
+                                        SharedOptions.iconMap[it.accountIcon]
+                                    Icon(
+                                        imageVector = accountIcon!!.icon,
+                                        contentDescription = it.accountIcon
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = it.accountName)
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 16.dp),
+                                onClick = {
+                                    showTransferAssetTo = true
+                                }) {
+                                selectedTransferAssetTo?.let {
+                                    val accountIcon =
+                                        SharedOptions.iconMap[it.accountIcon]
+                                    Icon(
+                                        imageVector = accountIcon!!.icon,
+                                        contentDescription = it.accountIcon
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = it.accountName)
+                                }
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.End, // 添加此项使左右文本框有空隙
+//                            verticalAlignment = Alignment.CenterVertically // 使文本框垂直居中
+                        ) {
+                            OutlinedTextField(
+                                value = transferAmountFrom,
+                                onValueChange = { newInput ->
+                                    // 过滤输入，只接受有效的浮点数、负数和小数点
+                                    if (newInput.isEmpty() || newInput.matches(numericRegex)) {
+                                        transferAmountFrom =
+                                            if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith("0.")) {
+                                                newInput.trimStart('0')
+                                            } else {
+                                                newInput
+                                            }
+                                    }
+                                },
+                                label = { Text("From") }, // 添加标签
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
+                                ),
+                                singleLine = true,
+                                textStyle = LocalTextStyle.current.copy(
+                                    textAlign = TextAlign.End, // 文本右对齐
+                                    color = MaterialTheme.colorScheme.primary
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 16.dp)
+                                    .onFocusChanged { focusState ->
+                                        if (transferAmountFrom == "0") {
+                                            transferAmountFrom = ""
+                                        }
+                                        if (!focusState.isFocused && transferAmountFrom.isEmpty()) {
+                                            transferAmountFrom = "0" // 当输入框失去焦点且为空时，填入0
+                                        }
+                                    },
+                                shape = RoundedCornerShape(8.dp), // 设置边框圆角
+                                leadingIcon = {
+                                    selectedTransferAssetFrom?.let { Text(it.currency) }
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            OutlinedTextField(
+                                value = transferAmountTo,
+                                onValueChange = { newInput ->
+                                    // 过滤输入，只接受有效的浮点数、负数和小数点
+                                    if (newInput.isEmpty() || newInput.matches(numericRegex)) {
+                                        transferAmountTo =
+                                            if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith("0.")) {
+                                                newInput.trimStart('0')
+                                            } else {
+                                                newInput
+                                            }
+                                    }
+                                },
+                                label = { Text("To") }, // 添加标签
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
+                                ),
+                                singleLine = true,
+                                textStyle = LocalTextStyle.current.copy(
+                                    textAlign = TextAlign.End, // 文本右对齐
+                                    color = MaterialTheme.colorScheme.primary
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 16.dp)
+                                    .onFocusChanged { focusState ->
+                                        if (transferAmountTo == "0") {
+                                            transferAmountTo = ""
+                                        }
+                                        if (!focusState.isFocused && transferAmountTo.isEmpty()) {
+                                            transferAmountTo = "0" // 当输入框失去焦点且为空时，填入0
+                                        }
+                                    },
+                                shape = RoundedCornerShape(8.dp),
+                                leadingIcon = {
+                                    selectedTransferAssetTo?.let { Text(it.currency) }
+                                }
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "匯率",
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                        }
+                    } else {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -245,8 +400,6 @@ fun RecordAddScreen(
                                 )
                             }
                         }
-                    }
-                    item {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -263,12 +416,13 @@ fun RecordAddScreen(
                             Button(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(end = 5.dp),
+                                    .padding(end = 16.dp, start = 10.dp),
                                 onClick = {
                                     showAsset = true
                                 }) {
                                 selectedAsset?.let {
-                                    val accountIcon = SharedOptions.iconMap[it.accountIcon]
+                                    val accountIcon =
+                                        SharedOptions.iconMap[it.accountIcon]
                                     Icon(
                                         imageVector = accountIcon!!.icon,
                                         contentDescription = it.accountIcon
@@ -279,93 +433,94 @@ fun RecordAddScreen(
                             }
                         }
                     }
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "類別",
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "類別",
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-                                    .weight(1f)
-                            )
-                            Button(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 5.dp),
-                                onClick = {
-                                    showCategory = true
-                                }) {
-                                selectedSubCategories?.let {
-                                    val mainIcon = SharedOptions.iconMap[it.subCategoryIcon]
-                                    Icon(
-                                        imageVector = mainIcon!!.icon,
-                                        contentDescription = it.subCategoryIcon
+                                .padding(start = 16.dp)
+                                .weight(1f)
+                        )
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 16.dp, start = 10.dp),
+                            onClick = {
+                                showCategory = true
+                            }) {
+                            selectedSubCategories?.let {
+                                val mainIcon = SharedOptions.iconMap[it.subCategoryIcon]
+                                Icon(
+                                    imageVector = mainIcon!!.icon,
+                                    contentDescription = it.subCategoryIcon
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                val context = LocalContext.current
+                                val resourceId =
+                                    context.resources.getIdentifier(
+                                        it.subCategoryNameKey,
+                                        "string",
+                                        context.packageName
                                     )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    val context = LocalContext.current
-                                    val resourceId =
-                                        context.resources.getIdentifier(
-                                            it.subCategoryNameKey,
-                                            "string",
-                                            context.packageName
-                                        )
-                                    val displayName = if (resourceId != 0) {
-                                        context.getString(resourceId) // 如果語系字串存在，顯示語系的值
-                                    } else {
-                                        it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
-                                    }
-                                    Text(text = displayName)
+                                val displayName = if (resourceId != 0) {
+                                    context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                                } else {
+                                    it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
                                 }
+                                Text(text = displayName)
                             }
                         }
                     }
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Button(
-                                modifier = Modifier.weight(1f).padding(start = 5.dp),
-                                onClick = {
-                                    showDatePicker = true
-                                }) {
-                                Text(formattedDate)
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Button(
-                                modifier = Modifier.weight(1f).padding(end = 5.dp),
-                                onClick = {
-                                    showTimePicker = true
-                                }) {
-                                Text(buttonText)
-                            }
+                                .weight(1f)
+                                .padding(start = 16.dp),
+                            onClick = {
+                                showDatePicker = true
+                            }) {
+                            Text(formattedDate)
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 16.dp),
+                            onClick = {
+                                showTimePicker = true
+                            }) {
+                            Text(buttonText)
                         }
                     }
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = remark,
+                            onValueChange = { newRemark -> remark = newRemark },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "備註",
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-                                    .weight(1f)
-                            )
-                        }
+                                .padding(horizontal = 16.dp),
+                            label = { Text("輸入備註") },
+                            minLines = 3,
+                            maxLines = 6
+                        )
                     }
                 }
+
                 if (showAsset) {
                     AssetDialog(
                         accounts = accounts.value, // 传递账户列表
@@ -373,6 +528,26 @@ fun RecordAddScreen(
                         onAssetSelected = { selectedAccount ->
                             selectedAsset = selectedAccount // 更新选中的资产
                             showAsset = false
+                        }
+                    )
+                }
+                if (showTransferAssetFrom) {
+                    AssetDialog(
+                        accounts = accounts.value, // 传递账户列表
+                        onDismiss = { showTransferAssetFrom = false },
+                        onAssetSelected = { selectedAccount ->
+                            selectedTransferAssetFrom = selectedAccount // 更新选中的资产
+                            showTransferAssetFrom = false
+                        }
+                    )
+                }
+                if (showTransferAssetTo) {
+                    AssetDialog(
+                        accounts = accounts.value, // 传递账户列表
+                        onDismiss = { showTransferAssetTo = false },
+                        onAssetSelected = { selectedAccount ->
+                            selectedTransferAssetTo = selectedAccount // 更新选中的资产
+                            showTransferAssetTo = false
                         }
                     )
                 }
