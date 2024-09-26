@@ -96,6 +96,20 @@ fun SettingsScreen(
                         }
                     )
                 }
+                item {
+                    ListItem(
+                        headlineContent = { Text("幣別匯率") },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = "幣別匯率",
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            navController.navigate("currency")
+                        }
+                    )
+                }
             }
         }
     }

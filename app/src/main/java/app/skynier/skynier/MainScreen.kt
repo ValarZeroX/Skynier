@@ -20,6 +20,7 @@ import app.skynier.skynier.ui.account.AccountScreen
 import app.skynier.skynier.ui.layouts.NavigationBarScreen
 import app.skynier.skynier.ui.record.RecordAddScreen
 import app.skynier.skynier.ui.settings.AccountCategoryScreen
+import app.skynier.skynier.ui.settings.CurrencyScreen
 import app.skynier.skynier.ui.settings.IconScreen
 import app.skynier.skynier.ui.settings.MainCategoryScreen
 import app.skynier.skynier.ui.settings.SettingsScreen
@@ -28,6 +29,7 @@ import app.skynier.skynier.ui.settings.ThemeScreen
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
+import app.skynier.skynier.viewmodels.CurrencyApiViewModel
 import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
@@ -42,6 +44,7 @@ fun MainScreen(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
+    currencyApiViewModel: CurrencyApiViewModel
 ) {
     val selectedItemIndex = rememberSaveable { mutableIntStateOf(0) }
     val navController = rememberNavController()
@@ -63,7 +66,8 @@ fun MainScreen(
                 subCategoryViewModel,
                 accountViewModel,
                 currencyViewModel,
-                accountCategoryViewModel
+                accountCategoryViewModel,
+                currencyApiViewModel
             )
         }
     }
@@ -119,6 +123,7 @@ fun Navigation(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
+    currencyApiViewModel: CurrencyApiViewModel
 ) {
     NavHost(navController = navController, startDestination = "account") {
         composable("report") { ReportScreen() }
@@ -183,7 +188,8 @@ fun Navigation(
                 subCategoryViewModel,
                 accountViewModel,
                 currencyViewModel,
-                accountCategoryViewModel
+                accountCategoryViewModel,
+                currencyApiViewModel
             )
         }
         composable("account_category") {
@@ -203,7 +209,16 @@ fun Navigation(
                 subCategoryViewModel,
                 accountViewModel,
                 currencyViewModel,
-                accountCategoryViewModel
+                accountCategoryViewModel,
+                currencyApiViewModel
+            )
+        }
+        composable("currency") {
+            CurrencyScreen(
+                navController,
+                skynierViewModel,
+                currencyViewModel,
+                currencyApiViewModel
             )
         }
     }

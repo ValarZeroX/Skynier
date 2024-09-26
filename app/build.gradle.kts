@@ -81,4 +81,7 @@ dependencies {
     implementation(libs.reorderable)
     //color pick
     implementation(libs.compose.colorpicker)
+    //remote api
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
 }

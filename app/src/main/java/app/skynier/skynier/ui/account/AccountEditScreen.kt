@@ -49,10 +49,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.skynier.skynier.database.entities.AccountEntity
+import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.library.CurrencyUtils
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
+import app.skynier.skynier.viewmodels.CurrencyApiViewModel
 
 @Composable
 fun AccountEditScreen(
@@ -64,6 +66,7 @@ fun AccountEditScreen(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
+    currencyApiViewModel: CurrencyApiViewModel
 ) {
     val context = LocalContext.current
     val selectedAccount = skynierViewModel.selectedAccountToEdit
@@ -112,19 +115,50 @@ fun AccountEditScreen(
     var selectedCurrency by rememberSaveable { mutableStateOf(selectedAccount.currency) }
     var selectedAccountCategoryId by rememberSaveable { mutableIntStateOf(selectedAccount.accountCategoryId) }
 
-
+    val currencyList = currencyViewModel.currencies.observeAsState(emptyList())
+    val currencyRates by currencyApiViewModel.currencyRates.observeAsState()
+    LaunchedEffect(Unit) {
+        currencyApiViewModel.fetchCurrencyRates()
+        currencyViewModel.loadAllCurrencies()
+    }
     Scaffold(
         topBar = {
             AccountEditScreenHeader(
                 navController,
                 onEditClick = {
+                    var currencyKey = "USD"
+                    if (selectedCurrency != "USD") {
+                        currencyKey = "USD$selectedCurrency"
+                    }
+
+                    val currencyRate = currencyRates?.get(currencyKey)
+                    val currentTime = System.currentTimeMillis()
+
+                    val existingCurrency = currencyList.value.find { it.currency == selectedCurrency }
+
+                    if (currencyRate != null) {
+                        val newCurrency = CurrencyEntity(
+                            currencyId = existingCurrency?.currencyId ?: 0, // 使用已有ID來更新，若沒有則為新插入
+                            currency = selectedCurrency,
+                            exchangeRate = currencyRate.exchangeRate,
+                            lastUpdatedTime = currentTime
+                        )
+
+                        if (existingCurrency != null) {
+                            // 已存在相同幣別，更新它
+                            currencyViewModel.updateCurrency(newCurrency)
+                        } else {
+                            // 不存在相同幣別，插入新的
+                            currencyViewModel.insertCurrency(newCurrency)
+                        }
+                    }
+
                     val initialBalanceDouble = balance.toDoubleOrNull() ?: 0.0
                     val accountIconKey = SharedOptions.iconMap.entries.find { it.value == displayIcon }?.key ?: "AccountBalance"
                     val displayedHexCode = hexCode.takeLast(6).uppercase()
                     if (name.isEmpty()){
                         name = untitled
                     }
-                    Log.d("selectedAccountCategoryId", "$selectedAccountCategoryId")
                     accountViewModel.updateAccount(
                         AccountEntity(
                             accountId = selectedAccount.accountId,

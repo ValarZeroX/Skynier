@@ -6,10 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.skynier.skynier.api.RetrofitInstance
 import app.skynier.skynier.database.AppDatabase
 import app.skynier.skynier.repository.AccountCategoryRepository
 import app.skynier.skynier.repository.AccountRepository
 import app.skynier.skynier.repository.CategoryRepository
+import app.skynier.skynier.repository.CurrencyApiRepository
 import app.skynier.skynier.repository.CurrencyRepository
 import app.skynier.skynier.repository.MainCategoryRepository
 import app.skynier.skynier.repository.SubCategoryRepository
@@ -20,6 +22,8 @@ import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.AccountViewModelFactory
 import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModelFactory
+import app.skynier.skynier.viewmodels.CurrencyApiViewModel
+import app.skynier.skynier.viewmodels.CurrencyApiViewModelFactory
 import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.CurrencyViewModelFactory
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
@@ -35,6 +39,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var accountViewModel: AccountViewModel
     private lateinit var currencyViewModel: CurrencyViewModel
     private lateinit var accountCategoryViewModel: AccountCategoryViewModel
+    private lateinit var currencyApiViewModel: CurrencyApiViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +52,7 @@ class MainActivity : ComponentActivity() {
         val accountRepository = AccountRepository(database.accountDao())
         val currencyRepository = CurrencyRepository(database.currencyDao())
         val accountCategoryRepository = AccountCategoryRepository(database.accountCategoryDao())
+        val currencyApiRepository = CurrencyApiRepository(RetrofitInstance.currencyApi)
 
         // ViewModel 的初始化 (注意：應該在 `setContent` 之前進行)
         categoryViewModel = ViewModelProvider(
@@ -73,13 +79,17 @@ class MainActivity : ComponentActivity() {
             this,
             AccountCategoryViewModelFactory(accountCategoryRepository)
         )[AccountCategoryViewModel::class.java]
+        currencyApiViewModel = ViewModelProvider(
+            this,
+            CurrencyApiViewModelFactory(currencyApiRepository)
+        )[CurrencyApiViewModel::class.java]
 
 
         enableEdgeToEdge()
         setContent {
             SkynierTheme(darkTheme = true, dynamicColor = false) {
                 val skynierViewModel: SkynierViewModel = viewModel()
-                MainScreen(skynierViewModel, categoryViewModel, mainCategoryViewModel, subCategoryViewModel,accountViewModel,currencyViewModel,accountCategoryViewModel)
+                MainScreen(skynierViewModel, categoryViewModel, mainCategoryViewModel, subCategoryViewModel,accountViewModel,currencyViewModel,accountCategoryViewModel,currencyApiViewModel)
             }
         }
     }
