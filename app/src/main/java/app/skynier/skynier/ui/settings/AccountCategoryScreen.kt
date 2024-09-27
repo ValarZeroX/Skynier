@@ -84,7 +84,7 @@ fun AccountCategoryScreen(
     accountViewModel: AccountViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
 ) {
-    val accountCategories = accountCategoryViewModel.accountCategories.observeAsState(emptyList())
+    val accountCategories by accountCategoryViewModel.accountCategories.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         accountCategoryViewModel.loadAllAccountCategories()
     }
@@ -93,7 +93,7 @@ fun AccountCategoryScreen(
     val reorderableLazyColumnState = rememberReorderableLazyListState(
         lazyListState = lazyListState,
     ) { from, to ->
-        val updatedList = accountCategories.value.toMutableList().apply {
+        val updatedList = accountCategories.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
         accountCategoryViewModel.updateAccountCategoryOrder(updatedList)
@@ -114,7 +114,7 @@ fun AccountCategoryScreen(
                 state = lazyListState
             ) {
                 itemsIndexed(
-                    accountCategories.value,
+                    accountCategories,
                     key = { _, accountCategories -> accountCategories.accountCategoryId }) { _, accountCategories ->
                     ReorderableItem(
                         reorderableLazyColumnState,
@@ -215,7 +215,7 @@ fun AccountCategoryScreen(
                 AddAccountCategory(
                     onDismiss = { showAddDialog = false },
                     onAdd = { name ->
-                        val accountCategorySort = accountCategories.value.size + 1
+                        val accountCategorySort = accountCategories.size + 1
                         accountCategoryViewModel.insertAccountCategory(
                             AccountCategoryEntity(
                                 accountCategoryNameKey = name,

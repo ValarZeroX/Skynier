@@ -1,5 +1,6 @@
 package app.skynier.skynier
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import app.skynier.skynier.repository.CurrencyApiRepository
 import app.skynier.skynier.repository.CurrencyRepository
 import app.skynier.skynier.repository.MainCategoryRepository
 import app.skynier.skynier.repository.SubCategoryRepository
+import app.skynier.skynier.repository.UserSettingsRepository
 import app.skynier.skynier.ui.theme.SkynierTheme
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountCategoryViewModelFactory
@@ -31,6 +33,8 @@ import app.skynier.skynier.viewmodels.MainCategoryViewModelFactory
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModelFactory
+import app.skynier.skynier.viewmodels.UserSettingsViewModel
+import app.skynier.skynier.viewmodels.UserSettingsViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private lateinit var mainCategoryViewModel: MainCategoryViewModel
@@ -40,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var currencyViewModel: CurrencyViewModel
     private lateinit var accountCategoryViewModel: AccountCategoryViewModel
     private lateinit var currencyApiViewModel: CurrencyApiViewModel
+    private lateinit var userSettingsViewModel: UserSettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +58,7 @@ class MainActivity : ComponentActivity() {
         val currencyRepository = CurrencyRepository(database.currencyDao())
         val accountCategoryRepository = AccountCategoryRepository(database.accountCategoryDao())
         val currencyApiRepository = CurrencyApiRepository(RetrofitInstance.currencyApi)
+        val userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
 
         // ViewModel 的初始化 (注意：應該在 `setContent` 之前進行)
         categoryViewModel = ViewModelProvider(
@@ -83,13 +89,26 @@ class MainActivity : ComponentActivity() {
             this,
             CurrencyApiViewModelFactory(currencyApiRepository)
         )[CurrencyApiViewModel::class.java]
-
+        userSettingsViewModel = ViewModelProvider(
+            this,
+            UserSettingsViewModelFactory(userSettingsRepository)
+        )[UserSettingsViewModel::class.java]
 
         enableEdgeToEdge()
         setContent {
             SkynierTheme(darkTheme = true, dynamicColor = false) {
                 val skynierViewModel: SkynierViewModel = viewModel()
-                MainScreen(skynierViewModel, categoryViewModel, mainCategoryViewModel, subCategoryViewModel,accountViewModel,currencyViewModel,accountCategoryViewModel,currencyApiViewModel)
+                MainScreen(
+                    skynierViewModel,
+                    categoryViewModel,
+                    mainCategoryViewModel,
+                    subCategoryViewModel,
+                    accountViewModel,
+                    currencyViewModel,
+                    accountCategoryViewModel,
+                    currencyApiViewModel,
+                    userSettingsViewModel
+                )
             }
         }
     }

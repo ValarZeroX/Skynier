@@ -90,7 +90,8 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
             "record_add",
             "account_add",
             "account_category",
-            "account_edit"
+            "account_edit",
+            "currency"
         )
         if (currentRoute !in excludedRoutes) {
             FloatingActionButton(

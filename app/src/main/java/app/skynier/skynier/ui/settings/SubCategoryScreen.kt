@@ -93,7 +93,7 @@ fun SubCategoryScreen(
     mainCategoryBackgroundColor: String,
     mainCategoryIconColor: String,
 ) {
-    val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
+    val subCategories by subCategoryViewModel.subCategories.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
     }
@@ -103,7 +103,7 @@ fun SubCategoryScreen(
     val reorderableLazyColumnState = rememberReorderableLazyListState(
         lazyListState = lazyListState,
     ) { from, to ->
-        val updatedList = subCategories.value.toMutableList().apply {
+        val updatedList = subCategories.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
         subCategoryViewModel.updateSubCategoryOrder(updatedList)
@@ -119,7 +119,7 @@ fun SubCategoryScreen(
                 state = lazyListState
             ) {
                 itemsIndexed(
-                    subCategories.value,
+                    subCategories,
                     key = { _, category -> category.subCategoryId }) { _, category ->
                     ReorderableItem(
                         reorderableLazyColumnState,
@@ -148,7 +148,7 @@ fun SubCategoryScreen(
                 val selectedIconKey =
                     SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
                 val displayedHexCode = hexCode.takeLast(6).uppercase()
-                val mainCategorySort = subCategories.value.size + 1
+                val mainCategorySort = subCategories.size + 1
                 subCategoryViewModel.insertSubCategory(
                     SubCategoryEntity(
                         mainCategoryId = mainCategoryId,

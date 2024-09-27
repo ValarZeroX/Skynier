@@ -113,11 +113,11 @@ fun MainCategoryScreen(
     mainCategoryViewModel: MainCategoryViewModel,
     subCategoryViewModel: SubCategoryViewModel
 ) {
-    val categories = categoryViewModel.categories.observeAsState(emptyList())
+    val categories by categoryViewModel.categories.observeAsState(emptyList())
     var selectedTabCategoryIndex by rememberSaveable { mutableIntStateOf(0) }
 
 
-    val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
+    val mainCategories by mainCategoryViewModel.mainCategories.observeAsState(emptyList())
     // 載入資料
     LaunchedEffect(selectedTabCategoryIndex) {
         mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabCategoryIndex + 1)
@@ -133,7 +133,7 @@ fun MainCategoryScreen(
     val reorderableLazyColumnState = rememberReorderableLazyListState(
         lazyListState = lazyListState,
     ) { from, to ->
-        val updatedList = mainCategories.value.toMutableList().apply {
+        val updatedList = mainCategories.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
         mainCategoryViewModel.updateMainCategoryOrder(updatedList)
@@ -153,7 +153,7 @@ fun MainCategoryScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             Column {
                 TabRow(selectedTabIndex = selectedTabCategoryIndex) {
-                    categories.value.forEachIndexed { index, value ->
+                    categories.forEachIndexed { index, value ->
                         val context = LocalContext.current
                         val resourceId =
                             context.resources.getIdentifier(
@@ -180,7 +180,7 @@ fun MainCategoryScreen(
                     state = lazyListState
                 ) {
                     itemsIndexed(
-                        mainCategories.value,
+                        mainCategories,
                         key = { _, category -> category.mainCategoryId }) { _, category ->
                         ReorderableItem(
                             reorderableLazyColumnState,
@@ -209,7 +209,7 @@ fun MainCategoryScreen(
                 val selectedIconKey =
                     SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
                 val displayedHexCode = hexCode.takeLast(6).uppercase()
-                val mainCategorySort = mainCategories.value.size + 1
+                val mainCategorySort = mainCategories.size + 1
                 mainCategoryViewModel.insertMainCategory(
                     MainCategoryEntity(
                         categoryId = selectedTabCategoryIndex + 1,

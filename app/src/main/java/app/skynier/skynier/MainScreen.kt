@@ -34,6 +34,7 @@ import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import app.skynier.skynier.viewmodels.UserSettingsViewModel
 
 @Composable
 fun MainScreen(
@@ -44,7 +45,8 @@ fun MainScreen(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
-    currencyApiViewModel: CurrencyApiViewModel
+    currencyApiViewModel: CurrencyApiViewModel,
+    userSettingsViewModel: UserSettingsViewModel,
 ) {
     val selectedItemIndex = rememberSaveable { mutableIntStateOf(0) }
     val navController = rememberNavController()
@@ -67,7 +69,8 @@ fun MainScreen(
                 accountViewModel,
                 currencyViewModel,
                 accountCategoryViewModel,
-                currencyApiViewModel
+                currencyApiViewModel,
+                userSettingsViewModel
             )
         }
     }
@@ -123,7 +126,8 @@ fun Navigation(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
-    currencyApiViewModel: CurrencyApiViewModel
+    currencyApiViewModel: CurrencyApiViewModel,
+    userSettingsViewModel: UserSettingsViewModel,
 ) {
     NavHost(navController = navController, startDestination = "account") {
         composable("report") { ReportScreen() }
@@ -189,7 +193,8 @@ fun Navigation(
                 accountViewModel,
                 currencyViewModel,
                 accountCategoryViewModel,
-                currencyApiViewModel
+                currencyApiViewModel,
+                userSettingsViewModel
             )
         }
         composable("account_category") {
@@ -218,7 +223,8 @@ fun Navigation(
                 navController,
                 skynierViewModel,
                 currencyViewModel,
-                currencyApiViewModel
+                currencyApiViewModel,
+                userSettingsViewModel
             )
         }
     }

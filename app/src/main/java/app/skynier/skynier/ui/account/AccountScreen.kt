@@ -72,13 +72,13 @@ fun AccountScreen(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel
 ) {
-    val accounts = accountViewModel.accounts.observeAsState(emptyList())
+    val accounts by accountViewModel.accounts.observeAsState(emptyList())
 
     val lazyListState = rememberLazyListState()
     val reorderableLazyColumnState = rememberReorderableLazyListState(
         lazyListState = lazyListState,
     ) { from, to ->
-        val updatedList = accounts.value.toMutableList().apply {
+        val updatedList = accounts.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
         accountViewModel.updateAccountOrder(updatedList)
@@ -97,7 +97,7 @@ fun AccountScreen(
                     state = lazyListState
                 ) {
                     itemsIndexed(
-                        accounts.value,
+                        accounts,
                         key = { _, accounts -> accounts.accountId }) { _, accounts ->
                         ReorderableItem(
                             reorderableLazyColumnState,

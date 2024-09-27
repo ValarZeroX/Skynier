@@ -62,6 +62,7 @@ import app.skynier.skynier.database.entities.AccountCategoryEntity
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.UserSettingsEntity
 import app.skynier.skynier.library.CategoryIcon
 import app.skynier.skynier.library.CurrencyUtils
 import app.skynier.skynier.library.SharedOptions
@@ -74,6 +75,7 @@ import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import app.skynier.skynier.viewmodels.UserSettingsViewModel
 import com.github.skydoves.colorpicker.compose.AlphaSlider
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
@@ -90,7 +92,8 @@ fun AccountAddScreen(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
-    currencyApiViewModel: CurrencyApiViewModel
+    currencyApiViewModel: CurrencyApiViewModel,
+    userSettingsViewModel: UserSettingsViewModel,
 ) {
 //    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
     var displayIcon = SharedOptions.iconMap["AccountBalance"] // 使用預設
@@ -170,6 +173,15 @@ fun AccountAddScreen(
                     val displayedHexCode = hexCode.takeLast(6).uppercase()
                     if (name.isEmpty()){
                         name = untitled
+                    }
+
+                    //第一次建立設定主幣別
+                    if (account.value.isEmpty()) {
+                        userSettingsViewModel.saveUserSettings(
+                            UserSettingsEntity(
+                                currency = selectedCurrency
+                            )
+                        )
                     }
                     accountViewModel.insertAccount(
                         AccountEntity(

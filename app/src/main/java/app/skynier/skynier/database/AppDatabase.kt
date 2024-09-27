@@ -12,18 +12,20 @@ import app.skynier.skynier.database.dao.CategoryDao
 import app.skynier.skynier.database.dao.CurrencyDao
 import app.skynier.skynier.database.dao.MainCategoryDao
 import app.skynier.skynier.database.dao.SubCategoryDao
+import app.skynier.skynier.database.dao.UserSettingsDao
 import app.skynier.skynier.database.entities.AccountCategoryEntity
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.CategoryEntity
 import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
+import app.skynier.skynier.database.entities.UserSettingsEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [AccountEntity::class,AccountCategoryEntity::class, CategoryEntity::class, CurrencyEntity::class, MainCategoryEntity::class, SubCategoryEntity::class],
+    entities = [AccountEntity::class,AccountCategoryEntity::class, CategoryEntity::class, CurrencyEntity::class, MainCategoryEntity::class, SubCategoryEntity::class, UserSettingsEntity::class],
     version = 1,
     exportSchema = false
 )
@@ -34,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mainCategoryDao(): MainCategoryDao
     abstract fun subCategoryDao(): SubCategoryDao
     abstract fun accountCategoryDao(): AccountCategoryDao
+    abstract fun userSettingsDao(): UserSettingsDao
 
     companion object {
         @Volatile
