@@ -15,6 +15,7 @@ import app.skynier.skynier.repository.CategoryRepository
 import app.skynier.skynier.repository.CurrencyApiRepository
 import app.skynier.skynier.repository.CurrencyRepository
 import app.skynier.skynier.repository.MainCategoryRepository
+import app.skynier.skynier.repository.RecordRepository
 import app.skynier.skynier.repository.SubCategoryRepository
 import app.skynier.skynier.repository.UserSettingsRepository
 import app.skynier.skynier.ui.theme.SkynierTheme
@@ -30,6 +31,8 @@ import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.CurrencyViewModelFactory
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModelFactory
+import app.skynier.skynier.viewmodels.RecordViewModel
+import app.skynier.skynier.viewmodels.RecordViewModelFactory
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModelFactory
@@ -45,6 +48,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var accountCategoryViewModel: AccountCategoryViewModel
     private lateinit var currencyApiViewModel: CurrencyApiViewModel
     private lateinit var userSettingsViewModel: UserSettingsViewModel
+    private lateinit var recordViewModel: RecordViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +63,7 @@ class MainActivity : ComponentActivity() {
         val accountCategoryRepository = AccountCategoryRepository(database.accountCategoryDao())
         val currencyApiRepository = CurrencyApiRepository(RetrofitInstance.currencyApi)
         val userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
+        val recordRepository = RecordRepository(database.recordDao())
 
         // ViewModel 的初始化 (注意：應該在 `setContent` 之前進行)
         categoryViewModel = ViewModelProvider(
@@ -93,6 +98,10 @@ class MainActivity : ComponentActivity() {
             this,
             UserSettingsViewModelFactory(userSettingsRepository)
         )[UserSettingsViewModel::class.java]
+        recordViewModel = ViewModelProvider(
+            this,
+            RecordViewModelFactory(recordRepository)
+        )[RecordViewModel::class.java]
 
         enableEdgeToEdge()
         setContent {
@@ -107,7 +116,8 @@ class MainActivity : ComponentActivity() {
                     currencyViewModel,
                     accountCategoryViewModel,
                     currencyApiViewModel,
-                    userSettingsViewModel
+                    userSettingsViewModel,
+                    recordViewModel
                 )
             }
         }

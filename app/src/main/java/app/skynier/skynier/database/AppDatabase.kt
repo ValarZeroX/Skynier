@@ -11,6 +11,7 @@ import app.skynier.skynier.database.dao.AccountDao
 import app.skynier.skynier.database.dao.CategoryDao
 import app.skynier.skynier.database.dao.CurrencyDao
 import app.skynier.skynier.database.dao.MainCategoryDao
+import app.skynier.skynier.database.dao.RecordDao
 import app.skynier.skynier.database.dao.SubCategoryDao
 import app.skynier.skynier.database.dao.UserSettingsDao
 import app.skynier.skynier.database.entities.AccountCategoryEntity
@@ -18,6 +19,7 @@ import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.CategoryEntity
 import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.RecordEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.database.entities.UserSettingsEntity
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +27,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [AccountEntity::class,AccountCategoryEntity::class, CategoryEntity::class, CurrencyEntity::class, MainCategoryEntity::class, SubCategoryEntity::class, UserSettingsEntity::class],
+    entities = [
+        AccountEntity::class,
+        AccountCategoryEntity::class,
+        CategoryEntity::class,
+        CurrencyEntity::class,
+        MainCategoryEntity::class,
+        SubCategoryEntity::class,
+        UserSettingsEntity::class,
+        RecordEntity::class
+    ],
     version = 1,
     exportSchema = false
 )
@@ -37,6 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun subCategoryDao(): SubCategoryDao
     abstract fun accountCategoryDao(): AccountCategoryDao
     abstract fun userSettingsDao(): UserSettingsDao
+    abstract fun recordDao(): RecordDao
 
     companion object {
         @Volatile
@@ -63,12 +75,22 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onCreate(db)
                 INSTANCE?.let { database ->
                     CoroutineScope(Dispatchers.IO).launch {
-                        populateDatabase(database.mainCategoryDao(), database.categoryDao(), database.subCategoryDao(), database.accountCategoryDao())
+                        populateDatabase(
+                            database.mainCategoryDao(),
+                            database.categoryDao(),
+                            database.subCategoryDao(),
+                            database.accountCategoryDao()
+                        )
                     }
                 }
             }
 
-            suspend fun populateDatabase(mainCategoryDao: MainCategoryDao, categoryDao: CategoryDao, subCategoryDao: SubCategoryDao, accountCategoryDao: AccountCategoryDao) {
+            suspend fun populateDatabase(
+                mainCategoryDao: MainCategoryDao,
+                categoryDao: CategoryDao,
+                subCategoryDao: SubCategoryDao,
+                accountCategoryDao: AccountCategoryDao
+            ) {
                 if (categoryDao.getAllCategories().isEmpty()) {
                     val defaultCategory = listOf(
                         CategoryEntity(
@@ -564,7 +586,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 2
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 9 ,
+                            mainCategoryId = 9,
                             subCategoryNameKey = "category_stock",
                             subCategoryIcon = "TrendingUp",
                             subCategoryBackgroundColor = "625B57",
@@ -572,7 +594,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 0
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 9 ,
+                            mainCategoryId = 9,
                             subCategoryNameKey = "category_interest",
                             subCategoryIcon = "Savings",
                             subCategoryBackgroundColor = "625B57",
@@ -580,7 +602,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 1
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 9 ,
+                            mainCategoryId = 9,
                             subCategoryNameKey = "category_investment",
                             subCategoryIcon = "Payments",
                             subCategoryBackgroundColor = "625B57",
@@ -588,7 +610,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 2
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 10 ,
+                            mainCategoryId = 10,
                             subCategoryNameKey = "transfer",
                             subCategoryIcon = "SyncAlt",
                             subCategoryBackgroundColor = "3CB371",
@@ -596,7 +618,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 0
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 10 ,
+                            mainCategoryId = 10,
                             subCategoryNameKey = "category_withdrawal",
                             subCategoryIcon = "Atm",
                             subCategoryBackgroundColor = "3CB371",
@@ -604,7 +626,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 1
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 10 ,
+                            mainCategoryId = 10,
                             subCategoryNameKey = "category_deposit",
                             subCategoryIcon = "LocalAtm",
                             subCategoryBackgroundColor = "3CB371",
@@ -612,7 +634,7 @@ abstract class AppDatabase : RoomDatabase() {
                             subCategorySort = 2
                         ),
                         SubCategoryEntity(
-                            mainCategoryId = 10 ,
+                            mainCategoryId = 10,
                             subCategoryNameKey = "category_exchange",
                             subCategoryIcon = "CurrencyExchange",
                             subCategoryBackgroundColor = "3CB371",

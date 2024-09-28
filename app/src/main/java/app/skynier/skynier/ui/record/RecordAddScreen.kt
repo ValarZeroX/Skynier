@@ -68,10 +68,14 @@ import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.library.DatePicker
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.TimePicker
+import app.skynier.skynier.library.combineDateAndTimeVersion2
+import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
+import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
+import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import java.text.SimpleDateFormat
@@ -88,19 +92,19 @@ fun RecordAddScreen(
     subCategoryViewModel: SubCategoryViewModel,
     accountCategoryViewModel: AccountCategoryViewModel,
     accountViewModel: AccountViewModel,
+    currencyViewModel: CurrencyViewModel,
+    recordViewModel: RecordViewModel,
 ) {
     val categories = categoryViewModel.categories.observeAsState(emptyList())
     val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
     val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
     var selectedTabIconIndex by remember { mutableIntStateOf(0) }
     var selectedSubCategories by remember { mutableStateOf<SubCategoryEntity?>(null) }
+    val currencyList by currencyViewModel.currencies.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         categoryViewModel.loadAllCategories()
         mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
-//        if (mainCategories.value.isNotEmpty()) {
-//            val mainCategoryId = mainCategories.value.first().mainCategoryId
-//            subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
-//        }
+        currencyViewModel.loadAllCurrencies()
     }
 
     // 當主分類加載完成時，載入對應的子分類
@@ -127,10 +131,6 @@ fun RecordAddScreen(
             subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
         }
     }
-
-    Log.d("categories", "${categories.value}")
-    Log.d("mainCategories", "${mainCategories.value}")
-    Log.d("subCategories", "${subCategories.value}")
 
     val numericRegex = Regex("^-?\\d*\\.?\\d*$")
     var amount by remember {
@@ -189,19 +189,43 @@ fun RecordAddScreen(
         formatter.format(cal.time)
     }
 
+    val transactionDate: Long = combineDateAndTimeVersion2(selectedDate, selectedTime)
+
     var selectedTransferAssetFrom by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
     var selectedTransferAssetTo by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
     var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
     var showTransferAssetTo by rememberSaveable { mutableStateOf(false) }
     var transferAmountFrom by remember {
-        mutableStateOf("0")
+        mutableStateOf("0.00")
     }
     var transferAmountTo by remember {
-        mutableStateOf("0")
+        mutableStateOf("0.00")
     }
+
+    val fromCurrencyRate = currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate ?: 1.0
+    val toCurrencyRate = currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
+
+    LaunchedEffect(selectedTransferAssetFrom) {
+        val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+        val conversionRate = toCurrencyRate / fromCurrencyRate
+        val convertedAmount = fromAmount * conversionRate
+        transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+    }
+    LaunchedEffect(selectedTransferAssetTo) {
+        val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+        val conversionRate = toCurrencyRate / fromCurrencyRate
+        val convertedAmount = fromAmount * conversionRate
+        transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+    }
+
     Scaffold(
         topBar = {
-            RecordAddScreenHeader(navController)
+            RecordAddScreenHeader(
+                navController,
+                onAddClick = {
+
+                }
+            )
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -296,6 +320,10 @@ fun RecordAddScreen(
                                             } else {
                                                 newInput
                                             }
+                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toCurrencyRate / fromCurrencyRate
+                                            val convertedAmount = fromAmount * conversionRate
+                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
                                     }
                                 },
                                 label = { Text("From") }, // 添加标签
@@ -316,6 +344,13 @@ fun RecordAddScreen(
                                         }
                                         if (!focusState.isFocused && transferAmountFrom.isEmpty()) {
                                             transferAmountFrom = "0" // 当输入框失去焦点且为空时，填入0
+                                        }
+                                        if (!focusState.isFocused && transferAmountFrom.isNotEmpty()) {
+                                            // 執行換算邏輯當失去焦點時
+                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toCurrencyRate / fromCurrencyRate
+                                            val convertedAmount = fromAmount * conversionRate
+                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
                                         }
                                     },
                                 shape = RoundedCornerShape(8.dp), // 设置边框圆角
@@ -359,11 +394,19 @@ fun RecordAddScreen(
                                         if (!focusState.isFocused && transferAmountTo.isEmpty()) {
                                             transferAmountTo = "0" // 当输入框失去焦点且为空时，填入0
                                         }
+//                                        if (!focusState.isFocused && transferAmountTo.isNotEmpty()) {
+//                                            // 執行反向換算邏輯當失去焦點時
+//                                            val toAmount = transferAmountTo.toDoubleOrNull() ?: 0.0
+//                                            val reverseConversionRate = fromCurrencyRate / toCurrencyRate
+//                                            val convertedAmount = toAmount * reverseConversionRate
+//                                            transferAmountFrom = String.format(Locale.US, "%.2f", convertedAmount)
+//                                        }
                                     },
                                 shape = RoundedCornerShape(8.dp),
                                 leadingIcon = {
                                     selectedTransferAssetTo?.let { Text(it.currency) }
-                                }
+                                },
+                                enabled = false
                             )
                         }
                         Row(
@@ -378,6 +421,14 @@ fun RecordAddScreen(
                                 modifier = Modifier
                                     .padding(start = 16.dp)
                                     .weight(1f)
+                            )
+                            Text(
+                                text = String.format(Locale.US, "%.4f", toCurrencyRate),
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .weight(1f),
+                                textAlign = TextAlign.End,
+                                color = Gray
                             )
                         }
                     } else {
@@ -572,6 +623,12 @@ fun RecordAddScreen(
                         onAssetSelected = { selectedAccount ->
                             selectedTransferAssetFrom = selectedAccount // 更新选中的资产
                             showTransferAssetFrom = false
+
+
+//                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+//                            val conversionRate = toCurrencyRate / fromCurrencyRate
+//                            val convertedAmount = fromAmount * conversionRate
+//                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
                         }
                     )
                 }
@@ -581,6 +638,14 @@ fun RecordAddScreen(
                         onDismiss = { showTransferAssetTo = false },
                         onAssetSelected = { selectedAccount ->
                             selectedTransferAssetTo = selectedAccount // 更新选中的资产
+
+//                            // 執行反向換算邏輯當失去焦點時
+//                            val toAmount = transferAmountTo.toDoubleOrNull() ?: 0.0
+//                            val reverseConversionRate = fromCurrencyRate / toCurrencyRate
+//                            val convertedAmount = toAmount * reverseConversionRate
+//                            transferAmountFrom = String.format(Locale.US, "%.2f", convertedAmount)
+
+//                            Log.d()
                             showTransferAssetTo = false
                         }
                     )
@@ -950,7 +1015,10 @@ fun AssetDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecordAddScreenHeader(navController: NavHostController) {
+fun RecordAddScreenHeader(
+    navController: NavHostController,
+    onAddClick: () -> Unit
+    ) {
     CenterAlignedTopAppBar(
         title = {
             Text("新增記錄")
@@ -966,7 +1034,8 @@ fun RecordAddScreenHeader(navController: NavHostController) {
         },
         actions = {
             IconButton(onClick = {
-
+                onAddClick()
+                navController.popBackStack()
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,

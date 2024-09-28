@@ -32,6 +32,7 @@ import app.skynier.skynier.viewmodels.CategoryViewModel
 import app.skynier.skynier.viewmodels.CurrencyApiViewModel
 import app.skynier.skynier.viewmodels.CurrencyViewModel
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
+import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.UserSettingsViewModel
@@ -47,6 +48,7 @@ fun MainScreen(
     accountCategoryViewModel: AccountCategoryViewModel,
     currencyApiViewModel: CurrencyApiViewModel,
     userSettingsViewModel: UserSettingsViewModel,
+    recordViewModel: RecordViewModel,
 ) {
     val selectedItemIndex = rememberSaveable { mutableIntStateOf(0) }
     val navController = rememberNavController()
@@ -70,7 +72,8 @@ fun MainScreen(
                 currencyViewModel,
                 accountCategoryViewModel,
                 currencyApiViewModel,
-                userSettingsViewModel
+                userSettingsViewModel,
+                recordViewModel
             )
         }
     }
@@ -128,6 +131,7 @@ fun Navigation(
     accountCategoryViewModel: AccountCategoryViewModel,
     currencyApiViewModel: CurrencyApiViewModel,
     userSettingsViewModel: UserSettingsViewModel,
+    recordViewModel: RecordViewModel,
 ) {
     NavHost(navController = navController, startDestination = "account") {
         composable("report") { ReportScreen() }
@@ -142,6 +146,8 @@ fun Navigation(
                 subCategoryViewModel,
                 accountCategoryViewModel,
                 accountViewModel,
+                currencyViewModel,
+                recordViewModel
             )
         }
         composable("main_category") {
