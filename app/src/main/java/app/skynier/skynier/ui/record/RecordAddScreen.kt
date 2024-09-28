@@ -90,19 +90,47 @@ fun RecordAddScreen(
     accountViewModel: AccountViewModel,
 ) {
     val categories = categoryViewModel.categories.observeAsState(emptyList())
-    LaunchedEffect(Unit) {
-        categoryViewModel.loadAllCategories()
-    }
-    var selectedTabIconIndex by remember { mutableIntStateOf(0) }
     val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
     val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
-//    var selectedMainCategories by remember { mutableStateOf<MainCategoryEntity?>(null) }
+    var selectedTabIconIndex by remember { mutableIntStateOf(0) }
     var selectedSubCategories by remember { mutableStateOf<SubCategoryEntity?>(null) }
+    LaunchedEffect(Unit) {
+        categoryViewModel.loadAllCategories()
+        mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
+//        if (mainCategories.value.isNotEmpty()) {
+//            val mainCategoryId = mainCategories.value.first().mainCategoryId
+//            subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
+//        }
+    }
+
+    // 當主分類加載完成時，載入對應的子分類
+    LaunchedEffect(mainCategories.value) {
+        if (mainCategories.value.isNotEmpty()) {
+            val mainCategoryId = mainCategories.value.first().mainCategoryId
+            subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
+        }
+    }
+
+    // 當子分類加載完成時，自動選擇第一個子分類
+    LaunchedEffect(subCategories.value) {
+        if (subCategories.value.isNotEmpty()) {
+            selectedSubCategories = subCategories.value.first()
+        }
+    }
+
     // 載入資料
     LaunchedEffect(selectedTabIconIndex) {
         mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
+        Log.d("isNotEmpty", "${mainCategories.value.isNotEmpty()}")
+        if (mainCategories.value.isNotEmpty()) {
+            val mainCategoryId = mainCategories.value.first().mainCategoryId
+            subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
+        }
     }
 
+    Log.d("categories", "${categories.value}")
+    Log.d("mainCategories", "${mainCategories.value}")
+    Log.d("subCategories", "${subCategories.value}")
 
     val numericRegex = Regex("^-?\\d*\\.?\\d*$")
     var amount by remember {
@@ -111,12 +139,12 @@ fun RecordAddScreen(
 
     var remark by rememberSaveable { mutableStateOf("") }
     var showAsset by rememberSaveable { mutableStateOf(false) }
-    var selectedAsset by remember { mutableStateOf<AccountEntity?>(null) }
+
     val accounts = accountViewModel.accounts.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         accountViewModel.loadAllAccounts()
     }
-
+    var selectedAsset by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
     var showCategory by rememberSaveable { mutableStateOf(false) }
 
     //日期選擇棄
@@ -161,8 +189,8 @@ fun RecordAddScreen(
         formatter.format(cal.time)
     }
 
-    var selectedTransferAssetFrom by remember { mutableStateOf<AccountEntity?>(null) }
-    var selectedTransferAssetTo by remember { mutableStateOf<AccountEntity?>(null) }
+    var selectedTransferAssetFrom by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
+    var selectedTransferAssetTo by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
     var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
     var showTransferAssetTo by rememberSaveable { mutableStateOf(false) }
     var transferAmountFrom by remember {
@@ -196,7 +224,7 @@ fun RecordAddScreen(
                             selected = selectedTabIconIndex == index,
                             onClick = {
                                 selectedTabIconIndex = index
-                                selectedSubCategories = null
+//                                selectedSubCategories = null
 
                             },
                             text = { Text(text = displayName) }
@@ -260,7 +288,10 @@ fun RecordAddScreen(
                                     // 过滤输入，只接受有效的浮点数、负数和小数点
                                     if (newInput.isEmpty() || newInput.matches(numericRegex)) {
                                         transferAmountFrom =
-                                            if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith("0.")) {
+                                            if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith(
+                                                    "0."
+                                                )
+                                            ) {
                                                 newInput.trimStart('0')
                                             } else {
                                                 newInput
@@ -299,7 +330,10 @@ fun RecordAddScreen(
                                     // 过滤输入，只接受有效的浮点数、负数和小数点
                                     if (newInput.isEmpty() || newInput.matches(numericRegex)) {
                                         transferAmountTo =
-                                            if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith("0.")) {
+                                            if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith(
+                                                    "0."
+                                                )
+                                            ) {
                                                 newInput.trimStart('0')
                                             } else {
                                                 newInput
