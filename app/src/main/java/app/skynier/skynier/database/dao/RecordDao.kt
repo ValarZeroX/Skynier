@@ -24,12 +24,12 @@ interface RecordDao {
     @Query("SELECT * FROM record WHERE recordId = :id")
     fun getRecordById(id: Int): LiveData<RecordEntity?>
 
-    @Query("SELECT * FROM record ORDER BY date DESC, time DESC")
+    @Query("SELECT * FROM record ORDER BY datetime DESC")
     fun getAllRecords(): LiveData<List<RecordEntity>>
 
-    @Query("SELECT * FROM record WHERE accountId = :accountId ORDER BY date DESC, time DESC")
+    @Query("SELECT * FROM record WHERE accountId = :accountId ORDER BY datetime DESC")
     fun getRecordsByAccount(accountId: Int): LiveData<List<RecordEntity>>
 
-    @Query("SELECT * FROM record WHERE mainCategoryId = :mainCategoryId AND subCategoryId = :subCategoryId ORDER BY date DESC, time DESC")
+    @Query("SELECT * FROM record WHERE mainCategoryId = :mainCategoryId AND subCategoryId = :subCategoryId ORDER BY datetime DESC")
     fun getRecordsByCategory(mainCategoryId: Int, subCategoryId: Int): LiveData<List<RecordEntity>>
 }

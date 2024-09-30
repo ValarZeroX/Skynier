@@ -144,7 +144,9 @@ fun RecordAddScreen(
     LaunchedEffect(Unit) {
         accountViewModel.loadAllAccounts()
     }
-    var selectedAsset by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
+    Log.d("accounts", "$accounts")
+
+    var selectedAsset by remember { mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null) }
     var showCategory by rememberSaveable { mutableStateOf(false) }
 
     //日期選擇棄
@@ -191,8 +193,12 @@ fun RecordAddScreen(
 
     val transactionDate: Long = combineDateAndTimeVersion2(selectedDate, selectedTime)
 
-    var selectedTransferAssetFrom by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
-    var selectedTransferAssetTo by remember { mutableStateOf<AccountEntity?>(accounts.value.first()) }
+    var selectedTransferAssetFrom by remember {
+        mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null)
+    }
+    var selectedTransferAssetTo by remember {
+        mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null)
+    }
     var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
     var showTransferAssetTo by rememberSaveable { mutableStateOf(false) }
     var transferAmountFrom by remember {
@@ -266,7 +272,11 @@ fun RecordAddScreen(
                                     .weight(1f)
                                     .padding(start = 16.dp),
                                 onClick = {
-                                    showTransferAssetFrom = true
+                                    selectedAsset?.let {
+                                        showTransferAssetFrom = true
+                                    }?: run {
+                                        navController.navigate("account_add")
+                                    }
                                 }) {
                                 selectedTransferAssetFrom?.let {
                                     val accountIcon =
@@ -277,6 +287,13 @@ fun RecordAddScreen(
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(text = it.accountName)
+                                } ?: run {
+                                    Icon(
+                                        imageVector = Icons.Filled.Add,
+                                        contentDescription = "Add"
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = "新增資產") // 或者显示提示信息
                                 }
                             }
                             Spacer(modifier = Modifier.width(16.dp))
@@ -285,7 +302,11 @@ fun RecordAddScreen(
                                     .weight(1f)
                                     .padding(end = 16.dp),
                                 onClick = {
-                                    showTransferAssetTo = true
+                                    selectedAsset?.let {
+                                        showTransferAssetTo = true
+                                    }?: run {
+                                        navController.navigate("account_add")
+                                    }
                                 }) {
                                 selectedTransferAssetTo?.let {
                                     val accountIcon =
@@ -296,6 +317,13 @@ fun RecordAddScreen(
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(text = it.accountName)
+                                } ?: run {
+                                    Icon(
+                                        imageVector = Icons.Filled.Add,
+                                        contentDescription = "Add"
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = "新增資產") // 或者显示提示信息
                                 }
                             }
                         }
@@ -503,7 +531,11 @@ fun RecordAddScreen(
                                     .weight(1f)
                                     .padding(end = 16.dp, start = 10.dp),
                                 onClick = {
-                                    showAsset = true
+                                    selectedAsset?.let {
+                                        showAsset = true
+                                    }?: run {
+                                        navController.navigate("account_add")
+                                    }
                                 }) {
                                 selectedAsset?.let {
                                     val accountIcon =
@@ -514,6 +546,13 @@ fun RecordAddScreen(
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(text = it.accountName)
+                                } ?: run {
+                                    Icon(
+                                        imageVector = Icons.Filled.Add,
+                                        contentDescription = "Add"
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = "新增資產") // 或者显示提示信息
                                 }
                             }
                         }
