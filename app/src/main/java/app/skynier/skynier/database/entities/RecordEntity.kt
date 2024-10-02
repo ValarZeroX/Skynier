@@ -8,7 +8,8 @@ data class RecordEntity(
     @PrimaryKey(autoGenerate = true) val recordId: Int = 0, // 記錄編號
     val accountId: Int, // 帳戶ID
     val currency: String, // 幣種代碼
-    val categoryId: Int, // 記錄類型，例如"收入"或"支出"
+    val type: Int,// 記錄類型，例如"收入"或"支出" 轉出 轉入 餘額調整
+    val categoryId: Int, // 類別
     val mainCategoryId: Int, // 主類別ID
     val subCategoryId: Int, // 子類別ID
     val amount: Double, // 金額

@@ -126,4 +126,13 @@
     <string name="asset_overview">资产总览</string>
     <string name="amount">金额</string>
     <string name="select_time">选择时间</string>
+    <string name="select_date">选择日期</string>
+    <string name="exchange_rate">汇率</string>
+    <string name="name">名称</string>
+    <string name="remark">备注</string>
+    <string name="select_subcategory">选择子分类</string>
+    <string name="select_category">选择分类</string>
+    <string name="back">返回</string>
+    <string name="select_asset">选择资产</string>
+    <string name="add_record">新增记录</string>
 </resources>

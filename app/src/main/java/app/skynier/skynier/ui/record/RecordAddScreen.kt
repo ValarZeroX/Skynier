@@ -64,6 +64,7 @@ import androidx.navigation.NavHostController
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.RecordEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.library.DatePicker
 import app.skynier.skynier.library.SharedOptions
@@ -137,6 +138,8 @@ fun RecordAddScreen(
         mutableStateOf("0")
     }
 
+    val untitled = stringResource(id = R.string.name)
+    var name by rememberSaveable { mutableStateOf("") }
     var remark by rememberSaveable { mutableStateOf("") }
     var showAsset by rememberSaveable { mutableStateOf(false) }
 
@@ -144,7 +147,7 @@ fun RecordAddScreen(
     LaunchedEffect(Unit) {
         accountViewModel.loadAllAccounts()
     }
-    Log.d("accounts", "$accounts")
+//    Log.d("accounts", "$accounts")
 
     var selectedAsset by remember { mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null) }
     var showCategory by rememberSaveable { mutableStateOf(false) }
@@ -162,7 +165,7 @@ fun RecordAddScreen(
             set(Calendar.MILLISECOND, 0)
         }
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
-    } ?: "選擇日期"
+    } ?: stringResource(id = R.string.select_date)
 
     //時間選擇器
     val initialDateTime = System.currentTimeMillis()
@@ -229,7 +232,65 @@ fun RecordAddScreen(
             RecordAddScreenHeader(
                 navController,
                 onAddClick = {
-
+                    if (selectedTabIconIndex == 0 || selectedTabIconIndex == 1) {
+                        recordViewModel.insertRecord(
+                            RecordEntity(
+                                accountId = selectedAsset!!.accountId,
+                                currency = selectedAsset!!.currency,
+                                type = selectedTabIconIndex + 1,
+                                categoryId = selectedTabIconIndex + 1,
+                                mainCategoryId = selectedSubCategories!!.mainCategoryId,
+                                subCategoryId = selectedSubCategories!!.subCategoryId,
+                                amount = amount.toDouble(),
+                                fee = 0.0,
+                                discount = 0.0,
+                                name = name,
+                                merchant = "",
+                                datetime = transactionDate,
+                                description = remark,
+                                objectType = "",
+                            )
+                        )
+                    } else {
+                        //轉出
+                        recordViewModel.insertRecord(
+                            RecordEntity(
+                                accountId = selectedTransferAssetFrom!!.accountId,
+                                currency = selectedTransferAssetFrom!!.currency,
+                                type = 3,
+                                categoryId = selectedTabIconIndex + 1,
+                                mainCategoryId = selectedSubCategories!!.mainCategoryId,
+                                subCategoryId = selectedSubCategories!!.subCategoryId,
+                                amount = transferAmountFrom.toDouble(),
+                                fee = 0.0,
+                                discount = 0.0,
+                                name = name,
+                                merchant = "",
+                                datetime = transactionDate,
+                                description = remark,
+                                objectType = "",
+                            )
+                        )
+                        //轉入
+                        recordViewModel.insertRecord(
+                            RecordEntity(
+                                accountId = selectedTransferAssetTo!!.accountId,
+                                currency = selectedTransferAssetTo!!.currency,
+                                type = 4,
+                                categoryId = selectedTabIconIndex + 1,
+                                mainCategoryId = selectedSubCategories!!.mainCategoryId,
+                                subCategoryId = selectedSubCategories!!.subCategoryId,
+                                amount = transferAmountTo.toDouble(),
+                                fee = 0.0,
+                                discount = 0.0,
+                                name = name,
+                                merchant = "",
+                                datetime = transactionDate,
+                                description = remark,
+                                objectType = "",
+                            )
+                        )
+                    }
                 }
             )
         }
@@ -293,7 +354,7 @@ fun RecordAddScreen(
                                         contentDescription = "Add"
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
-                                    Text(text = "新增資產") // 或者显示提示信息
+                                    Text(text = stringResource(id = R.string.add_asset))
                                 }
                             }
                             Spacer(modifier = Modifier.width(16.dp))
@@ -323,7 +384,7 @@ fun RecordAddScreen(
                                         contentDescription = "Add"
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
-                                    Text(text = "新增資產") // 或者显示提示信息
+                                    Text(text = stringResource(id = R.string.add_asset)) // 或者显示提示信息
                                 }
                             }
                         }
@@ -445,7 +506,7 @@ fun RecordAddScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "匯率",
+                                text = stringResource(id = R.string.exchange_rate),
                                 modifier = Modifier
                                     .padding(start = 16.dp)
                                     .weight(1f)
@@ -458,6 +519,51 @@ fun RecordAddScreen(
                                 textAlign = TextAlign.End,
                                 color = Gray
                             )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.name),
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .weight(1f)
+                            ) {
+                                if (name.isEmpty()) {
+                                    Text(
+                                        text = untitled, // 當name為空時顯示的佔位文本
+                                        color = Gray, // 顏色設置為灰色
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+                                BasicTextField(
+                                    value = name,
+                                    onValueChange = { newName ->
+                                        if (newName.length <= 60) {
+                                            name = newName
+                                        }
+                                    },
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    textStyle = LocalTextStyle.current.copy(
+                                        textAlign = TextAlign.End,
+                                        color = MaterialTheme.colorScheme.primary // 當用戶輸入後，顯示正常顏色
+                                    )
+                                )
+                            }
                         }
                     } else {
                         Row(
@@ -521,6 +627,51 @@ fun RecordAddScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
+                                text = stringResource(id = R.string.name),
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .weight(1f)
+                            ) {
+                                if (name.isEmpty()) {
+                                    Text(
+                                        text = untitled, // 當name為空時顯示的佔位文本
+                                        color = Gray, // 顏色設置為灰色
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+                                BasicTextField(
+                                    value = name,
+                                    onValueChange = { newName ->
+                                        if (newName.length <= 60) {
+                                            name = newName
+                                        }
+                                    },
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    textStyle = LocalTextStyle.current.copy(
+                                        textAlign = TextAlign.End,
+                                        color = MaterialTheme.colorScheme.primary // 當用戶輸入後，顯示正常顏色
+                                    )
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
                                 text = stringResource(id = R.string.asset),
                                 modifier = Modifier
                                     .padding(start = 16.dp)
@@ -552,7 +703,7 @@ fun RecordAddScreen(
                                         contentDescription = "Add"
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
-                                    Text(text = "新增資產") // 或者显示提示信息
+                                    Text(text = stringResource(id = R.string.add_asset)) // 或者显示提示信息
                                 }
                             }
                         }
@@ -565,7 +716,7 @@ fun RecordAddScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "類別",
+                            text = stringResource(id = R.string.category),
                             modifier = Modifier
                                 .padding(start = 16.dp)
                                 .weight(1f)
@@ -634,11 +785,15 @@ fun RecordAddScreen(
                     ) {
                         OutlinedTextField(
                             value = remark,
-                            onValueChange = { newRemark -> remark = newRemark },
+                            onValueChange = { newRemark ->
+                                if (newRemark.length <= 400) {
+                                    remark = newRemark
+                                }
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp),
-                            label = { Text("輸入備註") },
+                            label = { Text(stringResource(id = R.string.remark)) },
                             minLines = 3,
                             maxLines = 6
                         )
@@ -757,7 +912,7 @@ fun CategoryDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (isShowingSubCategories) "選擇子分類" else "選擇分類",
+                        text = if (isShowingSubCategories) stringResource(id = R.string.select_subcategory) else stringResource(id = R.string.select_category),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -877,7 +1032,7 @@ fun CategoryDialog(
                         TextButton(onClick = {
                             isShowingSubCategories = false
                         }) {
-                            Text(text = "返回")
+                            Text(text = stringResource(id = R.string.back))
                         }
                     }
                     // 取消按钮
@@ -992,7 +1147,7 @@ fun AssetDialog(
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "選擇資產", modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = stringResource(id = R.string.select_asset), modifier = Modifier.padding(bottom = 8.dp))
                 }
                 HorizontalDivider()
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -1060,7 +1215,7 @@ fun RecordAddScreenHeader(
     ) {
     CenterAlignedTopAppBar(
         title = {
-            Text("新增記錄")
+            Text(stringResource(id = R.string.add_record))
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
