@@ -19,6 +19,7 @@ import app.skynier.skynier.ui.account.AccountEditScreen
 import app.skynier.skynier.ui.account.AccountScreen
 import app.skynier.skynier.ui.layouts.NavigationBarScreen
 import app.skynier.skynier.ui.record.RecordAddScreen
+import app.skynier.skynier.ui.record.RecordMainScreen
 import app.skynier.skynier.ui.settings.AccountCategoryScreen
 import app.skynier.skynier.ui.settings.CurrencyScreen
 import app.skynier.skynier.ui.settings.IconScreen
@@ -231,6 +232,19 @@ fun Navigation(
                 currencyViewModel,
                 currencyApiViewModel,
                 userSettingsViewModel
+            )
+        }
+        composable("record") {
+            RecordMainScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                accountCategoryViewModel,
+                accountViewModel,
+                currencyViewModel,
+                recordViewModel
             )
         }
     }

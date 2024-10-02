@@ -122,14 +122,14 @@ fun SettingsScreenHeader(navController: NavHostController) {
         title = {
             Text("設定")
         },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "Back"
-                )
-            }
-
-        },
+//        navigationIcon = {
+//            IconButton(onClick = { navController.popBackStack() }) {
+//                Icon(
+//                    imageVector = Icons.Filled.ArrowBackIosNew,
+//                    contentDescription = "Back"
+//                )
+//            }
+//
+//        },
     )
 }

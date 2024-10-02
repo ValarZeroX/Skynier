@@ -51,7 +51,7 @@ fun NavigationBarScreen(navController: NavHostController, selectedItemIndex: Mut
                 selected = selectedItemIndex.value == 1,
                 onClick = {
                     selectedItemIndex.value = 1
-                    navController.navigate("settings")
+                    navController.navigate("record")
                 }
             )
 //        Spacer(modifier = Modifier.weight(1f, true)) // 用來保持中間位置
