@@ -34,4 +34,8 @@ class RecordRepository(private val recordDao: RecordDao) {
     fun getRecordsByCategory(mainCategoryId: Int, subCategoryId: Int): LiveData<List<RecordEntity>> {
         return recordDao.getRecordsByCategory(mainCategoryId, subCategoryId)
     }
+
+    fun getRecordsByDateRange(startDate: Long, endDate: Long): LiveData<List<RecordEntity>> {
+        return recordDao.getRecordsByDateRange(startDate, endDate)
+    }
 }

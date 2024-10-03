@@ -32,4 +32,8 @@ interface RecordDao {
 
     @Query("SELECT * FROM record WHERE mainCategoryId = :mainCategoryId AND subCategoryId = :subCategoryId ORDER BY datetime DESC")
     fun getRecordsByCategory(mainCategoryId: Int, subCategoryId: Int): LiveData<List<RecordEntity>>
+
+    @Query("SELECT * FROM record  WHERE datetime BETWEEN :startDate AND :endDate ORDER BY datetime DESC")
+    fun getRecordsByDateRange(startDate: Long, endDate: Long): LiveData<List<RecordEntity>>
+
 }

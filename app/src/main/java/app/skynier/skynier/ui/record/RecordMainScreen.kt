@@ -1,5 +1,6 @@
 package app.skynier.skynier.ui.record
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +35,7 @@ import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -48,10 +51,29 @@ fun RecordMainScreen(
     currencyViewModel: CurrencyViewModel,
     recordViewModel: RecordViewModel,
 ) {
+
+
 //    val selectedDate by remember { mutableStateOf(LocalDate.now()) }
 //    val localDate = LocalDate.now()
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+//    val startDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+//    val endDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+    val startOfDay = selectedDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+    val endOfDay = selectedDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+    val firstDayOfMonth = selectedDate.withDayOfMonth(1)  // 當月第一天
+    val lastDayOfMonth = selectedDate.withDayOfMonth(selectedDate.lengthOfMonth())  // 當月最後一天
+
+    val startMonthDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+    val endMonthDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+    val recordsMonth by recordViewModel.getDateSerialNumberMapByDateRange(startMonthDateMillis, endMonthDateMillis).observeAsState(initial = emptyMap())
+
+    val recordsDay by recordViewModel.getRecordsByDateRange(startOfDay, endOfDay).observeAsState(emptyList())
+    Log.d("recordsMonth", "$recordsMonth")
+    Log.d("recordsDay", "$recordsDay")
     Scaffold(
         topBar = {
             RecordMainScreen(
@@ -92,7 +114,15 @@ fun RecordMainScreen(
                 }
                 when (selectedTabIndex) {
                     0 -> {
-                        RecordDayScreen(selectedDate)
+                        RecordDayScreen(
+                            selectedDate,
+                            onDateSelected = { newDate ->
+                                selectedDate = newDate // 在上層組件內更新日期狀態
+                            },
+                            recordsDay,
+                            recordsMonth,
+                            subCategoryViewModel
+                        )
                     }
                     1 -> {
                         Text("月")
@@ -122,7 +152,7 @@ fun RecordMainScreen(
     val formattedDate = localDate.format(dateFormatter)
     CenterAlignedTopAppBar(
         title = {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically,) {
                 IconButton(onClick = onClickPrev) {
                     Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month")
                 }
