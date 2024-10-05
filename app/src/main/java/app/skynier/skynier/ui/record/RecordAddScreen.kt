@@ -143,13 +143,24 @@ fun RecordAddScreen(
     var remark by rememberSaveable { mutableStateOf("") }
     var showAsset by rememberSaveable { mutableStateOf(false) }
 
-    val accounts = accountViewModel.accounts.observeAsState(emptyList())
+    val accounts by accountViewModel.accounts.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         accountViewModel.loadAllAccounts()
     }
-//    Log.d("accounts", "$accounts")
+    Log.d("accounts", "$accounts")
 
-    var selectedAsset by remember { mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null) }
+//    var selectedAsset by remember { mutableStateOf<AccountEntity?>(if (accounts.isNotEmpty()) accounts.first() else null) }
+
+    var selectedAsset by remember { mutableStateOf<AccountEntity?>(null) }
+
+// 當 accounts 發生變化時，更新 selectedAsset
+    LaunchedEffect(accounts) {
+        if (accounts.isNotEmpty()) {
+            selectedAsset = accounts.first()
+        }
+    }
+    Log.d("accounts", "$selectedAsset")
+
     var showCategory by rememberSaveable { mutableStateOf(false) }
 
     //日期選擇棄
@@ -197,10 +208,10 @@ fun RecordAddScreen(
     val transactionDate: Long = combineDateAndTimeVersion2(selectedDate, selectedTime)
 
     var selectedTransferAssetFrom by remember {
-        mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null)
+        mutableStateOf<AccountEntity?>(if (accounts.isNotEmpty()) accounts.first() else null)
     }
     var selectedTransferAssetTo by remember {
-        mutableStateOf<AccountEntity?>(if (accounts.value.isNotEmpty()) accounts.value.first() else null)
+        mutableStateOf<AccountEntity?>(if (accounts.isNotEmpty()) accounts.first() else null)
     }
     var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
     var showTransferAssetTo by rememberSaveable { mutableStateOf(false) }
@@ -802,7 +813,7 @@ fun RecordAddScreen(
 
                 if (showAsset) {
                     AssetDialog(
-                        accounts = accounts.value, // 传递账户列表
+                        accounts = accounts, // 传递账户列表
                         onDismiss = { showAsset = false },
                         onAssetSelected = { selectedAccount ->
                             selectedAsset = selectedAccount // 更新选中的资产
@@ -812,7 +823,7 @@ fun RecordAddScreen(
                 }
                 if (showTransferAssetFrom) {
                     AssetDialog(
-                        accounts = accounts.value, // 传递账户列表
+                        accounts = accounts, // 传递账户列表
                         onDismiss = { showTransferAssetFrom = false },
                         onAssetSelected = { selectedAccount ->
                             selectedTransferAssetFrom = selectedAccount // 更新选中的资产
@@ -828,7 +839,7 @@ fun RecordAddScreen(
                 }
                 if (showTransferAssetTo) {
                     AssetDialog(
-                        accounts = accounts.value, // 传递账户列表
+                        accounts = accounts, // 传递账户列表
                         onDismiss = { showTransferAssetTo = false },
                         onAssetSelected = { selectedAccount ->
                             selectedTransferAssetTo = selectedAccount // 更新选中的资产

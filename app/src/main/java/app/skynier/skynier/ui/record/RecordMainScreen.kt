@@ -34,6 +34,7 @@ import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
+import app.skynier.skynier.viewmodels.UserSettingsViewModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -50,6 +51,7 @@ fun RecordMainScreen(
     accountViewModel: AccountViewModel,
     currencyViewModel: CurrencyViewModel,
     recordViewModel: RecordViewModel,
+    userSettingsViewModel: UserSettingsViewModel,
 ) {
 
 
@@ -121,7 +123,9 @@ fun RecordMainScreen(
                             },
                             recordsDay,
                             recordsMonth,
-                            subCategoryViewModel
+                            subCategoryViewModel,
+                            userSettingsViewModel,
+                            accountViewModel
                         )
                     }
                     1 -> {

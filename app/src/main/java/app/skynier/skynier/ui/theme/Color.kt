@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 var Red = Color(0xFFDC3545)
 var Blue = Color(0xFF009EEC)
 var Gray = Color(0xFF808080)
+var Green = Color(0xFF02C874)
 
 val primaryLight = Color(0xFF8F4C35)
 val onPrimaryLight = Color(0xFFFFFFFF)

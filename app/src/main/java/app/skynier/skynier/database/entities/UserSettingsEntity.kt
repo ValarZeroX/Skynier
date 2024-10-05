@@ -9,5 +9,5 @@ data class UserSettingsEntity(
     val themeIndex: Int = 0, //主題顏色
     val darkTheme: Boolean = true,
     var currency: String = "USD", //主幣別
-    val textColor: Int = 0, //正負文字顏色
+    val textColor: Int = 0, //收入支出文字顏色
 )

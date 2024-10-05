@@ -244,7 +244,8 @@ fun Navigation(
                 accountCategoryViewModel,
                 accountViewModel,
                 currencyViewModel,
-                recordViewModel
+                recordViewModel,
+                userSettingsViewModel
             )
         }
     }
