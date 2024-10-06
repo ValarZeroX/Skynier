@@ -3,10 +3,14 @@ package app.skynier.skynier.ui.record
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,23 +19,37 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.RecordEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
@@ -80,12 +98,11 @@ fun RecordDayScreen(
 
     val accounts by accountViewModel.accounts.observeAsState(emptyList())
 
+
     // 合併轉出(type 3)和轉入(type 4)的記錄
     val mergedTransferRecords = remember(recordsDay) {
         val transfersOut = recordsDay.filter { it.type == 3 }
         val transfersIn = recordsDay.filter { it.type == 4 }
-        Log.d("transfersOut", "$transfersOut")
-        Log.d("transfersIn", "$transfersIn")
         transfersOut.mapNotNull { outRecord ->
             transfersIn.find { inRecord ->
                 // 可以根據具體條件匹配，比如相同的金額和日期
@@ -95,7 +112,9 @@ fun RecordDayScreen(
             }
         }
     }
-    Log.d("mergedTransferRecords", "$mergedTransferRecords")
+
+    var showRecordDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedRecord by remember { mutableStateOf<RecordEntity?>(null) }
 
     Column {
         CustomCalendar(
@@ -116,117 +135,226 @@ fun RecordDayScreen(
             }
             // 顯示其他類型的記錄 (type 1 和 type 2)
             items(recordsDay.filter { it.type == 1 || it.type == 2 }) { record ->
-                DisplaySingleRecord(record, subCategoriesByMainCategory, accounts, userSettings)
+                DisplaySingleRecord(
+                    record,
+                    subCategoriesByMainCategory,
+                    accounts,
+                    userSettings,
+                    onClick = {
+                        selectedRecord = record
+                        showRecordDialog = true
+                    })
             }
+        }
+        // 顯示對話框
+        if (showRecordDialog) {
+            RecordDialog(
+                record = selectedRecord,
+                onDismissRequest = { showRecordDialog = false },
+                userSettings,
+                subCategoriesByMainCategory,
+                accounts
+            )
+        }
+    }
+}
 
-//            items(recordsDay) { record ->
-//                // 獲取該 mainCategoryId 下的子類別
-//                val subCategoriesForThisMainCategory = subCategoriesByMainCategory[record.mainCategoryId] ?: emptyList()
-//
-//                // 根據 subCategoryId 查找匹配的子類別
-//                val matchingSubCategory = subCategoriesForThisMainCategory.find { it.subCategoryId == record.subCategoryId }
-//                // 如果找到匹配的子類別，進行處理
-//                matchingSubCategory?.let { category ->
-//                    val recordIcon = SharedOptions.iconMap[category.subCategoryIcon]
-//                    val backgroundColor = Color(android.graphics.Color.parseColor("#${category.subCategoryBackgroundColor}"))
-//                    val iconColor = Color(android.graphics.Color.parseColor("#${category.subCategoryIconColor}"))
-//                    val decimalFormat = DecimalFormat("#,###.##")
-//                    val formattedValue = decimalFormat.format(record.amount)
-//
-//                    var textColor = MaterialTheme.colorScheme.onBackground
-//                    userSettings?.let { textColor = textColor(it.textColor, record.categoryId) }
-//                    ListItem(
-//                        headlineContent = { Text(text = record.name) },
-//                        supportingContent = {
-//                            Text(
-//                                text = record.description,
-//                                color = Gray
-//                            )
-//                        },
-//                        trailingContent = {
-//                            Column(
-//                                horizontalAlignment = Alignment.End
-//                            ) {
-//                                Row(
-//                                    modifier = Modifier.padding(vertical = 4.dp),
-//                                    verticalAlignment = Alignment.CenterVertically,
-//                                ) {
-//                                    Text(
-//                                        text = record.currency,
-//                                        fontSize = 10.sp,
-//                                        fontWeight = FontWeight.Bold,
-//                                        color = Gray
-//                                    )
-//                                    Spacer(modifier = Modifier.width(4.dp))
-//                                    Text(
-//                                        text = "$$formattedValue",
-//                                        color = textColor,
-//                                        fontSize = 16.sp
-//                                    )
-//                                }
-//                                Box(
-//                                    modifier = Modifier
-//                                        .border(
-//                                            width = 1.dp,
-//                                            color = Gray,
-//                                            shape = RoundedCornerShape(8.dp)
-//                                        )
-//                                        .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
-//                                ) {
-//                                    Row(modifier = Modifier.padding(vertical = 2.dp),verticalAlignment = Alignment.CenterVertically) {
-//                                        Spacer(modifier = Modifier.width(4.dp))
-//                                        accounts.find { it.accountId == record.accountId }?.let {
-//                                            val accountIcon = SharedOptions.iconMap[it.accountIcon]
-//                                            if (accountIcon != null) {
-//                                                Icon(
-//                                                    accountIcon.icon,
-//                                                    contentDescription = "Localized description",
-//                                                    modifier = Modifier.size(16.dp),
-//                                                    tint = MaterialTheme.colorScheme.primary
-//                                                )
-//                                            }
-//                                            Spacer(modifier = Modifier.width(4.dp))
-//                                            Text(
-//                                                text = it.accountName,
-//                                                fontSize = 12.sp,
-//                                                fontWeight = FontWeight.Bold
-//                                            )
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        },
-//                        leadingContent = {
-//                            Box(
-//                                modifier = Modifier
-//                                    .size(36.dp)
-//                                    .background(backgroundColor, CircleShape),
-//                                contentAlignment = Alignment.Center
-//                            ) {
-//                                recordIcon?.let { iconData ->
-//                                    // 只有在 recordIcon 不為 null 時才顯示圖標
-//                                    Icon(
-//                                        imageVector = iconData.icon,
-//                                        contentDescription = category.subCategoryNameKey,
-//                                        modifier = Modifier.size(20.dp),
-//                                        tint = iconColor
-//                                    )
-//                                } ?: run {
-//                                    // 如果沒有找到 icon，顯示一個默認的佔位圖標
-//                                    Icon(
-//                                        imageVector = Icons.Default.Error, // 可以換成適合的默認圖標
-//                                        contentDescription = "Default icon",
-//                                        modifier = Modifier.size(18.dp),
-//                                        tint = Color.Gray
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    )
-//                    HorizontalDivider()
+@Composable
+fun RecordDialog(
+    record: RecordEntity?,
+    onDismissRequest: () -> Unit,
+    userSettings: UserSettingsEntity?,
+    subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
+    accounts: List<AccountEntity>,
+) {
+    if (record != null) {
+        val decimalFormat = DecimalFormat("#,###.##")
+        val formattedValue = decimalFormat.format(record.amount)
+        val subCategoriesForThisMainCategory =
+            subCategoriesByMainCategory[record.mainCategoryId] ?: emptyList()
+        val matchingSubCategory =
+            subCategoriesForThisMainCategory.find { it.subCategoryId == record.subCategoryId }
+
+        matchingSubCategory?.let { category ->
+            val recordIcon = SharedOptions.iconMap[category.subCategoryIcon]
+            val backgroundColor =
+                Color(android.graphics.Color.parseColor("#${category.subCategoryBackgroundColor}"))
+            val iconColor =
+                Color(android.graphics.Color.parseColor("#${category.subCategoryIconColor}"))
+
+            var textColorDialog = MaterialTheme.colorScheme.onBackground
+            userSettings?.let { textColorDialog = textColor(it.textColor, record.categoryId) }
+
+            val context = LocalContext.current
+            val resourceId =
+                context.resources.getIdentifier(category.subCategoryNameKey, "string", context.packageName)
+            val displayName = if (resourceId != 0) {
+                context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+            } else {
+                category.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+            }
+            Dialog(onDismissRequest = onDismissRequest) {
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.padding(5.dp)
+                ) {
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // 左上角的關閉圖示
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(8.dp)
+                                    .clickable {
+                                        onDismissRequest()
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector =Icons.Filled.Close, // 假設使用默認的 Close 圖標
+                                    contentDescription = "Close",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Gray
+                                )
+                            }
+
+                            // 右上角的刪除和編輯圖示
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(14.dp) // 添加間距
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Delete, // 刪除圖標
+                                        contentDescription = "Delete",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = Gray
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Filled.Edit, // 編輯圖標
+                                        contentDescription = "Edit",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = Gray
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+
+                            // Icon 和 Text 水平居中
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(backgroundColor, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    recordIcon?.let { iconData ->
+                                        Icon(
+                                            imageVector = iconData.icon,
+                                            contentDescription = category.subCategoryNameKey,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = iconColor
+                                        )
+                                    } ?: run {
+                                        Icon(
+                                            imageVector = Icons.Default.Error,
+                                            contentDescription = "Default icon",
+                                            modifier = Modifier.size(18.dp),
+                                            tint = Color.Gray
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp)) // 添加圖標與文本之間的間距
+                                Text(
+                                    text = record.name.ifEmpty { displayName },
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                        HorizontalDivider()
+                        Column(modifier = Modifier.padding(18.dp)) {
+//                            Text(text = "名稱: ${record.name}")
+//                            Text(text = "描述: ${record.description}")
+                            Row(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                accounts.find { it.accountId == record.accountId }?.let {
+                                    val accountIcon = SharedOptions.iconMap[it.accountIcon]
+                                    if (accountIcon != null) {
+                                        Icon(
+                                            accountIcon.icon,
+                                            contentDescription = "Localized description",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = it.accountName,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            Row(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = record.currency,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Gray
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "$$formattedValue",
+                                    color = textColorDialog,
+                                    fontSize = 16.sp
+                                )
+                            }
+                            HorizontalDivider()
+                            Text(
+                                text = record.description.ifEmpty { "備註" },
+                                color = Gray,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+//        androidx.compose.material3.AlertDialog(
+//            onDismissRequest = { onDismissRequest() },
+//            title = {
+//                Text(text = "記錄詳情")
+//            },
+//            text = {
+//                Column {
+//                    Text(text = "名稱: ${record.name}")
+//                    Text(text = "描述: ${record.description}")
+//                    Text(text = "金額: ${record.currency} ${record.amount}")
+//                }
+//            },
+//            confirmButton = {
+//                androidx.compose.material3.Button(
+//                    onClick = { onDismissRequest() }
+//                ) {
+//                    Text("關閉")
 //                }
 //            }
-        }
+//        )
     }
 }
 
@@ -259,7 +387,7 @@ fun DisplayMergedTransferRecord(
             supportingContent = {
                 Column {
                     Row {
-                        Text(text="轉帳", color = Gray, fontSize = 12.sp)
+                        Text(text = "轉帳", color = Gray, fontSize = 12.sp)
                         Spacer(modifier = Modifier.width(10.dp))
                         Box(
                             modifier = Modifier
@@ -295,7 +423,7 @@ fun DisplayMergedTransferRecord(
                             }
                         }
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text="⮕", color = Gray)
+                        Text(text = "⮕", color = Gray)
                         Spacer(modifier = Modifier.width(4.dp))
                         Box(
                             modifier = Modifier
@@ -331,8 +459,12 @@ fun DisplayMergedTransferRecord(
                             }
                         }
                     }
-//                Text(text = mergedRecord.inAccountId, color = Gray)
-                    Text(text = mergedRecord.description, color = Gray)
+                    Text(
+                        text = mergedRecord.description,
+                        color = Gray,
+                        maxLines = 2, // 限制最多顯示兩行
+                        overflow = TextOverflow.Ellipsis // 超過兩行時用省略號顯示
+                    )
                 }
             },
             trailingContent = {
@@ -391,6 +523,7 @@ fun DisplaySingleRecord(
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
     accounts: List<AccountEntity>,
     userSettings: UserSettingsEntity?,
+    onClick: () -> Unit // 添加 onClick 參數來處理點擊事件
 ) {
     val subCategoriesForThisMainCategory =
         subCategoriesByMainCategory[record.mainCategoryId] ?: emptyList()
@@ -410,9 +543,15 @@ fun DisplaySingleRecord(
         userSettings?.let { textColor = textColor(it.textColor, record.categoryId) }
 
         ListItem(
+            modifier = Modifier.clickable { onClick() },
             headlineContent = { Text(text = record.name) },
             supportingContent = {
-                Text(text = record.description, color = Gray)
+                Text(
+                    text = record.description,
+                    color = Gray,
+                    maxLines = 2, // 限制最多顯示兩行
+                    overflow = TextOverflow.Ellipsis // 超過兩行時用省略號顯示
+                )
             },
             trailingContent = {
                 Column(horizontalAlignment = Alignment.End) {
@@ -498,6 +637,8 @@ fun DisplaySingleRecord(
 }
 
 data class MergedTransferEntity(
+    val outRecordId: Int,
+    val inRecordId: Int,
     val outCurrency: String,   // 轉出幣種
     val inCurrency: String,    // 轉入幣種
     val outAccountId: Int,     // 轉出帳戶ID
@@ -518,6 +659,8 @@ fun mergeTransferRecords(
     inRecord: RecordEntity   // 轉入記錄
 ): MergedTransferEntity {
     return MergedTransferEntity(
+        outRecordId = outRecord.recordId,
+        inRecordId = inRecord.recordId,
         outCurrency = outRecord.currency, // 保留轉出幣種
         inCurrency = inRecord.currency,   // 保留轉入幣種
         outAccountId = outRecord.accountId, // 保留轉出帳戶ID
