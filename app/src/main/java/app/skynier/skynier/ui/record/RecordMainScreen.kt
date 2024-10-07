@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -78,7 +80,7 @@ fun RecordMainScreen(
     Log.d("recordsDay", "$recordsDay")
     Scaffold(
         topBar = {
-            RecordMainScreen(
+            RecordMainScreenHeader(
                 navController,
                 selectedDate,
                 onClickPrev = {
@@ -125,7 +127,8 @@ fun RecordMainScreen(
                             recordsMonth,
                             subCategoryViewModel,
                             userSettingsViewModel,
-                            accountViewModel
+                            accountViewModel,
+                            navController
                         )
                     }
                     1 -> {
@@ -145,7 +148,7 @@ fun RecordMainScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecordMainScreen(
+fun RecordMainScreenHeader(
     navController: NavHostController,
     localDate: LocalDate,
     onClickNext: () -> Unit,
@@ -174,15 +177,25 @@ fun RecordMainScreen(
 //                )
 //            }
 //        },
-//        actions = {
-//            IconButton(onClick = {
-//                navController.navigate("account_add")
-//            }) {
-//                Icon(
-//                    imageVector = Icons.Filled.Add,
-//                    contentDescription = "Add"
-//                )
-//            }
-//        }
+        actions = {
+            Row {
+                IconButton(onClick = {
+//                    navController.navigate("tune")
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                }
+                IconButton(onClick = {
+//                    navController.navigate("tune")
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Tune,
+                        contentDescription = "Tune"
+                    )
+                }
+            }
+        }
     )
 }

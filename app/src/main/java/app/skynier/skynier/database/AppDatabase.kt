@@ -136,7 +136,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_food",
                             mainCategoryIcon = "Restaurant",
-                            mainCategoryBackgroundColor = "01B468",
+                            mainCategoryBackgroundColor = "EA00C962",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 0,
                         ),
@@ -144,7 +144,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_shopping",
                             mainCategoryIcon = "ShoppingCart",
-                            mainCategoryBackgroundColor = "8C8C00",
+                            mainCategoryBackgroundColor = "FFFF2200",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 1,
                         ),
@@ -152,7 +152,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_transportation",
                             mainCategoryIcon = "Commute",
-                            mainCategoryBackgroundColor = "4C4414",
+                            mainCategoryBackgroundColor = "FF782B31",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 2,
                         ),
@@ -160,7 +160,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_travel",
                             mainCategoryIcon = "BeachAccess",
-                            mainCategoryBackgroundColor = "23B0F0",
+                            mainCategoryBackgroundColor = "FF005CFF",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 3,
                         ),
@@ -168,7 +168,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_activities",
                             mainCategoryIcon = "Snowboarding",
-                            mainCategoryBackgroundColor = "7F7F84",
+                            mainCategoryBackgroundColor = "FFD36AAB",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 4,
                         ),
@@ -176,7 +176,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_finance",
                             mainCategoryIcon = "AccountBalance",
-                            mainCategoryBackgroundColor = "B89E14",
+                            mainCategoryBackgroundColor = "FFFF3E4C",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 5,
                         ),
@@ -184,7 +184,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 1,
                             mainCategoryNameKey = "category_household",
                             mainCategoryIcon = "FamilyRestroom",
-                            mainCategoryBackgroundColor = "7373B9",
+                            mainCategoryBackgroundColor = "FF9F9FFF",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 6,
                         ),
@@ -192,7 +192,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 2,
                             mainCategoryNameKey = "category_work",
                             mainCategoryIcon = "Work",
-                            mainCategoryBackgroundColor = "DAA520",
+                            mainCategoryBackgroundColor = "FFD800FF",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 0,
                         ),
@@ -200,7 +200,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 2,
                             mainCategoryNameKey = "category_finance",
                             mainCategoryIcon = "AccountBalance",
-                            mainCategoryBackgroundColor = "625B57",
+                            mainCategoryBackgroundColor = "FFC66596",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 1,
                         ),
@@ -208,7 +208,7 @@ abstract class AppDatabase : RoomDatabase() {
                             categoryId = 3,
                             mainCategoryNameKey = "transfer",
                             mainCategoryIcon = "SyncAlt",
-                            mainCategoryBackgroundColor = "3CB371",
+                            mainCategoryBackgroundColor = "FF39AB6C",
                             mainCategoryIconColor = "FBFBFB",
                             mainCategorySort = 0,
                         ),
@@ -221,7 +221,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_breakfast",
                             subCategoryIcon = "BreakfastDining",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -229,7 +229,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_brunch",
                             subCategoryIcon = "BrunchDining",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -237,7 +237,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_lunch",
                             subCategoryIcon = "LunchDining",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -245,7 +245,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_dinner",
                             subCategoryIcon = "DinnerDining",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),
@@ -253,7 +253,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_liquor",
                             subCategoryIcon = "Liquor",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 4
                         ),
@@ -261,7 +261,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_snacks",
                             subCategoryIcon = "Cookie",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 5
                         ),
@@ -269,7 +269,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 1,
                             subCategoryNameKey = "category_drinks",
                             subCategoryIcon = "LocalBar",
-                            subCategoryBackgroundColor = "01B468",
+                            subCategoryBackgroundColor = "EA00C962",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 6
                         ),
@@ -277,7 +277,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 2,
                             subCategoryNameKey = "category_books",
                             subCategoryIcon = "MenuBook",
-                            subCategoryBackgroundColor = "8C8C00",
+                            subCategoryBackgroundColor = "FFFF2200",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -285,7 +285,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 2,
                             subCategoryNameKey = "category_ebooks",
                             subCategoryIcon = "BookOnline",
-                            subCategoryBackgroundColor = "8C8C00",
+                            subCategoryBackgroundColor = "FFFF2200",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -293,7 +293,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 2,
                             subCategoryNameKey = "category_video_games",
                             subCategoryIcon = "VideoGameAsset",
-                            subCategoryBackgroundColor = "8C8C00",
+                            subCategoryBackgroundColor = "FFFF2200",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -301,7 +301,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 2,
                             subCategoryNameKey = "category_electronics",
                             subCategoryIcon = "Devices",
-                            subCategoryBackgroundColor = "8C8C00",
+                            subCategoryBackgroundColor = "FFFF2200",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),
@@ -309,7 +309,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 2,
                             subCategoryNameKey = "category_clothing",
                             subCategoryIcon = "Checkroom",
-                            subCategoryBackgroundColor = "8C8C00",
+                            subCategoryBackgroundColor = "FFFF2200",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 4
                         ),
@@ -317,7 +317,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 2,
                             subCategoryNameKey = "category_software",
                             subCategoryIcon = "GetApp",
-                            subCategoryBackgroundColor = "8C8C00",
+                            subCategoryBackgroundColor = "FFFF2200",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 5
                         ),
@@ -325,7 +325,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_air_ticket",
                             subCategoryIcon = "AirplaneTicket",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -333,7 +333,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_parking_fee",
                             subCategoryIcon = "LocalParking",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -341,7 +341,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_fuel_expense",
                             subCategoryIcon = "LocalGasStation",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -349,7 +349,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_train",
                             subCategoryIcon = "Train",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),
@@ -357,7 +357,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_bus",
                             subCategoryIcon = "DirectionsBus",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 4
                         ),
@@ -365,7 +365,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_metro",
                             subCategoryIcon = "Subway",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 5
                         ),
@@ -373,7 +373,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 3,
                             subCategoryNameKey = "category_taxi",
                             subCategoryIcon = "LocalTaxi",
-                            subCategoryBackgroundColor = "4C4414",
+                            subCategoryBackgroundColor = "FF782B31",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 6
                         ),
@@ -381,7 +381,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 4,
                             subCategoryNameKey = "category_ticket",
                             subCategoryIcon = "ConfirmationNumber",
-                            subCategoryBackgroundColor = "23B0F0",
+                            subCategoryBackgroundColor = "FF005CFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -389,7 +389,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 4,
                             subCategoryNameKey = "category_hotel",
                             subCategoryIcon = "Hotel",
-                            subCategoryBackgroundColor = "23B0F0",
+                            subCategoryBackgroundColor = "FF005CFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -397,7 +397,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 4,
                             subCategoryNameKey = "category_casino",
                             subCategoryIcon = "Casino",
-                            subCategoryBackgroundColor = "23B0F0",
+                            subCategoryBackgroundColor = "FF005CFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -405,7 +405,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 4,
                             subCategoryNameKey = "category_attraction",
                             subCategoryIcon = "Attractions",
-                            subCategoryBackgroundColor = "23B0F0",
+                            subCategoryBackgroundColor = "FF005CFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),
@@ -413,7 +413,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 4,
                             subCategoryNameKey = "category_fitness_center",
                             subCategoryIcon = "FitnessCenter",
-                            subCategoryBackgroundColor = "23B0F0",
+                            subCategoryBackgroundColor = "FF005CFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 4
                         ),
@@ -421,7 +421,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 4,
                             subCategoryNameKey = "category_laundry_service",
                             subCategoryIcon = "LocalLaundryService",
-                            subCategoryBackgroundColor = "23B0F0",
+                            subCategoryBackgroundColor = "FF005CFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 5
                         ),
@@ -429,7 +429,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 5,
                             subCategoryNameKey = "category_theatre",
                             subCategoryIcon = "Theaters",
-                            subCategoryBackgroundColor = "7F7F84",
+                            subCategoryBackgroundColor = "FFD36AAB",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -437,7 +437,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 5,
                             subCategoryNameKey = "category_football",
                             subCategoryIcon = "SportsSoccer",
-                            subCategoryBackgroundColor = "7F7F84",
+                            subCategoryBackgroundColor = "FFD36AAB",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -445,7 +445,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 5,
                             subCategoryNameKey = "category_baseball",
                             subCategoryIcon = "SportsBaseball",
-                            subCategoryBackgroundColor = "7F7F84",
+                            subCategoryBackgroundColor = "FFD36AAB",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),
@@ -453,7 +453,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 5,
                             subCategoryNameKey = "category_basketball",
                             subCategoryIcon = "SportsBasketball",
-                            subCategoryBackgroundColor = "7F7F84",
+                            subCategoryBackgroundColor = "FFD36AAB",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 4
                         ),
@@ -461,7 +461,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 5,
                             subCategoryNameKey = "category_art",
                             subCategoryIcon = "Palette",
-                            subCategoryBackgroundColor = "7F7F84",
+                            subCategoryBackgroundColor = "FFD36AAB",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 5
                         ),
@@ -469,7 +469,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 5,
                             subCategoryNameKey = "category_party",
                             subCategoryIcon = "Celebration",
-                            subCategoryBackgroundColor = "7F7F84",
+                            subCategoryBackgroundColor = "FFD36AAB",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 6
                         ),
@@ -477,7 +477,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 6,
                             subCategoryNameKey = "category_stock",
                             subCategoryIcon = "TrendingDown",
-                            subCategoryBackgroundColor = "B89E14",
+                            subCategoryBackgroundColor = "FFFF3E4C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -485,7 +485,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 6,
                             subCategoryNameKey = "category_insurance",
                             subCategoryIcon = "Receipt",
-                            subCategoryBackgroundColor = "B89E14",
+                            subCategoryBackgroundColor = "FFFF3E4C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -493,7 +493,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 6,
                             subCategoryNameKey = "category_tax",
                             subCategoryIcon = "Payments",
-                            subCategoryBackgroundColor = "B89E14",
+                            subCategoryBackgroundColor = "FFFF3E4C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -501,7 +501,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_education",
                             subCategoryIcon = "School",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -509,7 +509,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_gas_bill",
                             subCategoryIcon = "GasMeter",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -517,7 +517,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_electricity_bill",
                             subCategoryIcon = "ElectricMeter",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -525,7 +525,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_internet_bill",
                             subCategoryIcon = "Wifi",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),
@@ -533,7 +533,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_water_bill",
                             subCategoryIcon = "WaterDrop",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 4
                         ),
@@ -541,7 +541,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_medicine",
                             subCategoryIcon = "Vaccines",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 5
                         ),
@@ -549,7 +549,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_maintenance_fee",
                             subCategoryIcon = "Hardware",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 6
                         ),
@@ -557,7 +557,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 7,
                             subCategoryNameKey = "category_rent",
                             subCategoryIcon = "House",
-                            subCategoryBackgroundColor = "7373B9",
+                            subCategoryBackgroundColor = "FF9F9FFF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 7
                         ),
@@ -565,7 +565,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 8,
                             subCategoryNameKey = "category_salary",
                             subCategoryIcon = "Paid",
-                            subCategoryBackgroundColor = "DAA520",
+                            subCategoryBackgroundColor = "FFD800FF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -573,7 +573,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 8,
                             subCategoryNameKey = "category_bonus",
                             subCategoryIcon = "Money",
-                            subCategoryBackgroundColor = "DAA520",
+                            subCategoryBackgroundColor = "FFD800FF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -581,7 +581,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 8,
                             subCategoryNameKey = "category_side_job",
                             subCategoryIcon = "Store",
-                            subCategoryBackgroundColor = "DAA520",
+                            subCategoryBackgroundColor = "FFD800FF",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -589,7 +589,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 9,
                             subCategoryNameKey = "category_stock",
                             subCategoryIcon = "TrendingUp",
-                            subCategoryBackgroundColor = "625B57",
+                            subCategoryBackgroundColor = "FFC66596",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -597,7 +597,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 9,
                             subCategoryNameKey = "category_interest",
                             subCategoryIcon = "Savings",
-                            subCategoryBackgroundColor = "625B57",
+                            subCategoryBackgroundColor = "FFC66596",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -605,7 +605,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 9,
                             subCategoryNameKey = "category_investment",
                             subCategoryIcon = "Payments",
-                            subCategoryBackgroundColor = "625B57",
+                            subCategoryBackgroundColor = "FFC66596",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -613,7 +613,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 10,
                             subCategoryNameKey = "transfer",
                             subCategoryIcon = "SyncAlt",
-                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryBackgroundColor = "FF39AB6C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 0
                         ),
@@ -621,7 +621,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 10,
                             subCategoryNameKey = "category_withdrawal",
                             subCategoryIcon = "Atm",
-                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryBackgroundColor = "FF39AB6C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 1
                         ),
@@ -629,7 +629,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 10,
                             subCategoryNameKey = "category_deposit",
                             subCategoryIcon = "LocalAtm",
-                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryBackgroundColor = "FF39AB6C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 2
                         ),
@@ -637,7 +637,7 @@ abstract class AppDatabase : RoomDatabase() {
                             mainCategoryId = 10,
                             subCategoryNameKey = "category_exchange",
                             subCategoryIcon = "CurrencyExchange",
-                            subCategoryBackgroundColor = "3CB371",
+                            subCategoryBackgroundColor = "FF39AB6C",
                             subCategoryIconColor = "FBFBFB",
                             subCategorySort = 3
                         ),

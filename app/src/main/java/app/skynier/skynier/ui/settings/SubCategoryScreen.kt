@@ -147,7 +147,7 @@ fun SubCategoryScreen(
             onAdd = { name, hexCode, selectedIcon ->
                 val selectedIconKey =
                     SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
-                val displayedHexCode = hexCode.takeLast(6).uppercase()
+                val displayedHexCode = hexCode.uppercase()
                 val mainCategorySort = subCategories.size + 1
                 subCategoryViewModel.insertSubCategory(
                     SubCategoryEntity(
@@ -155,7 +155,7 @@ fun SubCategoryScreen(
                         subCategoryIcon = selectedIconKey ?: "Restaurant",
                         subCategoryNameKey = name,
                         subCategoryBackgroundColor = displayedHexCode,
-                        subCategoryIconColor = "FFFFFF",
+                        subCategoryIconColor = "FBFBFBFB",
                         subCategorySort = mainCategorySort,
                     )
                 )

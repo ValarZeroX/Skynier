@@ -76,6 +76,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import app.skynier.skynier.Navigation
@@ -208,7 +209,7 @@ fun MainCategoryScreen(
             onAdd = { name, hexCode, selectedIcon ->
                 val selectedIconKey =
                     SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
-                val displayedHexCode = hexCode.takeLast(6).uppercase()
+                val displayedHexCode = hexCode.uppercase()
                 val mainCategorySort = mainCategories.size + 1
                 mainCategoryViewModel.insertMainCategory(
                     MainCategoryEntity(
@@ -216,7 +217,7 @@ fun MainCategoryScreen(
                         mainCategoryIcon = selectedIconKey ?: "Restaurant",
                         mainCategoryNameKey = name,
                         mainCategoryBackgroundColor = displayedHexCode,
-                        mainCategoryIconColor = "FFFFFF",
+                        mainCategoryIconColor = "FBFBFB",
                         mainCategorySort = mainCategorySort,
                     )
                 )
@@ -240,10 +241,13 @@ fun AddCategory(
 
     var name by rememberSaveable { mutableStateOf(initialName) }
     var hexCode by rememberSaveable {
-        mutableStateOf("009EEC")
+        mutableStateOf("FF009EEC")
     }
 //    var tempHexCode by remember { mutableStateOf(hexCode) }
     val controller = rememberColorPickerController()
+    LaunchedEffect(controller) {
+        controller.selectByColor(Color(android.graphics.Color.parseColor("#$hexCode")), fromUser = false)
+    }
     val untitled = stringResource(id = R.string.untitled)
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -279,6 +283,7 @@ fun AddCategory(
                                 CircleShape
                             )
                             .clickable {
+//                                onDismiss()
                                 navController.navigate("icon")
                             }, // Set background color and shape
                         contentAlignment = Alignment.Center
@@ -553,6 +558,9 @@ fun EditMainCategory(
     var name by rememberSaveable { mutableStateOf(category!!.mainCategoryNameKey) }
     var hexCode by rememberSaveable { mutableStateOf(category!!.mainCategoryBackgroundColor) }
     val controller = rememberColorPickerController()
+    LaunchedEffect(controller) {
+        controller.selectByColor(Color(android.graphics.Color.parseColor("#$hexCode")), fromUser = false)
+    }
     val untitled = stringResource(id = R.string.untitled)
 
     val context = LocalContext.current
@@ -563,6 +571,7 @@ fun EditMainCategory(
     } else {
         name // 如果語系字串不存在，顯示原始值
     }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -642,7 +651,6 @@ fun EditMainCategory(
                     onColorChanged = { colorEnvelope ->
                         hexCode = colorEnvelope.hexCode
                     },
-                    initialColor = Color(android.graphics.Color.parseColor("#$hexCode")),
                 )
                 AlphaSlider(
                     modifier = Modifier
@@ -675,7 +683,7 @@ fun EditMainCategory(
                                 SharedOptions.iconMap.entries.find { it.value == selectedIcon }?.key
                             val updatedCategory = category!!.copy(
                                 mainCategoryNameKey = name,
-                                mainCategoryBackgroundColor = hexCode.takeLast(6).uppercase(),
+                                mainCategoryBackgroundColor = hexCode.uppercase(), //.takeLast(6).uppercase()
                                 mainCategoryIcon = selectedIconKey ?: "Restaurant"
                             )
                             onUpdate(updatedCategory)
@@ -687,6 +695,20 @@ fun EditMainCategory(
             }
         }
     }
+}
+
+fun hexCodeToColor(hexCode: String): Color {
+    // 确保 hexCode 是 8 位，带有 #AARRGGBB 的格式
+    val cleanHexCode = hexCode.removePrefix("#")
+
+    // 提取 Alpha、Red、Green、Blue 值
+    val alpha = Integer.parseInt(cleanHexCode.substring(0, 2), 16) / 255f
+    val red = Integer.parseInt(cleanHexCode.substring(2, 4), 16) / 255f
+    val green = Integer.parseInt(cleanHexCode.substring(4, 6), 16) / 255f
+    val blue = Integer.parseInt(cleanHexCode.substring(6, 8), 16) / 255f
+
+    // 构建 Compose 的 Color 对象
+    return Color(red, green, blue, alpha)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

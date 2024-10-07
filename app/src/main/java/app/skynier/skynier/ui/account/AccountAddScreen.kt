@@ -98,7 +98,7 @@ fun AccountAddScreen(
 //    val selectedIcon by skynierViewModel.selectedIcon.observeAsState()
     var displayIcon = SharedOptions.iconMap["AccountBalance"] // 使用預設
     var hexCode by rememberSaveable {
-        mutableStateOf("009EEC")
+        mutableStateOf("FF009EEC")
     }
 
     var name by rememberSaveable { mutableStateOf("") }
@@ -170,7 +170,7 @@ fun AccountAddScreen(
 
                     val initialBalanceDouble = balance.toDoubleOrNull() ?: 0.0
                     val accountIconKey = SharedOptions.iconMap.entries.find { it.value == displayIcon }?.key ?: "AccountBalance"
-                    val displayedHexCode = hexCode.takeLast(6).uppercase()
+                    val displayedHexCode = hexCode.uppercase()
                     if (name.isEmpty()){
                         name = untitled
                     }
@@ -589,6 +589,9 @@ fun IconPickerDialog(
 //    var displayIcon by rememberSaveable { mutableStateOf(initialIcon) }
     var hexCode by rememberSaveable { mutableStateOf(initialHexCode) }
     val controller = rememberColorPickerController()
+    LaunchedEffect(controller) {
+        controller.selectByColor(Color(android.graphics.Color.parseColor("#$hexCode")), fromUser = false)
+    }
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,

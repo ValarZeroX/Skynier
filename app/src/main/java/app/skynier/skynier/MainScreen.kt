@@ -19,6 +19,7 @@ import app.skynier.skynier.ui.account.AccountEditScreen
 import app.skynier.skynier.ui.account.AccountScreen
 import app.skynier.skynier.ui.layouts.NavigationBarScreen
 import app.skynier.skynier.ui.record.RecordAddScreen
+import app.skynier.skynier.ui.record.RecordEditScreen
 import app.skynier.skynier.ui.record.RecordMainScreen
 import app.skynier.skynier.ui.settings.AccountCategoryScreen
 import app.skynier.skynier.ui.settings.CurrencyScreen
@@ -140,6 +141,19 @@ fun Navigation(
         composable("theme") { ThemeScreen(navController) }
         composable("record_add") {
             RecordAddScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                accountCategoryViewModel,
+                accountViewModel,
+                currencyViewModel,
+                recordViewModel
+            )
+        }
+        composable("record_edit") {
+            RecordEditScreen(
                 navController,
                 skynierViewModel,
                 categoryViewModel,

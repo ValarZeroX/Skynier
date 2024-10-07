@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.RecordEntity
@@ -79,6 +81,7 @@ fun RecordDayScreen(
     subCategoryViewModel: SubCategoryViewModel,
     userSettingsViewModel: UserSettingsViewModel,
     accountViewModel: AccountViewModel,
+    navController: NavHostController,
 ) {
     // 模擬數據，日期對應的一些記錄
 //    val recordData = mapOf(
@@ -167,7 +170,8 @@ fun RecordDayScreen(
                 onDismissRequest = { showRecordMergeDialog = false },
                 userSettings,
                 subCategoriesByMainCategory,
-                accounts
+                accounts,
+                navController
             )
         }
         if (showRecordDialog) {
@@ -176,7 +180,8 @@ fun RecordDayScreen(
                 onDismissRequest = { showRecordDialog = false },
                 userSettings,
                 subCategoriesByMainCategory,
-                accounts
+                accounts,
+                navController
             )
         }
     }
@@ -189,6 +194,7 @@ fun RecordMergeDialog(
     userSettings: UserSettingsEntity?,
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
     accounts: List<AccountEntity>,
+    navController: NavHostController,
 ) {
     if (record != null) {
         val decimalFormat = DecimalFormat("#,###.##")
@@ -242,23 +248,18 @@ fun RecordMergeDialog(
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.padding(5.dp)
                 ) {
-                    Column {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 10.dp),
-                            contentAlignment = Alignment.Center
+                                .align(Alignment.TopStart)
                         ) {
-                            // 左上角的關閉圖示
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(8.dp)
-                                    .clickable {
-                                        onDismissRequest()
-                                    }
-                            ) {
+                            IconButton(
+                                onClick = {onDismissRequest()}
+                            ){
                                 Icon(
                                     imageVector = Icons.Filled.Close, // 假設使用默認的 Close 圖標
                                     contentDescription = "Close",
@@ -266,15 +267,15 @@ fun RecordMergeDialog(
                                     tint = Gray
                                 )
                             }
-
-                            // 右上角的刪除和編輯圖示
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(8.dp)
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(14.dp) // 添加間距
+                        }
+                        // 右上角的刪除和編輯圖示
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                        ) {
+                            Row{
+                                IconButton(
+                                    onClick = {}
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Delete, // 刪除圖標
@@ -282,18 +283,33 @@ fun RecordMergeDialog(
                                         modifier = Modifier.size(20.dp),
                                         tint = Gray
                                     )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        onDismissRequest()
+                                        navController.navigate("record_edit")
+                                    }
+                                ) {
                                     Icon(
                                         imageVector = Icons.Filled.Edit, // 編輯圖標
                                         contentDescription = "Edit",
                                         modifier = Modifier.size(20.dp),
                                         tint = Gray
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
                                 }
                             }
-
+                        }
+                    }
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth().padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             // Icon 和 Text 水平居中
                             Column(
+//                                modifier = Modifier
+//                                    .padding(vertical = 5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
@@ -473,6 +489,7 @@ fun RecordDialog(
     userSettings: UserSettingsEntity?,
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
     accounts: List<AccountEntity>,
+    navController: NavHostController,
 ) {
     if (record != null) {
         val decimalFormat = DecimalFormat("#,###.##")
@@ -524,23 +541,18 @@ fun RecordDialog(
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.padding(5.dp)
                 ) {
-                    Column {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 10.dp),
-                            contentAlignment = Alignment.Center
+                                .align(Alignment.TopStart)
                         ) {
-                            // 左上角的關閉圖示
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(8.dp)
-                                    .clickable {
-                                        onDismissRequest()
-                                    }
-                            ) {
+                            IconButton(
+                                onClick = {onDismissRequest()}
+                            ){
                                 Icon(
                                     imageVector = Icons.Filled.Close, // 假設使用默認的 Close 圖標
                                     contentDescription = "Close",
@@ -548,15 +560,15 @@ fun RecordDialog(
                                     tint = Gray
                                 )
                             }
-
-                            // 右上角的刪除和編輯圖示
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(8.dp)
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(14.dp) // 添加間距
+                        }
+                        // 右上角的刪除和編輯圖示
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                        ) {
+                            Row{
+                                IconButton(
+                                    onClick = {}
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Delete, // 刪除圖標
@@ -564,16 +576,30 @@ fun RecordDialog(
                                         modifier = Modifier.size(20.dp),
                                         tint = Gray
                                     )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        onDismissRequest()
+                                        navController.navigate("record_edit")
+                                    }
+                                ) {
                                     Icon(
                                         imageVector = Icons.Filled.Edit, // 編輯圖標
                                         contentDescription = "Edit",
                                         modifier = Modifier.size(20.dp),
                                         tint = Gray
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
                                 }
                             }
-
+                        }
+                    }
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             // Icon 和 Text 水平居中
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -733,23 +759,6 @@ fun DisplayMergedTransferRecord(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Filled.Sell,
-                            contentDescription = "Localized description",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = categoryName,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
                             Icons.Filled.Payments,
                             contentDescription = "Localized description",
                             modifier = Modifier.size(16.dp),
@@ -765,6 +774,23 @@ fun DisplayMergedTransferRecord(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "$$formattedValueFees (${stringResource(id = R.string.fees)})",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Sell,
+                            contentDescription = "Localized description",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = categoryName,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
