@@ -152,7 +152,7 @@ fun RecordMainScreen(
     onClickPrev: () -> Unit,
 ) {
     val currentLocale = Locale.getDefault()
-    val dateFormatter = DateTimeFormatter.ofPattern("MMM, yyyy", currentLocale)
+    val dateFormatter = DateTimeFormatter.ofPattern("MMMM, yyyy", currentLocale)
     val formattedDate = localDate.format(dateFormatter)
     CenterAlignedTopAppBar(
         title = {

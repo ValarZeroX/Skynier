@@ -238,6 +238,9 @@ fun RecordAddScreen(
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
 
+    var fees by remember {
+        mutableStateOf("0.00")
+    }
     Scaffold(
         topBar = {
             RecordAddScreenHeader(
@@ -273,7 +276,7 @@ fun RecordAddScreen(
                                 mainCategoryId = selectedSubCategories!!.mainCategoryId,
                                 subCategoryId = selectedSubCategories!!.subCategoryId,
                                 amount = transferAmountFrom.toDouble(),
-                                fee = 0.0,
+                                fee = fees.toDouble(),
                                 discount = 0.0,
                                 name = name,
                                 merchant = "",
@@ -572,6 +575,59 @@ fun RecordAddScreen(
                                     textStyle = LocalTextStyle.current.copy(
                                         textAlign = TextAlign.End,
                                         color = MaterialTheme.colorScheme.primary // 當用戶輸入後，顯示正常顏色
+                                    )
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.fees),
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .weight(1f)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                            ) {
+                                BasicTextField(
+                                    value = fees,
+                                    onValueChange = { newInput ->
+                                        // 過濾輸入，只接受有效的浮點數、負數和小數點
+                                        if (newInput.isEmpty() || newInput.matches(numericRegex)) {
+                                            fees =
+                                                if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith(
+                                                        "0."
+                                                    )
+                                                ) {
+                                                    newInput.trimStart('0')
+                                                } else {
+                                                    newInput
+                                                }
+                                        }
+                                    },
+                                    keyboardOptions = KeyboardOptions.Default.copy(
+                                        keyboardType = KeyboardType.Decimal // 顯示帶有小數點的數字鍵盤6
+                                    ),
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    singleLine = true,
+                                    modifier = Modifier.onFocusChanged { focusState ->
+                                        if (fees == "0") {
+                                            fees = ""
+                                        }
+                                        if (!focusState.isFocused && fees.isEmpty()) {
+                                            fees = "0" // 當輸入框失去焦點且為空時，填入0
+                                        }
+                                    },
+                                    textStyle = LocalTextStyle.current.copy(
+                                        textAlign = TextAlign.End,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 )
                             }

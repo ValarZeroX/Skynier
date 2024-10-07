@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -62,7 +64,11 @@ import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.UserSettingsViewModel
 import java.text.DecimalFormat
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun RecordDayScreen(
@@ -116,6 +122,9 @@ fun RecordDayScreen(
     var showRecordDialog by rememberSaveable { mutableStateOf(false) }
     var selectedRecord by remember { mutableStateOf<RecordEntity?>(null) }
 
+    var showRecordMergeDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedMergeRecord by remember { mutableStateOf<MergedTransferEntity?>(null) }
+
     Column {
         CustomCalendar(
             selectedDate = selectedDate,
@@ -130,7 +139,11 @@ fun RecordDayScreen(
                     mergedRecord,
                     accounts,
                     subCategoriesByMainCategory,
-                    userSettings
+                    userSettings,
+                    onClick = {
+                        selectedMergeRecord = mergedRecord
+                        showRecordMergeDialog = true
+                    }
                 )
             }
             // 顯示其他類型的記錄 (type 1 和 type 2)
@@ -143,10 +156,20 @@ fun RecordDayScreen(
                     onClick = {
                         selectedRecord = record
                         showRecordDialog = true
-                    })
+                    }
+                )
             }
         }
         // 顯示對話框
+        if (showRecordMergeDialog) {
+            RecordMergeDialog(
+                record = selectedMergeRecord,
+                onDismissRequest = { showRecordMergeDialog = false },
+                userSettings,
+                subCategoriesByMainCategory,
+                accounts
+            )
+        }
         if (showRecordDialog) {
             RecordDialog(
                 record = selectedRecord,
@@ -160,8 +183,8 @@ fun RecordDayScreen(
 }
 
 @Composable
-fun RecordDialog(
-    record: RecordEntity?,
+fun RecordMergeDialog(
+    record: MergedTransferEntity?,
     onDismissRequest: () -> Unit,
     userSettings: UserSettingsEntity?,
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
@@ -169,12 +192,29 @@ fun RecordDialog(
 ) {
     if (record != null) {
         val decimalFormat = DecimalFormat("#,###.##")
-        val formattedValue = decimalFormat.format(record.amount)
+        val formattedValueOut = decimalFormat.format(record.outAmount)
+        val formattedValueIn = decimalFormat.format(record.inAmount)
+        val formattedValueFees = decimalFormat.format(record.fees)
         val subCategoriesForThisMainCategory =
             subCategoriesByMainCategory[record.mainCategoryId] ?: emptyList()
         val matchingSubCategory =
             subCategoriesForThisMainCategory.find { it.subCategoryId == record.subCategoryId }
 
+        val dateTime =
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(record.datetime), ZoneId.systemDefault())
+
+        // 定义日期时间格式
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+        val newDateTime = dateTime.format(formatter)
+
+        val categoryName = when (record.categoryId) {
+            1 -> stringResource(id = R.string.expense)
+            2 -> stringResource(id = R.string.income)
+            3 -> stringResource(id = R.string.transfer)
+            else -> {
+                ""
+            }
+        }
         matchingSubCategory?.let { category ->
             val recordIcon = SharedOptions.iconMap[category.subCategoryIcon]
             val backgroundColor =
@@ -187,7 +227,11 @@ fun RecordDialog(
 
             val context = LocalContext.current
             val resourceId =
-                context.resources.getIdentifier(category.subCategoryNameKey, "string", context.packageName)
+                context.resources.getIdentifier(
+                    category.subCategoryNameKey,
+                    "string",
+                    context.packageName
+                )
             val displayName = if (resourceId != 0) {
                 context.getString(resourceId) // 如果語系字串存在，顯示語系的值
             } else {
@@ -216,7 +260,7 @@ fun RecordDialog(
                                     }
                             ) {
                                 Icon(
-                                    imageVector =Icons.Filled.Close, // 假設使用默認的 Close 圖標
+                                    imageVector = Icons.Filled.Close, // 假設使用默認的 Close 圖標
                                     contentDescription = "Close",
                                     modifier = Modifier.size(20.dp),
                                     tint = Gray
@@ -284,8 +328,305 @@ fun RecordDialog(
                         }
                         HorizontalDivider()
                         Column(modifier = Modifier.padding(18.dp)) {
-//                            Text(text = "名稱: ${record.name}")
-//                            Text(text = "描述: ${record.description}")
+                            Row(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.Payments,
+                                    contentDescription = "Localized description",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = record.outCurrency,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Gray
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "$$formattedValueFees (${stringResource(id = R.string.fees)})",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.Sell,
+                                    contentDescription = "Localized description",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = categoryName,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                accounts.find { it.accountId == record.outAccountId }?.let {
+                                    val accountIcon = SharedOptions.iconMap[it.accountIcon]
+                                    if (accountIcon != null) {
+                                        Icon(
+                                            accountIcon.icon,
+                                            contentDescription = "Localized description",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = it.accountName,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = "⮕", color = Gray)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                accounts.find { it.accountId == record.inAccountId }?.let {
+                                    val accountIcon = SharedOptions.iconMap[it.accountIcon]
+                                    if (accountIcon != null) {
+                                        Icon(
+                                            accountIcon.icon,
+                                            contentDescription = "Localized description",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = it.accountName,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            Row(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = record.outCurrency,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Gray
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "$$formattedValueOut",
+                                    color = textColorDialog,
+                                    fontSize = 16.sp
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = "⮕", color = Gray)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = record.inCurrency,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Gray
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "$$formattedValueIn",
+                                    color = textColorDialog,
+                                    fontSize = 16.sp
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth() // 让 Row 占满整个宽度
+                            ) {
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = newDateTime,
+                                    fontSize = 12.sp,
+                                    color = Gray,
+                                )
+                            }
+                            HorizontalDivider()
+                            Text(
+                                text = record.description.ifEmpty { "備註" },
+                                color = Gray,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RecordDialog(
+    record: RecordEntity?,
+    onDismissRequest: () -> Unit,
+    userSettings: UserSettingsEntity?,
+    subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
+    accounts: List<AccountEntity>,
+) {
+    if (record != null) {
+        val decimalFormat = DecimalFormat("#,###.##")
+        val formattedValue = decimalFormat.format(record.amount)
+        val subCategoriesForThisMainCategory =
+            subCategoriesByMainCategory[record.mainCategoryId] ?: emptyList()
+        val matchingSubCategory =
+            subCategoriesForThisMainCategory.find { it.subCategoryId == record.subCategoryId }
+
+        val dateTime =
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(record.datetime), ZoneId.systemDefault())
+
+        // 定义日期时间格式
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+        val newDateTime = dateTime.format(formatter)
+
+        val categoryName = when (record.categoryId) {
+            1 -> stringResource(id = R.string.expense)
+            2 -> stringResource(id = R.string.income)
+            3 -> stringResource(id = R.string.transfer)
+            else -> {
+                ""
+            }
+        }
+        matchingSubCategory?.let { category ->
+            val recordIcon = SharedOptions.iconMap[category.subCategoryIcon]
+            val backgroundColor =
+                Color(android.graphics.Color.parseColor("#${category.subCategoryBackgroundColor}"))
+            val iconColor =
+                Color(android.graphics.Color.parseColor("#${category.subCategoryIconColor}"))
+
+            var textColorDialog = MaterialTheme.colorScheme.onBackground
+            userSettings?.let { textColorDialog = textColor(it.textColor, record.categoryId) }
+
+            val context = LocalContext.current
+            val resourceId =
+                context.resources.getIdentifier(
+                    category.subCategoryNameKey,
+                    "string",
+                    context.packageName
+                )
+            val displayName = if (resourceId != 0) {
+                context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+            } else {
+                category.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+            }
+            Dialog(onDismissRequest = onDismissRequest) {
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.padding(5.dp)
+                ) {
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // 左上角的關閉圖示
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(8.dp)
+                                    .clickable {
+                                        onDismissRequest()
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close, // 假設使用默認的 Close 圖標
+                                    contentDescription = "Close",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Gray
+                                )
+                            }
+
+                            // 右上角的刪除和編輯圖示
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(14.dp) // 添加間距
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Delete, // 刪除圖標
+                                        contentDescription = "Delete",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = Gray
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Filled.Edit, // 編輯圖標
+                                        contentDescription = "Edit",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = Gray
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+
+                            // Icon 和 Text 水平居中
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(backgroundColor, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    recordIcon?.let { iconData ->
+                                        Icon(
+                                            imageVector = iconData.icon,
+                                            contentDescription = category.subCategoryNameKey,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = iconColor
+                                        )
+                                    } ?: run {
+                                        Icon(
+                                            imageVector = Icons.Default.Error,
+                                            contentDescription = "Default icon",
+                                            modifier = Modifier.size(18.dp),
+                                            tint = Color.Gray
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp)) // 添加圖標與文本之間的間距
+                                Text(
+                                    text = record.name.ifEmpty { displayName },
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                        HorizontalDivider()
+                        Column(modifier = Modifier.padding(18.dp)) {
+                            Row(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.Sell,
+                                    contentDescription = "Localized description",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = categoryName,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Row(
                                 modifier = Modifier.padding(vertical = 2.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -325,6 +666,16 @@ fun RecordDialog(
                                     fontSize = 16.sp
                                 )
                             }
+                            Row(
+                                modifier = Modifier.fillMaxWidth() // 让 Row 占满整个宽度
+                            ) {
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = newDateTime,
+                                    fontSize = 12.sp,
+                                    color = Gray,
+                                )
+                            }
                             HorizontalDivider()
                             Text(
                                 text = record.description.ifEmpty { "備註" },
@@ -335,26 +686,6 @@ fun RecordDialog(
                 }
             }
         }
-//        androidx.compose.material3.AlertDialog(
-//            onDismissRequest = { onDismissRequest() },
-//            title = {
-//                Text(text = "記錄詳情")
-//            },
-//            text = {
-//                Column {
-//                    Text(text = "名稱: ${record.name}")
-//                    Text(text = "描述: ${record.description}")
-//                    Text(text = "金額: ${record.currency} ${record.amount}")
-//                }
-//            },
-//            confirmButton = {
-//                androidx.compose.material3.Button(
-//                    onClick = { onDismissRequest() }
-//                ) {
-//                    Text("關閉")
-//                }
-//            }
-//        )
     }
 }
 
@@ -364,45 +695,86 @@ fun DisplayMergedTransferRecord(
     accounts: List<AccountEntity>,
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
     userSettings: UserSettingsEntity?,
+    onClick: () -> Unit
 ) {
     val subCategoriesForThisMainCategory =
         subCategoriesByMainCategory[mergedRecord.mainCategoryId] ?: emptyList()
     val matchingSubCategory =
         subCategoriesForThisMainCategory.find { it.subCategoryId == mergedRecord.subCategoryId }
-
+    val decimalFormat = DecimalFormat("#,###.##")
+    val formattedValueOut = decimalFormat.format(mergedRecord.outAmount)
+    val formattedValueIn = decimalFormat.format(mergedRecord.inAmount)
+    val formattedValueFees = decimalFormat.format(mergedRecord.fees)
     matchingSubCategory?.let { category ->
         val recordIcon = SharedOptions.iconMap[category.subCategoryIcon]
         val backgroundColor =
             Color(android.graphics.Color.parseColor("#${category.subCategoryBackgroundColor}"))
         val iconColor =
             Color(android.graphics.Color.parseColor("#${category.subCategoryIconColor}"))
-        val decimalFormat = DecimalFormat("#,###.##")
-        val formattedValueOut = decimalFormat.format(mergedRecord.outAmount)
-        val formattedValueIn = decimalFormat.format(mergedRecord.inAmount)
 
         var textColorMerge = MaterialTheme.colorScheme.onBackground
         userSettings?.let { textColorMerge = textColor(it.textColor, mergedRecord.categoryId) }
+
+        val categoryName = when (mergedRecord.categoryId) {
+            1 -> stringResource(id = R.string.expense)
+            2 -> stringResource(id = R.string.income)
+            3 -> stringResource(id = R.string.transfer)
+            else -> {
+                ""
+            }
+        }
         ListItem(
+            modifier = Modifier.clickable { onClick() },
             headlineContent = { Text(text = mergedRecord.name) },
             supportingContent = {
                 Column {
+                    Row(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Sell,
+                            contentDescription = "Localized description",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = categoryName,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Payments,
+                            contentDescription = "Localized description",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = mergedRecord.outCurrency,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Gray
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "$$formattedValueFees (${stringResource(id = R.string.fees)})",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                     Row {
-                        Text(text = "轉帳", color = Gray, fontSize = 12.sp)
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Box(
-                            modifier = Modifier
-                                .border(
-                                    width = 1.dp,
-                                    color = Gray,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
-                        ) {
+                        Box {
                             Row(
                                 modifier = Modifier.padding(vertical = 2.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Spacer(modifier = Modifier.width(4.dp))
                                 accounts.find { it.accountId == mergedRecord.outAccountId }?.let {
                                     val accountIcon = SharedOptions.iconMap[it.accountIcon]
                                     if (accountIcon != null) {
@@ -425,15 +797,7 @@ fun DisplayMergedTransferRecord(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(text = "⮕", color = Gray)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .border(
-                                    width = 1.dp,
-                                    color = Gray,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
-                        ) {
+                        Box {
                             Row(
                                 modifier = Modifier.padding(vertical = 2.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -542,16 +906,68 @@ fun DisplaySingleRecord(
         var textColor = MaterialTheme.colorScheme.onBackground
         userSettings?.let { textColor = textColor(it.textColor, record.categoryId) }
 
+        val categoryName = when (record.categoryId) {
+            1 -> stringResource(id = R.string.expense)
+            2 -> stringResource(id = R.string.income)
+            3 -> stringResource(id = R.string.transfer)
+            else -> {
+                ""
+            }
+        }
+
         ListItem(
             modifier = Modifier.clickable { onClick() },
             headlineContent = { Text(text = record.name) },
             supportingContent = {
-                Text(
-                    text = record.description,
-                    color = Gray,
-                    maxLines = 2, // 限制最多顯示兩行
-                    overflow = TextOverflow.Ellipsis // 超過兩行時用省略號顯示
-                )
+                Column {
+                    Row(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Sell,
+                            contentDescription = "Localized description",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = categoryName,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Box {
+                        Row(
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            accounts.find { it.accountId == record.accountId }?.let {
+                                val accountIcon = SharedOptions.iconMap[it.accountIcon]
+                                if (accountIcon != null) {
+                                    Icon(
+                                        accountIcon.icon,
+                                        contentDescription = "Localized description",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = it.accountName,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = record.description,
+                        color = Gray,
+                        maxLines = 2, // 限制最多顯示兩行
+                        overflow = TextOverflow.Ellipsis // 超過兩行時用省略號顯示
+                    )
+                }
             },
             trailingContent = {
                 Column(horizontalAlignment = Alignment.End) {
@@ -571,39 +987,6 @@ fun DisplaySingleRecord(
                             color = textColor,
                             fontSize = 16.sp
                         )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .border(
-                                width = 1.dp,
-                                color = Gray,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            accounts.find { it.accountId == record.accountId }?.let {
-                                val accountIcon = SharedOptions.iconMap[it.accountIcon]
-                                if (accountIcon != null) {
-                                    Icon(
-                                        accountIcon.icon,
-                                        contentDescription = "Localized description",
-                                        modifier = Modifier.size(16.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = it.accountName,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
                     }
                 }
             },
@@ -652,6 +1035,8 @@ data class MergedTransferEntity(
     val categoryId: Int,
     val mainCategoryId: Int,
     val subCategoryId: Int,
+    val datetime: Long,
+    val fees: Double,
 )
 
 fun mergeTransferRecords(
@@ -673,6 +1058,8 @@ fun mergeTransferRecords(
         description = outRecord.description, // 合併描述,
         categoryId = outRecord.categoryId,
         mainCategoryId = outRecord.mainCategoryId,
-        subCategoryId = outRecord.subCategoryId
+        subCategoryId = outRecord.subCategoryId,
+        datetime = outRecord.datetime,
+        fees = outRecord.fee
     )
 }
