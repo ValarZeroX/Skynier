@@ -287,7 +287,7 @@ fun RecordMergeDialog(
                                 IconButton(
                                     onClick = {
                                         onDismissRequest()
-                                        navController.navigate("record_edit")
+                                        navController.navigate("record_edit/${record.outRecordId}/${record.inRecordId}")
                                     }
                                 ) {
                                     Icon(
@@ -580,7 +580,7 @@ fun RecordDialog(
                                 IconButton(
                                     onClick = {
                                         onDismissRequest()
-                                        navController.navigate("record_edit")
+                                        navController.navigate("record_edit/${record.recordId}/0")
                                     }
                                 ) {
                                     Icon(

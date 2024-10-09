@@ -152,7 +152,9 @@ fun Navigation(
                 recordViewModel
             )
         }
-        composable("record_edit") {
+        composable("record_edit/{recordId}/{inRecordId}") { backStackEntry ->
+            val recordId = backStackEntry.arguments?.getString("recordId")
+            val inRecordId = backStackEntry.arguments?.getString("inRecordId")
             RecordEditScreen(
                 navController,
                 skynierViewModel,
@@ -162,7 +164,9 @@ fun Navigation(
                 accountCategoryViewModel,
                 accountViewModel,
                 currencyViewModel,
-                recordViewModel
+                recordViewModel,
+                recordId?.toInt() ?: 0,
+                inRecordId?.toInt() ?: 0,
             )
         }
         composable("main_category") {

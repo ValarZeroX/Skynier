@@ -1,9 +1,12 @@
 package app.skynier.skynier.ui.layouts
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,11 +14,15 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -35,6 +42,7 @@ fun CustomCalendar(
     startFromSunday: Boolean,
     highlightDays: Map<LocalDate, Boolean>
 ) {
+    val today = LocalDate.now()
     val daysInMonth = selectedDate.lengthOfMonth() // 當前月有幾天
     val firstDayOfMonth = selectedDate.withDayOfMonth(1).dayOfWeek.value % 7 // 當前月的第一天是星期幾（1是星期一）
     val weekdays = getWeekDays(startFromSunday)
@@ -61,31 +69,56 @@ fun CustomCalendar(
                         if (day in 1..daysInMonth) {
                             val date = selectedDate.withDayOfMonth(day)
                             val isSelected = date == selectedDate
-
+                            val isToday = date == today
                             // 根據 recordData 判斷該日期是否有資料
                             val hasRecord = highlightDays[date] == true
                             Column(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .clickable { onDateSelected(date) }
-                                    .padding(4.dp).border(
-                                        width = 2.dp, // 边框宽度
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
-                                        shape = CircleShape // 边框形状为圆形
-                                    ).aspectRatio(1f),
+                                    .weight(1f),
+//                                    .clickable(
+//                                        onClick = { onDateSelected(date) },
+//                                        indication = ripple(bounded = true),
+//                                        interactionSource = remember { MutableInteractionSource() },
+//                                    )
+//                                    .padding(4.dp).border(
+//                                        width = 2.dp, // 边框宽度
+//                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
+//                                        shape = CircleShape // 边框形状为圆形
+//                                    ).aspectRatio(1f)
+//                                    .background(
+//                                        color = if (isToday) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
+//                                        shape = CircleShape // 设置为圆形背景
+//                                    ),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
+                                Box(
+                                    modifier = Modifier
+//                                        .weight(1f)
+                                        .clip(CircleShape)
+                                        .clickable(
+                                            onClick = { onDateSelected(date) },
+                                            indication = ripple(bounded = true),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                        )
+                                        .padding(4.dp).border(
+                                            width = 2.dp, // 边框宽度
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
+                                            shape = CircleShape // 边框形状为圆形
+                                        ).aspectRatio(1f)
+                                        .background(
+                                            color = if (isToday) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
+                                            shape = CircleShape // 设置为圆形背景
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = day.toString(),
+                                        color = if (hasRecord) MaterialTheme.colorScheme.onBackground else Gray,
+                                    )
+                                }
                                 // 顯示日期
-                                Text(
-                                    text = day.toString(),
-                                    color = if (hasRecord) MaterialTheme.colorScheme.onBackground else Gray,
-//                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-//                                    style = MaterialTheme.typography.bodyLarge
-//                                    style = if (isSelected) MaterialTheme.typography.bodyLarge.copy(
-//                                        color = Color.Blue
-//                                    ) else MaterialTheme.typography.bodyLarge
-                                )
+
 
                                 // 顯示對應日期的資料
 //                                recordData[date]?.let { record ->
