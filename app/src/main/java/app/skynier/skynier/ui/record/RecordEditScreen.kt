@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,7 +55,11 @@ import androidx.navigation.NavHostController
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.RecordEntity
+import app.skynier.skynier.database.entities.SubCategoryEntity
+import app.skynier.skynier.library.DatePicker
 import app.skynier.skynier.library.SharedOptions
+import app.skynier.skynier.library.TimePicker
+import app.skynier.skynier.library.combineDateAndTimeVersion2
 import app.skynier.skynier.ui.settings.MainCategoryScreenHeader
 import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
@@ -66,10 +71,13 @@ import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordEditScreen(
     navController: NavHostController,
@@ -92,11 +100,14 @@ fun RecordEditScreen(
     }
     val categories = categoryViewModel.categories.observeAsState(emptyList())
     val currencyList by currencyViewModel.currencies.observeAsState(emptyList())
+
+    val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
+    val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
     Log.d("record", "$record")
 
     LaunchedEffect(Unit) {
         categoryViewModel.loadAllCategories()
-//        mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
+//
         currencyViewModel.loadAllCurrencies()
 //        selectedTabIconIndex = (record?.categoryId ?: 1) -1
     }
@@ -109,6 +120,8 @@ fun RecordEditScreen(
         // TODO: 显示加载状态或错误信息
         return
     }
+
+
 
     var selectedAsset by remember { mutableStateOf<AccountEntity?>(null) }
     var selectedTransferAssetFrom by remember {
@@ -126,6 +139,8 @@ fun RecordEditScreen(
         if (inRecordId != 0 && inRecord != null) {
             val inAccountId = inRecord!!.accountId // 获取 inRecord 的 accountId
             selectedTransferAssetTo = accounts.find { it.accountId == inAccountId } // 查找对应的账户并赋值
+        } else {
+            selectedTransferAssetTo = selectedAsset
         }
     }
     val numericRegex = Regex("^-?\\d*\\.?\\d*$")
@@ -143,8 +158,40 @@ fun RecordEditScreen(
 
 
     var selectedTabIconIndex by remember { mutableIntStateOf(record!!.categoryId - 1) }
+    Log.d("selectedTabIconIndex", "$selectedTabIconIndex")
 
-    var editedRecord by remember { mutableStateOf(record) }
+    var selectedSubCategories by remember { mutableStateOf<SubCategoryEntity?>(null) }
+    var showCategory by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(selectedTabIconIndex) {
+        Log.d("Unit", "$mainCategories")
+        mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
+    }
+
+    LaunchedEffect(mainCategories.value) {
+        if (mainCategories.value.isNotEmpty() && record!!.categoryId == selectedTabIconIndex +1) {
+            val mainCategoryId = record!!.mainCategoryId
+            subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
+        }
+        if (mainCategories.value.isNotEmpty() && record!!.categoryId != selectedTabIconIndex +1) {
+            val mainCategoryId = mainCategories.value.first().mainCategoryId
+            subCategoryViewModel.loadSubCategoriesByMainCategoryId(mainCategoryId)
+        }
+    }
+
+    // 當子分類加載完成時，自動選擇第一個子分類
+    LaunchedEffect(subCategories.value) {
+        if (subCategories.value.isNotEmpty() && record!!.categoryId == selectedTabIconIndex +1) {
+            selectedSubCategories = subCategories.value.find {
+                it.subCategoryId == record!!.subCategoryId
+            }
+        }
+        if (subCategories.value.isNotEmpty() && record!!.categoryId != selectedTabIconIndex +1) {
+            selectedSubCategories = subCategories.value.first()
+        }
+    }
+
+//    var editedRecord by remember { mutableStateOf(record) }
 
 
     var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
@@ -178,12 +225,113 @@ fun RecordEditScreen(
     var fees by remember {
         mutableStateOf(record!!.fee.toString())
     }
-    Log.d("selectedTabIconIndex", "$selectedTabIconIndex")
+
+    val initialDate = record?.datetime ?: Calendar.getInstance().timeInMillis
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<Long?>(initialDate) }
+    val formattedDate = selectedDate?.let {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = it
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
+    } ?: stringResource(id = R.string.select_date)
+
+    //時間選擇器
+    val recordDatetime: Long = record?.datetime ?: System.currentTimeMillis()
+    val calendar = Calendar.getInstance().apply {
+        timeInMillis = recordDatetime
+    }
+    val initialHour = calendar.get(Calendar.HOUR_OF_DAY)
+    val initialMinute = calendar.get(Calendar.MINUTE)
+
+    var selectedTime by remember {
+        mutableStateOf(
+            TimePickerState(
+                initialHour = initialHour,
+                initialMinute = initialMinute,
+                is24Hour = true
+            )
+        )
+    }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val formatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+    val buttonText = run {
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, selectedTime.hour)
+            set(Calendar.MINUTE, selectedTime.minute)
+        }
+        formatter.format(cal.time)
+    }
+
+    val transactionDate: Long = combineDateAndTimeVersion2(selectedDate, selectedTime)
     Scaffold(
         topBar = {
             RecordEditScreenHeader(
-                navController, onAddClick = {
-                    editedRecord?.let { recordViewModel.updateRecord(it) }
+                navController, onUpdateClick = {
+                    if (selectedTabIconIndex == 0 || selectedTabIconIndex == 1) {
+                        recordViewModel.updateRecord(
+                            RecordEntity(
+                                recordId = recordId,
+                                accountId = selectedAsset!!.accountId,
+                                currency = selectedAsset!!.currency,
+                                type = selectedTabIconIndex + 1,
+                                categoryId = selectedTabIconIndex + 1,
+                                mainCategoryId = selectedSubCategories!!.mainCategoryId,
+                                subCategoryId = selectedSubCategories!!.subCategoryId,
+                                amount = amount.toDouble(),
+                                fee = 0.0,
+                                discount = 0.0,
+                                name = name,
+                                merchant = "",
+                                datetime = transactionDate,
+                                description = remark,
+                                objectType = "",
+                            )
+                        )
+                    } else {
+                        recordViewModel.updateRecord(
+                            RecordEntity(
+                                recordId = recordId,
+                                accountId = selectedTransferAssetFrom!!.accountId,
+                                currency = selectedTransferAssetFrom!!.currency,
+                                type = 3,
+                                categoryId = selectedTabIconIndex + 1,
+                                mainCategoryId = selectedSubCategories!!.mainCategoryId,
+                                subCategoryId = selectedSubCategories!!.subCategoryId,
+                                amount = transferAmountFrom.toDouble(),
+                                fee = fees.toDouble(),
+                                discount = 0.0,
+                                name = name,
+                                merchant = "",
+                                datetime = transactionDate,
+                                description = remark,
+                                objectType = "",
+                            )
+                        )
+                        recordViewModel.updateRecord(
+                            RecordEntity(
+                                recordId = inRecordId,
+                                accountId = selectedTransferAssetTo!!.accountId,
+                                currency = selectedTransferAssetTo!!.currency,
+                                type = 4,
+                                categoryId = selectedTabIconIndex + 1,
+                                mainCategoryId = selectedSubCategories!!.mainCategoryId,
+                                subCategoryId = selectedSubCategories!!.subCategoryId,
+                                amount = transferAmountTo.toDouble(),
+                                fee = 0.0,
+                                discount = 0.0,
+                                name = name,
+                                merchant = "",
+                                datetime = transactionDate,
+                                description = remark,
+                                objectType = "",
+                            )
+                        )
+                    }
                     navController.popBackStack() // 返回到上一个页面
                 }
             )
@@ -658,17 +806,191 @@ fun RecordEditScreen(
                             }
                         }
                     }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.category),
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .weight(1f)
+                        )
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 16.dp, start = 10.dp),
+                            onClick = {
+                                showCategory = true
+                            }) {
+                            selectedSubCategories?.let {
+                                val mainIcon = SharedOptions.iconMap[it.subCategoryIcon]
+                                Icon(
+                                    imageVector = mainIcon!!.icon,
+                                    contentDescription = it.subCategoryIcon
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                val context = LocalContext.current
+                                val resourceId =
+                                    context.resources.getIdentifier(
+                                        it.subCategoryNameKey,
+                                        "string",
+                                        context.packageName
+                                    )
+                                val displayName = if (resourceId != 0) {
+                                    context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                                } else {
+                                    it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+                                }
+                                Text(text = displayName)
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 16.dp),
+                            onClick = {
+                                showDatePicker = true
+                            }) {
+                            Text(formattedDate)
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 16.dp),
+                            onClick = {
+                                showTimePicker = true
+                            }) {
+                            Text(buttonText)
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = remark,
+                            onValueChange = { newRemark ->
+                                if (newRemark.length <= 400) {
+                                    remark = newRemark
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            label = { Text(stringResource(id = R.string.remark)) },
+                            minLines = 3,
+                            maxLines = 6
+                        )
+                    }
+
+                }
+                if (showAsset) {
+                    AssetDialog(
+                        accounts = accounts, // 传递账户列表
+                        onDismiss = { showAsset = false },
+                        onAssetSelected = { selectedAccount ->
+                            selectedAsset = selectedAccount // 更新选中的资产
+                            showAsset = false
+                        }
+                    )
+                }
+                if (showTransferAssetFrom) {
+                    AssetDialog(
+                        accounts = accounts, // 传递账户列表
+                        onDismiss = { showTransferAssetFrom = false },
+                        onAssetSelected = { selectedAccount ->
+                            selectedTransferAssetFrom = selectedAccount // 更新选中的资产
+                            showTransferAssetFrom = false
+
+
+//                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+//                            val conversionRate = toCurrencyRate / fromCurrencyRate
+//                            val convertedAmount = fromAmount * conversionRate
+//                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                        }
+                    )
+                }
+                if (showTransferAssetTo) {
+                    AssetDialog(
+                        accounts = accounts, // 传递账户列表
+                        onDismiss = { showTransferAssetTo = false },
+                        onAssetSelected = { selectedAccount ->
+                            selectedTransferAssetTo = selectedAccount // 更新选中的资产
+
+//                            // 執行反向換算邏輯當失去焦點時
+//                            val toAmount = transferAmountTo.toDoubleOrNull() ?: 0.0
+//                            val reverseConversionRate = fromCurrencyRate / toCurrencyRate
+//                            val convertedAmount = toAmount * reverseConversionRate
+//                            transferAmountFrom = String.format(Locale.US, "%.2f", convertedAmount)
+
+//                            Log.d()
+                            showTransferAssetTo = false
+                        }
+                    )
+                }
+                if (showCategory) {
+                    CategoryDialog(
+                        mainCategories = mainCategories.value,
+                        subCategories = subCategories.value, // 从 ViewModel 中获取子分类数据
+                        subCategoryViewModel = subCategoryViewModel, // 传递 ViewModel，用于加载子分类
+                        onDismiss = { showCategory = false },
+//                        onMainCategoriesSelected = { selectedMainCategory ->
+//                            selectedMainCategories = selectedMainCategory
+//                            // 加载子分类
+//                            subCategoryViewModel.loadSubCategoriesByMainCategoryId(selectedMainCategory.mainCategoryId)
+//                        },
+                        onSubCategorySelected = { selectedSubCategory ->
+                            // 选择子分类后执行的操作
+                            selectedSubCategories = selectedSubCategory
+                            showCategory = false
+                        }
+                    )
+                }
+                if (showDatePicker) {
+                    DatePicker(
+                        selectedDate = selectedDate,
+                        onDateSelected = { date ->
+                            selectedDate = date
+                            showDatePicker = false
+                        },
+                        onDismiss = { showDatePicker = false }
+                    )
+                }
+                if (showTimePicker) {
+                    TimePicker(
+                        selectedTime = selectedTime,
+                        onDismiss = { showTimePicker = false },
+                        onConfirm = { time ->
+                            selectedTime = time
+                            showTimePicker = false
+                        }
+                    )
                 }
             }
         }
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordEditScreenHeader(
     navController: NavHostController,
-    onAddClick: () -> Unit
+    onUpdateClick: () -> Unit
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -685,7 +1007,7 @@ fun RecordEditScreenHeader(
         },
         actions = {
             IconButton(onClick = {
-                onAddClick()
+                onUpdateClick()
             }) {
                 Icon(
                     imageVector = Icons.Filled.Check,

@@ -24,6 +24,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,8 +60,8 @@ fun RecordMainScreen(
 
 //    val selectedDate by remember { mutableStateOf(LocalDate.now()) }
 //    val localDate = LocalDate.now()
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
 //    val startDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 //    val endDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
