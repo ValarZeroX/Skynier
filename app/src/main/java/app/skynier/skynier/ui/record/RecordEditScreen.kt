@@ -204,21 +204,24 @@ fun RecordEditScreen(
         mutableStateOf("0")
     }
 
-    val fromCurrencyRate =
-        currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate
-            ?: 1.0
-    val toCurrencyRate =
-        currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
+    val fromCurrencyRate = currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate ?: 1.0
+    val toCurrencyRate = currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
 
-    LaunchedEffect(selectedTransferAssetFrom) {
-        val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-        val conversionRate = toCurrencyRate / fromCurrencyRate
-        val convertedAmount = fromAmount * conversionRate
-        transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+    var toExchangeRate by remember {
+        mutableStateOf(String.format(Locale.US, "%.4f", toCurrencyRate))
     }
-    LaunchedEffect(selectedTransferAssetTo) {
+
+    if (selectedTransferAssetFrom?.currency != "USD") {
+        // 如果不是以USD为基准，计算新的汇率
+        val calculatedRate = toCurrencyRate / fromCurrencyRate
+        toExchangeRate = String.format(Locale.US, "%.4f", calculatedRate)
+    } else {
+        toExchangeRate = String.format(Locale.US, "%.4f", toCurrencyRate)
+    }
+
+    LaunchedEffect(selectedTransferAssetFrom, selectedTransferAssetTo) {
         val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-        val conversionRate = toCurrencyRate / fromCurrencyRate
+        val conversionRate = toExchangeRate.toDouble()
         val convertedAmount = fromAmount * conversionRate
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
@@ -480,7 +483,7 @@ fun RecordEditScreen(
                                             // 執行換算邏輯當失去焦點時
                                             val fromAmount =
                                                 transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toCurrencyRate / fromCurrencyRate
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
                                             val convertedAmount = fromAmount * conversionRate
                                             transferAmountTo =
                                                 String.format(Locale.US, "%.2f", convertedAmount)
@@ -555,14 +558,56 @@ fun RecordEditScreen(
                                     .padding(start = 16.dp)
                                     .weight(1f)
                             )
-                            Text(
-                                text = String.format(Locale.US, "%.4f", toCurrencyRate),
+                            Box(
                                 modifier = Modifier
                                     .padding(end = 16.dp)
-                                    .weight(1f),
-                                textAlign = TextAlign.End,
-                                color = Gray
-                            )
+                            ) {
+                                BasicTextField(
+                                    value = toExchangeRate,
+                                    onValueChange = { newInput ->
+                                        // 過濾輸入，只接受有效的浮點數、負數和小數點
+                                        if (newInput.isEmpty() || newInput.matches(numericRegex)) {
+                                            toExchangeRate =
+                                                if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith(
+                                                        "0."
+                                                    )
+                                                ) {
+                                                    newInput.trimStart('0')
+                                                } else {
+                                                    newInput
+                                                }
+                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val convertedAmount = fromAmount * conversionRate
+                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                        }
+                                    },
+                                    keyboardOptions = KeyboardOptions.Default.copy(
+                                        keyboardType = KeyboardType.Decimal // 顯示帶有小數點的數字鍵盤6
+                                    ),
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    singleLine = true,
+                                    modifier = Modifier.onFocusChanged { focusState ->
+                                        if (toExchangeRate == "0") {
+                                            toExchangeRate = ""
+                                        }
+                                        if (!focusState.isFocused && fees.isEmpty()) {
+                                            toExchangeRate = "0" // 當輸入框失去焦點且為空時，填入0
+                                        }
+                                        if (!focusState.isFocused && toExchangeRate.isNotEmpty()) {
+                                            // 執行換算邏輯當失去焦點時
+                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val convertedAmount = fromAmount * conversionRate
+                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                        }
+                                    },
+                                    textStyle = LocalTextStyle.current.copy(
+                                        textAlign = TextAlign.End,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                            }
                         }
                         Row(
                             modifier = Modifier

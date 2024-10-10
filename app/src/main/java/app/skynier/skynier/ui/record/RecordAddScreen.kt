@@ -2,7 +2,6 @@ package app.skynier.skynier.ui.record
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -151,7 +149,6 @@ fun RecordAddScreen(
     LaunchedEffect(Unit) {
         accountViewModel.loadAllAccounts()
     }
-    Log.d("accounts", "$accounts")
 
 //    var selectedAsset by remember { mutableStateOf<AccountEntity?>(if (accounts.isNotEmpty()) accounts.first() else null) }
 
@@ -163,7 +160,6 @@ fun RecordAddScreen(
             selectedAsset = accounts.first()
         }
     }
-    Log.d("accounts", "$selectedAsset")
 
     var showCategory by rememberSaveable { mutableStateOf(false) }
 
@@ -226,29 +222,24 @@ fun RecordAddScreen(
         mutableStateOf("0")
     }
 
-
-
     val fromCurrencyRate = currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate ?: 1.0
     val toCurrencyRate = currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
-    Log.d("toCurrencyRate", "$toCurrencyRate")
-//    exchangeRate = toCurrencyRate.toString()
-    var toExchangeRate by remember {
-        mutableStateOf(toCurrencyRate.toString())
-    }
-    LaunchedEffect(toCurrencyRate) {
-        toExchangeRate = toCurrencyRate.toString()
-    }
-    Log.d("toExchangeRate", toExchangeRate)
 
-    LaunchedEffect(selectedTransferAssetFrom) {
-        val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-        val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
-        val convertedAmount = fromAmount * conversionRate
-        transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+    var toExchangeRate by remember {
+        mutableStateOf(String.format(Locale.US, "%.4f", toCurrencyRate))
     }
-    LaunchedEffect(selectedTransferAssetTo) {
+
+    if (selectedTransferAssetFrom?.currency != "USD") {
+        // 如果不是以USD为基准，计算新的汇率
+        val calculatedRate = toCurrencyRate / fromCurrencyRate
+        toExchangeRate = String.format(Locale.US, "%.4f", calculatedRate)
+    } else {
+        toExchangeRate = String.format(Locale.US, "%.4f", toCurrencyRate)
+    }
+
+    LaunchedEffect(selectedTransferAssetFrom, selectedTransferAssetTo) {
         val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-        val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+        val conversionRate = toExchangeRate.toDouble()
         val convertedAmount = fromAmount * conversionRate
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
@@ -463,10 +454,13 @@ fun RecordAddScreen(
                                         }
                                         if (!focusState.isFocused && transferAmountFrom.isNotEmpty()) {
                                             // 執行換算邏輯當失去焦點時
-                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val fromAmount =
+                                                transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate =
+                                                toExchangeRate.toDouble() / fromCurrencyRate
                                             val convertedAmount = fromAmount * conversionRate
-                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                            transferAmountTo =
+                                                String.format(Locale.US, "%.2f", convertedAmount)
                                         }
                                     },
                                 shape = RoundedCornerShape(8.dp), // 设置边框圆角
