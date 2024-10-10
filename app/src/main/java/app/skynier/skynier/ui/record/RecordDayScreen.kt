@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Sell
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +65,7 @@ import app.skynier.skynier.library.textColor
 import app.skynier.skynier.ui.layouts.CustomCalendar
 import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.AccountViewModel
+import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.UserSettingsViewModel
 import java.text.DecimalFormat
@@ -82,6 +85,7 @@ fun RecordDayScreen(
     userSettingsViewModel: UserSettingsViewModel,
     accountViewModel: AccountViewModel,
     navController: NavHostController,
+    recordViewModel: RecordViewModel,
 ) {
     // 模擬數據，日期對應的一些記錄
 //    val recordData = mapOf(
@@ -128,6 +132,8 @@ fun RecordDayScreen(
     var showRecordMergeDialog by rememberSaveable { mutableStateOf(false) }
     var selectedMergeRecord by remember { mutableStateOf<MergedTransferEntity?>(null) }
 
+
+
     Column {
         CustomCalendar(
             selectedDate = selectedDate,
@@ -171,7 +177,8 @@ fun RecordDayScreen(
                 userSettings,
                 subCategoriesByMainCategory,
                 accounts,
-                navController
+                navController,
+                recordViewModel
             )
         }
         if (showRecordDialog) {
@@ -181,10 +188,36 @@ fun RecordDayScreen(
                 userSettings,
                 subCategoriesByMainCategory,
                 accounts,
-                navController
+                navController,
+                recordViewModel
             )
         }
     }
+}
+
+@Composable
+fun RecordDeleteDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmDelete: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(text = "確認刪除") },
+        text = { Text(text = "您確定要刪除此記錄嗎？") },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirmDelete()
+                onDismissRequest() // 关闭对话框
+            }) {
+                Text("確認")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("取消")
+            }
+        }
+    )
 }
 
 @Composable
@@ -195,7 +228,9 @@ fun RecordMergeDialog(
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
     accounts: List<AccountEntity>,
     navController: NavHostController,
+    recordViewModel: RecordViewModel,
 ) {
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     if (record != null) {
         val decimalFormat = DecimalFormat("#,###.##")
         val formattedValueOut = decimalFormat.format(record.outAmount)
@@ -275,7 +310,9 @@ fun RecordMergeDialog(
                         ) {
                             Row{
                                 IconButton(
-                                    onClick = {}
+                                    onClick = {
+                                        showDeleteDialog = true
+                                    }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Delete, // 刪除圖標
@@ -480,6 +517,19 @@ fun RecordMergeDialog(
             }
         }
     }
+    if (showDeleteDialog) {
+        RecordDeleteDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            onConfirmDelete = {
+                // 在这里执行删除操作，例如调用 ViewModel 的删除方法
+                if (record != null) {
+                    recordViewModel.deleteRecordById(record.outRecordId)
+                    recordViewModel.deleteRecordById(record.inRecordId)
+                    onDismissRequest()
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -490,8 +540,11 @@ fun RecordDialog(
     subCategoriesByMainCategory: Map<Int, List<SubCategoryEntity>>,
     accounts: List<AccountEntity>,
     navController: NavHostController,
+    recordViewModel: RecordViewModel,
 ) {
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     if (record != null) {
+
         val decimalFormat = DecimalFormat("#,###.##")
         val formattedValue = decimalFormat.format(record.amount)
         val subCategoriesForThisMainCategory =
@@ -568,7 +621,9 @@ fun RecordDialog(
                         ) {
                             Row{
                                 IconButton(
-                                    onClick = {}
+                                    onClick = {
+                                        showDeleteDialog = true
+                                    }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Delete, // 刪除圖標
@@ -712,6 +767,17 @@ fun RecordDialog(
                 }
             }
         }
+    }
+    if (showDeleteDialog) {
+        RecordDeleteDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            onConfirmDelete = {
+                if (record != null) {
+                    recordViewModel.deleteRecordById(record.recordId)
+                    onDismissRequest()
+                }
+            }
+        )
     }
 }
 

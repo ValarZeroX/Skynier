@@ -45,6 +45,10 @@ class RecordViewModel(private val repository: RecordRepository) : ViewModel() {
         return repository.getRecordsByDateRange(startDate, endDate)
     }
 
+    fun deleteRecordById(recordId: Int) = viewModelScope.launch {
+        repository.deleteRecordById(recordId)
+    }
+
     fun getDateSerialNumberMapByDateRange(
         startDate: Long,
         endDate: Long

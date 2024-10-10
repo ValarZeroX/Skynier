@@ -150,6 +150,10 @@ fun RecordEditScreen(
     var amount by remember {
         mutableStateOf(newAmount)
     }
+    val newFee = decimalFormat.format(record!!.fee)
+    var fees by remember {
+        mutableStateOf(newFee)
+    }
 
     val untitled = stringResource(id = R.string.name)
     var name by rememberSaveable { mutableStateOf(record!!.name) }
@@ -222,9 +226,7 @@ fun RecordEditScreen(
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
 
-    var fees by remember {
-        mutableStateOf(record!!.fee.toString())
-    }
+
 
     val initialDate = record?.datetime ?: Calendar.getInstance().timeInMillis
     var showDatePicker by remember { mutableStateOf(false) }

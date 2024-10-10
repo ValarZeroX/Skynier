@@ -129,7 +129,8 @@ fun RecordMainScreen(
                             subCategoryViewModel,
                             userSettingsViewModel,
                             accountViewModel,
-                            navController
+                            navController,
+                            recordViewModel
                         )
                     }
                     1 -> {

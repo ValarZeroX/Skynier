@@ -138,6 +138,10 @@ fun RecordAddScreen(
         mutableStateOf("0")
     }
 
+    var fees by remember {
+        mutableStateOf("0")
+    }
+
     val untitled = stringResource(id = R.string.name)
     var name by rememberSaveable { mutableStateOf("") }
     var remark by rememberSaveable { mutableStateOf("") }
@@ -216,10 +220,10 @@ fun RecordAddScreen(
     var showTransferAssetFrom by rememberSaveable { mutableStateOf(false) }
     var showTransferAssetTo by rememberSaveable { mutableStateOf(false) }
     var transferAmountFrom by remember {
-        mutableStateOf("0.00")
+        mutableStateOf("0")
     }
     var transferAmountTo by remember {
-        mutableStateOf("0.00")
+        mutableStateOf("0")
     }
 
     val fromCurrencyRate = currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate ?: 1.0
@@ -238,9 +242,7 @@ fun RecordAddScreen(
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
 
-    var fees by remember {
-        mutableStateOf("0.00")
-    }
+
     Scaffold(
         topBar = {
             RecordAddScreenHeader(
