@@ -226,18 +226,29 @@ fun RecordAddScreen(
         mutableStateOf("0")
     }
 
+
+
     val fromCurrencyRate = currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate ?: 1.0
     val toCurrencyRate = currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
+    Log.d("toCurrencyRate", "$toCurrencyRate")
+//    exchangeRate = toCurrencyRate.toString()
+    var toExchangeRate by remember {
+        mutableStateOf(toCurrencyRate.toString())
+    }
+    LaunchedEffect(toCurrencyRate) {
+        toExchangeRate = toCurrencyRate.toString()
+    }
+    Log.d("toExchangeRate", toExchangeRate)
 
     LaunchedEffect(selectedTransferAssetFrom) {
         val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-        val conversionRate = toCurrencyRate / fromCurrencyRate
+        val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
         val convertedAmount = fromAmount * conversionRate
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
     LaunchedEffect(selectedTransferAssetTo) {
         val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-        val conversionRate = toCurrencyRate / fromCurrencyRate
+        val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
         val convertedAmount = fromAmount * conversionRate
         transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
     }
@@ -426,7 +437,7 @@ fun RecordAddScreen(
                                                 newInput
                                             }
                                             val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toCurrencyRate / fromCurrencyRate
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
                                             val convertedAmount = fromAmount * conversionRate
                                             transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
                                     }
@@ -453,7 +464,7 @@ fun RecordAddScreen(
                                         if (!focusState.isFocused && transferAmountFrom.isNotEmpty()) {
                                             // 執行換算邏輯當失去焦點時
                                             val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toCurrencyRate / fromCurrencyRate
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
                                             val convertedAmount = fromAmount * conversionRate
                                             transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
                                         }
@@ -527,14 +538,64 @@ fun RecordAddScreen(
                                     .padding(start = 16.dp)
                                     .weight(1f)
                             )
-                            Text(
-                                text = String.format(Locale.US, "%.4f", toCurrencyRate),
+//                            Text(
+//                                text = String.format(Locale.US, "%.4f", toCurrencyRate),
+//                                modifier = Modifier
+//                                    .padding(end = 16.dp)
+//                                    .weight(1f),
+//                                textAlign = TextAlign.End,
+//                                color = Gray
+//                            )
+                            Box(
                                 modifier = Modifier
                                     .padding(end = 16.dp)
-                                    .weight(1f),
-                                textAlign = TextAlign.End,
-                                color = Gray
-                            )
+                            ) {
+                                BasicTextField(
+                                    value = toExchangeRate,
+                                    onValueChange = { newInput ->
+                                        // 過濾輸入，只接受有效的浮點數、負數和小數點
+                                        if (newInput.isEmpty() || newInput.matches(numericRegex)) {
+                                            toExchangeRate =
+                                                if (newInput.startsWith("0") && newInput.length > 1 && !newInput.startsWith(
+                                                        "0."
+                                                    )
+                                                ) {
+                                                    newInput.trimStart('0')
+                                                } else {
+                                                    newInput
+                                                }
+                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val convertedAmount = fromAmount * conversionRate
+                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                        }
+                                    },
+                                    keyboardOptions = KeyboardOptions.Default.copy(
+                                        keyboardType = KeyboardType.Decimal // 顯示帶有小數點的數字鍵盤6
+                                    ),
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    singleLine = true,
+                                    modifier = Modifier.onFocusChanged { focusState ->
+                                        if (toExchangeRate == "0") {
+                                            toExchangeRate = ""
+                                        }
+                                        if (!focusState.isFocused && fees.isEmpty()) {
+                                            toExchangeRate = "0" // 當輸入框失去焦點且為空時，填入0
+                                        }
+                                        if (!focusState.isFocused && toExchangeRate.isNotEmpty()) {
+                                            // 執行換算邏輯當失去焦點時
+                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val convertedAmount = fromAmount * conversionRate
+                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                        }
+                                    },
+                                    textStyle = LocalTextStyle.current.copy(
+                                        textAlign = TextAlign.End,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                            }
                         }
                         Row(
                             modifier = Modifier

@@ -136,4 +136,9 @@
     <string name="select_asset">Select Asset</string>
     <string name="add_record">Add Record</string>
     <string name="fees">Fees</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="edit_record">Edit Record</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_message">Are you sure you want to delete this record?</string>
 </resources>

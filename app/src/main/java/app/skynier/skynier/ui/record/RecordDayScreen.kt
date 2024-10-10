@@ -88,15 +88,8 @@ fun RecordDayScreen(
     recordViewModel: RecordViewModel,
 ) {
     // 模擬數據，日期對應的一些記錄
-//    val recordData = mapOf(
-//        LocalDate.now() to "資料1",
-//        LocalDate.now().minusDays(1) to "資料2",
-//        LocalDate.now().minusDays(3) to "資料3"
-//    )
-
     val highlightDays = remember(recordsMonth) {
         recordsMonth.values.associate { day ->
-            Log.d("day", "$day")
             selectedDate.withDayOfMonth(day) to true // 將日期轉換為 LocalDate 並與 true 關聯
         }
     }
@@ -202,19 +195,19 @@ fun RecordDeleteDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = "確認刪除") },
-        text = { Text(text = "您確定要刪除此記錄嗎？") },
+        title = { Text(text = stringResource(id = R.string.confirm_delete)) },
+        text = { Text(text = stringResource(id = R.string.confirm_delete_message)) },
         confirmButton = {
             TextButton(onClick = {
                 onConfirmDelete()
                 onDismissRequest() // 关闭对话框
             }) {
-                Text("確認")
+                Text(stringResource(id = R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("取消")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
@@ -508,7 +501,7 @@ fun RecordMergeDialog(
                             }
                             HorizontalDivider()
                             Text(
-                                text = record.description.ifEmpty { "備註" },
+                                text = record.description.ifEmpty { stringResource(id = R.string.remark) },
                                 color = Gray,
                             )
                         }
@@ -759,7 +752,7 @@ fun RecordDialog(
                             }
                             HorizontalDivider()
                             Text(
-                                text = record.description.ifEmpty { "備註" },
+                                text = record.description.ifEmpty { stringResource(id = R.string.remark) },
                                 color = Gray,
                             )
                         }

@@ -103,7 +103,6 @@ fun RecordEditScreen(
 
     val mainCategories = mainCategoryViewModel.mainCategories.observeAsState(emptyList())
     val subCategories = subCategoryViewModel.subCategories.observeAsState(emptyList())
-    Log.d("record", "$record")
 
     LaunchedEffect(Unit) {
         categoryViewModel.loadAllCategories()
@@ -162,13 +161,11 @@ fun RecordEditScreen(
 
 
     var selectedTabIconIndex by remember { mutableIntStateOf(record!!.categoryId - 1) }
-    Log.d("selectedTabIconIndex", "$selectedTabIconIndex")
 
     var selectedSubCategories by remember { mutableStateOf<SubCategoryEntity?>(null) }
     var showCategory by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(selectedTabIconIndex) {
-        Log.d("Unit", "$mainCategories")
         mainCategoryViewModel.loadMainCategoriesByMainCategoryId(selectedTabIconIndex + 1)
     }
 
@@ -204,7 +201,7 @@ fun RecordEditScreen(
         mutableStateOf(record!!.amount.toString())
     }
     var transferAmountTo by remember {
-        mutableStateOf("0.00")
+        mutableStateOf("0")
     }
 
     val fromCurrencyRate =
@@ -460,7 +457,7 @@ fun RecordEditScreen(
                                             String.format(Locale.US, "%.2f", convertedAmount)
                                     }
                                 },
-                                label = { Text("From") }, // 添加标签
+                                label = { Text(stringResource(id = R.string.from)) },
                                 keyboardOptions = KeyboardOptions.Default.copy(
                                     keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
                                 ),
@@ -511,7 +508,7 @@ fun RecordEditScreen(
                                             }
                                     }
                                 },
-                                label = { Text("To") }, // 添加标签
+                                label = { Text(stringResource(id = R.string.to)) }, // 添加标签
                                 keyboardOptions = KeyboardOptions.Default.copy(
                                     keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
                                 ),
@@ -932,14 +929,6 @@ fun RecordEditScreen(
                         onDismiss = { showTransferAssetTo = false },
                         onAssetSelected = { selectedAccount ->
                             selectedTransferAssetTo = selectedAccount // 更新选中的资产
-
-//                            // 執行反向換算邏輯當失去焦點時
-//                            val toAmount = transferAmountTo.toDoubleOrNull() ?: 0.0
-//                            val reverseConversionRate = fromCurrencyRate / toCurrencyRate
-//                            val convertedAmount = toAmount * reverseConversionRate
-//                            transferAmountFrom = String.format(Locale.US, "%.2f", convertedAmount)
-
-//                            Log.d()
                             showTransferAssetTo = false
                         }
                     )
@@ -950,11 +939,6 @@ fun RecordEditScreen(
                         subCategories = subCategories.value, // 从 ViewModel 中获取子分类数据
                         subCategoryViewModel = subCategoryViewModel, // 传递 ViewModel，用于加载子分类
                         onDismiss = { showCategory = false },
-//                        onMainCategoriesSelected = { selectedMainCategory ->
-//                            selectedMainCategories = selectedMainCategory
-//                            // 加载子分类
-//                            subCategoryViewModel.loadSubCategoriesByMainCategoryId(selectedMainCategory.mainCategoryId)
-//                        },
                         onSubCategorySelected = { selectedSubCategory ->
                             // 选择子分类后执行的操作
                             selectedSubCategories = selectedSubCategory
@@ -996,7 +980,7 @@ fun RecordEditScreenHeader(
 ) {
     CenterAlignedTopAppBar(
         title = {
-            Text(text = "編輯記錄")
+            Text(text = stringResource(id = R.string.edit_record))
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {

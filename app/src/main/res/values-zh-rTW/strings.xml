@@ -136,4 +136,9 @@
     <string name="select_asset">選擇資產</string>
     <string name="add_record">新增記錄</string>
     <string name="fees">手續費</string>
+    <string name="from">從</string>
+    <string name="to">到</string>
+    <string name="edit_record">編輯記錄</string>
+    <string name="confirm_delete">確認刪除</string>
+    <string name="confirm_delete_message">您確定要刪除此記錄嗎？</string>
 </resources>
