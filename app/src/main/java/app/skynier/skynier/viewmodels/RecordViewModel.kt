@@ -51,14 +51,19 @@ class RecordViewModel(private val repository: RecordRepository) : ViewModel() {
 
     fun getDateSerialNumberMapByDateRange(
         startDate: Long,
-        endDate: Long
+        endDate: Long,
+        searchText: String
     ): LiveData<Map<Int, Int>> {
         val result = MediatorLiveData<Map<Int, Int>>()
 
         val recordsLiveData = repository.getRecordsByDateRange(startDate, endDate)
 
         result.addSource(recordsLiveData) { records ->
-            val distinctDates = records.map { record ->
+            val filteredRecords = records.filter {
+                it.name.contains(searchText, ignoreCase = true) ||
+                        it.description.contains(searchText, ignoreCase = true)
+            }
+            val distinctDates = filteredRecords.map { record ->
                 // 提取日期中的日（例如23日）
                 record.datetime.let {
                     Instant.ofEpochMilli(it)

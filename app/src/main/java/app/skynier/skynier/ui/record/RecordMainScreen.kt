@@ -1,13 +1,22 @@
 package app.skynier.skynier.ui.record
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -15,6 +24,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -29,6 +40,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
@@ -63,7 +81,7 @@ fun RecordMainScreen(
 //    val localDate = LocalDate.now()
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-
+    var searchText by rememberSaveable { mutableStateOf("") }
 //    val startDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 //    val endDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
 
@@ -80,15 +98,26 @@ fun RecordMainScreen(
         lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
     val recordsMonth by recordViewModel.getDateSerialNumberMapByDateRange(
         startMonthDateMillis,
-        endMonthDateMillis
+        endMonthDateMillis,
+        searchText
     ).observeAsState(initial = emptyMap())
 
     val recordsDay by recordViewModel.getRecordsByDateRange(startOfDay, endOfDay)
         .observeAsState(emptyList())
+    val filteredRecordsDay = recordsDay.filter {
+        it.name.contains(searchText, ignoreCase = true) ||
+                it.description.contains(searchText, ignoreCase = true)
+    }
+    //列表
     val recordTotal by recordViewModel.getRecordsByDateRange(
         startMonthDateMillis,
-        endMonthDateMillis
+        endMonthDateMillis,
     ).observeAsState(emptyList())
+
+    val filteredRecords = recordTotal.filter {
+        it.name.contains(searchText, ignoreCase = true) ||
+                it.description.contains(searchText, ignoreCase = true)
+    }
 
 
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
@@ -111,6 +140,8 @@ fun RecordMainScreen(
                 onClickNext = {
                     selectedDate = selectedDate.plusMonths(1)
                 },
+                searchText = searchText,
+                onSearchTextChange = { searchText = it }
             )
         }
     ) { innerPadding ->
@@ -138,7 +169,7 @@ fun RecordMainScreen(
                                 onDateSelected = { newDate ->
                                     selectedDate = newDate // 在上層組件內更新日期狀態
                                 },
-                                recordsDay,
+                                recordsDay = filteredRecordsDay,
                                 recordsMonth,
                                 subCategoryViewModel,
                                 userSettings,
@@ -151,7 +182,7 @@ fun RecordMainScreen(
 
                     1 -> {
                         RecordDayListScreen(
-                            recordTotal,
+                            recordTotal = filteredRecords,
                             userSettings,
                             subCategoryViewModel,
                             accounts,
@@ -172,47 +203,95 @@ fun RecordMainScreenHeader(
     localDate: LocalDate,
     onClickNext: () -> Unit,
     onClickPrev: () -> Unit,
+    searchText: String,
+    onSearchTextChange: (String) -> Unit
 ) {
+    var showSearchBar by rememberSaveable { mutableStateOf(false) }
+
     val currentLocale = Locale.getDefault()
     val dateFormatter = DateTimeFormatter.ofPattern("MMMM, yyyy", currentLocale)
     val formattedDate = localDate.format(dateFormatter)
+
     CenterAlignedTopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onClickPrev) {
-                    Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month")
-                }
-                Text(text = formattedDate)
-                IconButton(onClick = onClickNext) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = "Next month")
+            if (showSearchBar) {
+                BasicTextField(
+                    value = searchText,
+                    onValueChange = onSearchTextChange,
+                    textStyle = LocalTextStyle.current.copy(
+                        textAlign = TextAlign.Start,
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    singleLine = true,
+                    modifier = Modifier
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .fillMaxWidth(),
+                    decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Filled.Search,
+                                contentDescription = "Search Icon",
+                                tint = Color.Gray
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (searchText.isEmpty()) {
+                                    Text(
+                                        text = "輸入要搜尋的內容",
+                                        color = Color.Gray,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                                innerTextField()
+                            }
+                            if (searchText.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    onSearchTextChange("")
+                                    showSearchBar = false
+                                }) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Close Search")
+                                }
+                            }
+                        }
+                    }
+                )
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onClickPrev) {
+                        Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month")
+                    }
+                    Text(text = formattedDate)
+                    IconButton(onClick = onClickNext) {
+                        Icon(Icons.Default.ChevronRight, contentDescription = "Next month")
+                    }
                 }
             }
         },
-//        navigationIcon = {
-//            IconButton(onClick = { navController.popBackStack() }) {
-//                Icon(
-//                    imageVector = Icons.Filled.ArrowBackIosNew,
-//                    contentDescription = "Back"
-//                )
-//            }
-//        },
-        actions = {
-            Row {
-                IconButton(onClick = {
-//                    navController.navigate("tune")
-                }) {
+        navigationIcon = {
+            if (showSearchBar) {
+                IconButton(onClick = { showSearchBar = false }) {
                     Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search"
+                        imageVector = Icons.Filled.ArrowBackIosNew,
+                        contentDescription = "Back"
                     )
                 }
-                IconButton(onClick = {
-//                    navController.navigate("tune")
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.Tune,
-                        contentDescription = "Tune"
-                    )
+            }
+        },
+        actions = {
+            if (!showSearchBar) {
+                Row {
+                    IconButton(onClick = { showSearchBar = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    }
                 }
             }
         }
