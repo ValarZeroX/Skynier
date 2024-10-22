@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -19,11 +20,11 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,18 +68,38 @@ fun RecordMainScreen(
 //    val endDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
 
     val startOfDay = selectedDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-    val endOfDay = selectedDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+    val endOfDay =
+        selectedDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
 
     val firstDayOfMonth = selectedDate.withDayOfMonth(1)  // 當月第一天
     val lastDayOfMonth = selectedDate.withDayOfMonth(selectedDate.lengthOfMonth())  // 當月最後一天
 
-    val startMonthDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-    val endMonthDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
-    val recordsMonth by recordViewModel.getDateSerialNumberMapByDateRange(startMonthDateMillis, endMonthDateMillis).observeAsState(initial = emptyMap())
+    val startMonthDateMillis =
+        firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+    val endMonthDateMillis =
+        lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+    val recordsMonth by recordViewModel.getDateSerialNumberMapByDateRange(
+        startMonthDateMillis,
+        endMonthDateMillis
+    ).observeAsState(initial = emptyMap())
 
-    val recordsDay by recordViewModel.getRecordsByDateRange(startOfDay, endOfDay).observeAsState(emptyList())
-    Log.d("recordsMonth", "$recordsMonth")
-    Log.d("recordsDay", "$recordsDay")
+    val recordsDay by recordViewModel.getRecordsByDateRange(startOfDay, endOfDay)
+        .observeAsState(emptyList())
+    val recordTotal by recordViewModel.getRecordsByDateRange(
+        startMonthDateMillis,
+        endMonthDateMillis
+    ).observeAsState(emptyList())
+
+
+    val userSettings by userSettingsViewModel.userSettings.observeAsState()
+    LaunchedEffect(Unit) {
+        subCategoryViewModel.loadAllSubCategoriesAndGroupByMainCategory()
+        userSettingsViewModel.loadUserSettings()
+    }
+
+    val accounts by accountViewModel.accounts.observeAsState(emptyList())
+//    Log.d("recordsMonth", "$recordsMonth")
+    Log.d("recordTotal", "$recordTotal")
     Scaffold(
         topBar = {
             RecordMainScreenHeader(
@@ -99,48 +120,44 @@ fun RecordMainScreen(
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text("日") }
+                        text = { Text("行事曆") }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text("月") }
-                    )
-                    Tab(
-                        selected = selectedTabIndex == 2,
-                        onClick = { selectedTabIndex = 2 },
-                        text = { Text("年") }
-                    )
-                    Tab(
-                        selected = selectedTabIndex == 3,
-                        onClick = { selectedTabIndex = 3 },
-                        text = { Text("全部") }
+                        text = { Text("列表") }
                     )
                 }
                 when (selectedTabIndex) {
                     0 -> {
-                        RecordDayScreen(
-                            selectedDate,
-                            onDateSelected = { newDate ->
-                                selectedDate = newDate // 在上層組件內更新日期狀態
-                            },
-                            recordsDay,
-                            recordsMonth,
+                        Column {
+//                            RecordDashboard(recordTotal,userSettings)
+                            HorizontalDivider()
+                            RecordDayScreen(
+                                selectedDate,
+                                onDateSelected = { newDate ->
+                                    selectedDate = newDate // 在上層組件內更新日期狀態
+                                },
+                                recordsDay,
+                                recordsMonth,
+                                subCategoryViewModel,
+                                userSettings,
+                                accounts,
+                                navController,
+                                recordViewModel
+                            )
+                        }
+                    }
+
+                    1 -> {
+                        RecordDayListScreen(
+                            recordTotal,
+                            userSettings,
                             subCategoryViewModel,
-                            userSettingsViewModel,
-                            accountViewModel,
+                            accounts,
                             navController,
                             recordViewModel
                         )
-                    }
-                    1 -> {
-                        Text("月")
-                    }
-                    2 -> {
-                        Text("年")
-                    }
-                    3 -> {
-                        Text("全部")
                     }
                 }
             }
@@ -161,7 +178,7 @@ fun RecordMainScreenHeader(
     val formattedDate = localDate.format(dateFormatter)
     CenterAlignedTopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically,) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClickPrev) {
                     Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month")
                 }

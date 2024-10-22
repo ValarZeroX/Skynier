@@ -1,8 +1,6 @@
 package app.skynier.skynier.ui.record
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -26,7 +23,6 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +32,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -64,10 +59,8 @@ import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.textColor
 import app.skynier.skynier.ui.layouts.CustomCalendar
 import app.skynier.skynier.ui.theme.Gray
-import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
-import app.skynier.skynier.viewmodels.UserSettingsViewModel
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -82,8 +75,8 @@ fun RecordDayScreen(
     recordsDay: List<RecordEntity>,
     recordsMonth: Map<Int, Int>,
     subCategoryViewModel: SubCategoryViewModel,
-    userSettingsViewModel: UserSettingsViewModel,
-    accountViewModel: AccountViewModel,
+    userSettings: UserSettingsEntity?,
+    accounts: List<AccountEntity>,
     navController: NavHostController,
     recordViewModel: RecordViewModel,
 ) {
@@ -96,13 +89,8 @@ fun RecordDayScreen(
     val subCategoriesByMainCategory by subCategoryViewModel.subCategoriesByMainCategory.observeAsState(
         emptyMap()
     )
-    val userSettings by userSettingsViewModel.userSettings.observeAsState()
-    LaunchedEffect(Unit) {
-        subCategoryViewModel.loadAllSubCategoriesAndGroupByMainCategory()
-        userSettingsViewModel.loadUserSettings()
-    }
 
-    val accounts by accountViewModel.accounts.observeAsState(emptyList())
+
 
 
     // 合併轉出(type 3)和轉入(type 4)的記錄

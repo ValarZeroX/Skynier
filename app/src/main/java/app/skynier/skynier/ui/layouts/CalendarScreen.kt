@@ -47,7 +47,7 @@ fun CustomCalendar(
     val firstDayOfMonth = selectedDate.withDayOfMonth(1).dayOfWeek.value % 7 // 當前月的第一天是星期幾（1是星期一）
     val weekdays = getWeekDays(startFromSunday)
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(10.dp)) {
         // 顯示星期標題
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             weekdays.forEach { day ->
