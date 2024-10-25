@@ -108,13 +108,16 @@ fun ReportMainScreen(
         startMonthDateMillis,
         endMonthDateMillis,
     ).observeAsState(emptyList())
-
+    val currencyList by currencyViewModel.currencies.observeAsState(emptyList())
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     LaunchedEffect(Unit) {
         userSettingsViewModel.loadUserSettings()
+        currencyViewModel.loadAllCurrencies()
     }
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
+
+
     Log.d("recordTotal", "$recordTotal")
     Scaffold(
         topBar = {
@@ -160,7 +163,7 @@ fun ReportMainScreen(
                 }
                 when (selectedTabIndex) {
                     0 -> {
-                        ReportCategoryScreen(recordTotal, mainCategoryViewModel, userSettings)
+                        ReportCategoryScreen(recordTotal, mainCategoryViewModel,subCategoryViewModel, userSettings, currencyList)
                     }
 
                     1 -> {

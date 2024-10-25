@@ -80,7 +80,7 @@ fun CurrencyScreen(
 //            usdToSelectedCurrencyRate.toString()
 //        }
 //    }
-
+//    Log.d("currencyRates","$currencyRates")
     fun convertToMainCurrency(currencyCode: String): String {
         val usdToTargetCurrencyRate = currencyRates?.get("USD$currencyCode")?.exchangeRate ?: 1.0
         val usdToSelectedCurrencyRate = currencyRates?.get("USD$selectedCurrency")?.exchangeRate ?: 1.0
