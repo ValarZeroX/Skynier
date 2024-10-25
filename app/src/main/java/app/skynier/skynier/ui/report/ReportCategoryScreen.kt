@@ -42,9 +42,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.RecordEntity
@@ -100,7 +102,7 @@ fun ReportCategoryScreen(
             0 -> recordTotal.filter { it.type == 1 } // Expenses
             1 -> recordTotal.filter { it.type == 2 } // Income
             2 -> recordTotal.filter { it.type == 3 } // Transfers
-            3 -> recordTotal.filter { it.type == 4 } // 轉入
+//            3 -> recordTotal.filter { it.type == 4 } // 轉入
             else -> emptyList()
         }
         val convertedRecords = filteredRecords.map { record ->
@@ -202,7 +204,7 @@ fun ReportCategoryScreen(
             0 -> recordTotal.filter { it.type == 1 && it.mainCategoryId == selectedMainCategoryId } // Expenses
             1 -> recordTotal.filter { it.type == 2 && it.mainCategoryId == selectedMainCategoryId } // Income
             2 -> recordTotal.filter { it.type == 3 && it.mainCategoryId == selectedMainCategoryId } // 轉出
-            3 -> recordTotal.filter { it.type == 4  && it.mainCategoryId == selectedMainCategoryId} // 轉入
+//            3 -> recordTotal.filter { it.type == 4  && it.mainCategoryId == selectedMainCategoryId} // 轉入
             else -> emptyList()
         }
         val convertedRecords = filteredRecords.map { record ->
@@ -318,7 +320,14 @@ fun ReportCategoryTypeSwitch(selectedCategoryType: Int, onCategoryTypeSelected: 
     ) {
         AssistChip(
             onClick = { onCategoryTypeSelected(0) },
-            label = { Text("支出") },
+            label = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(id = R.string.expense))
+                }
+            },
             leadingIcon = {
                 if (selectedCategoryType == 0) {
                     Icon(
@@ -334,7 +343,14 @@ fun ReportCategoryTypeSwitch(selectedCategoryType: Int, onCategoryTypeSelected: 
 
         AssistChip(
             onClick = { onCategoryTypeSelected(1) },
-            label = { Text("收入") },
+            label = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(id = R.string.income))
+                }
+            },
             leadingIcon = {
                 if (selectedCategoryType == 1) {
                     Icon(
@@ -350,7 +366,14 @@ fun ReportCategoryTypeSwitch(selectedCategoryType: Int, onCategoryTypeSelected: 
 
         AssistChip(
             onClick = { onCategoryTypeSelected(2) },
-            label = { Text("轉出") },
+            label = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(id = R.string.transfer))
+                }
+            },
             leadingIcon = {
                 if (selectedCategoryType == 2) {
                     Icon(
@@ -364,20 +387,20 @@ fun ReportCategoryTypeSwitch(selectedCategoryType: Int, onCategoryTypeSelected: 
         )
         Spacer(modifier = Modifier.width(12.dp))
 
-        AssistChip(
-            onClick = { onCategoryTypeSelected(3) },
-            label = { Text("轉入") },
-            leadingIcon = {
-                if (selectedCategoryType == 3) {
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = "Checked",
-                        Modifier.size(AssistChipDefaults.IconSize)
-                    )
-                }
-            },
-            modifier = Modifier.weight(1f)
-        )
+//        AssistChip(
+//            onClick = { onCategoryTypeSelected(3) },
+//            label = { Text("轉入") },
+//            leadingIcon = {
+//                if (selectedCategoryType == 3) {
+//                    Icon(
+//                        Icons.Filled.Check,
+//                        contentDescription = "Checked",
+//                        Modifier.size(AssistChipDefaults.IconSize)
+//                    )
+//                }
+//            },
+//            modifier = Modifier.weight(1f)
+//        )
     }
 }
 
