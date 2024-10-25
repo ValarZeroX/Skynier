@@ -29,12 +29,38 @@ class RecordViewModel(private val repository: RecordRepository) : ViewModel() {
         return repository.getRecordById(id)
     }
 
-    fun getAllRecords(): LiveData<List<RecordEntity>> {
+    private fun getAllRecords(): LiveData<List<RecordEntity>> {
         return repository.getAllRecords()
     }
 
     fun getRecordsByAccount(accountId: Int): LiveData<List<RecordEntity>> {
         return repository.getRecordsByAccount(accountId)
+    }
+
+    // 预先计算所有账户的余额
+    fun getAllAccountsBalances(): LiveData<Map<Int, Double>> {
+        val result = MediatorLiveData<Map<Int, Double>>()
+        val recordsLiveData = getAllRecords()
+
+        result.addSource(recordsLiveData) { records ->
+            val balanceMap = mutableMapOf<Int, Double>()
+
+            records.forEach { record ->
+                val balanceChange = when (record.type) {
+                    1 -> -record.amount // 支出
+                    2 -> record.amount // 收入
+                    3 -> -record.amount // 转出
+                    4 -> record.amount  // 转入
+                    else -> 0.0
+                }
+
+                balanceMap[record.accountId] = balanceMap.getOrDefault(record.accountId, 0.0) + balanceChange
+            }
+
+            result.value = balanceMap
+        }
+
+        return result
     }
 
     fun getRecordsByCategory(mainCategoryId: Int, subCategoryId: Int): LiveData<List<RecordEntity>> {

@@ -141,4 +141,7 @@
     <string name="edit_record">編輯記錄</string>
     <string name="confirm_delete">確認刪除</string>
     <string name="confirm_delete_message">您確定要刪除此記錄嗎？</string>
+    <string name="calendar">日曆</string>
+    <string name="list">列表</string>
+    <string name="enter_search_content">輸入要搜尋的內容</string>
 </resources>

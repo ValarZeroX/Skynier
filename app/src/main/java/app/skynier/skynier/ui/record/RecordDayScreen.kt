@@ -987,10 +987,22 @@ fun DisplaySingleRecord(
                 ""
             }
         }
+        val context = LocalContext.current
+        val resourceId =
+            context.resources.getIdentifier(
+                category.subCategoryNameKey,
+                "string",
+                context.packageName
+            )
+        val displayName = if (resourceId != 0) {
+            context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+        } else {
+            category.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+        }
 
         ListItem(
             modifier = Modifier.clickable { onClick() },
-            headlineContent = { Text(text = record.name) },
+            headlineContent = { Text(text = record.name.ifEmpty { displayName }) },
             supportingContent = {
                 Column {
                     Row(

@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -371,12 +372,25 @@ fun RecordDayListScreen(
                             ""
                         }
                     }
+
+                    val context = LocalContext.current
+                    val resourceId =
+                        context.resources.getIdentifier(
+                            category.subCategoryNameKey,
+                            "string",
+                            context.packageName
+                        )
+                    val displayName = if (resourceId != 0) {
+                        context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                    } else {
+                        category.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+                    }
                     ListItem(
                         modifier = Modifier.clickable {
                             selectedRecord = record
                             showRecordDialog = true
                         },
-                        headlineContent = { Text(text = record.name) },
+                        headlineContent = { Text(text = record.name.ifEmpty { displayName }) },
                         supportingContent = {
                             Column {
                                 Row(

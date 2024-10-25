@@ -140,4 +140,7 @@
     <string name="edit_record">Edit Record</string>
     <string name="confirm_delete">Confirm Delete</string>
     <string name="confirm_delete_message">Are you sure you want to delete this record?</string>
+    <string name="calendar">Calendar</string>
+    <string name="list">List</string>
+    <string name="enter_search_content">Enter search content</string>
 </resources>

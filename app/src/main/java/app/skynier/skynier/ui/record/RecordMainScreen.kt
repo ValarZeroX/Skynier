@@ -43,11 +43,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import app.skynier.skynier.R
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
@@ -128,7 +130,7 @@ fun RecordMainScreen(
 
     val accounts by accountViewModel.accounts.observeAsState(emptyList())
 //    Log.d("recordsMonth", "$recordsMonth")
-    Log.d("recordTotal", "$recordTotal")
+//    Log.d("recordTotal", "$recordTotal")
     Scaffold(
         topBar = {
             RecordMainScreenHeader(
@@ -151,12 +153,12 @@ fun RecordMainScreen(
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text("行事曆") }
+                        text = { Text(stringResource(id = R.string.calendar)) }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text("列表") }
+                        text = { Text(stringResource(id = R.string.list)) }
                     )
                 }
                 when (selectedTabIndex) {
@@ -243,7 +245,7 @@ fun RecordMainScreenHeader(
                             Box(modifier = Modifier.weight(1f)) {
                                 if (searchText.isEmpty()) {
                                     Text(
-                                        text = "輸入要搜尋的內容",
+                                        text = stringResource(id = R.string.enter_search_content),
                                         color = Color.Gray,
                                         fontSize = 12.sp
                                     )

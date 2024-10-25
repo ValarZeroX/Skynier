@@ -84,4 +84,6 @@ dependencies {
     //remote api
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
+    //報表
+    implementation (libs.mpandroidchart)
 }

@@ -37,3 +37,14 @@ fun textColor(textColorSetting: Int, categoryId: Int): Color {
         else -> MaterialTheme.colorScheme.onBackground
     }
 }
+
+@Composable
+fun textColorBasedOnAmount(textColorSetting: Int, amount: Double): Color {
+    return when (textColorSetting) {
+        0 -> if (amount >= 0) Green else Red
+        1 -> if (amount >= 0) Red else Green
+        2 -> if (amount >= 0) Blue else Red
+        3 -> if (amount >= 0) Red else Blue
+        else -> MaterialTheme.colorScheme.onBackground
+    }
+}
