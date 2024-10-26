@@ -66,6 +66,7 @@ fun ReportMainScreen(
     recordViewModel: RecordViewModel,
     userSettingsViewModel: UserSettingsViewModel,
 ) {
+
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
@@ -116,7 +117,7 @@ fun ReportMainScreen(
     }
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
-
+    val accounts by accountViewModel.accounts.observeAsState(emptyList())
 
     Log.d("recordTotal", "$recordTotal")
     Scaffold(
@@ -153,7 +154,7 @@ fun ReportMainScreen(
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text(text = "類別") }
+                        text = { Text(text = stringResource(id = R.string.category)) }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
@@ -163,7 +164,7 @@ fun ReportMainScreen(
                 }
                 when (selectedTabIndex) {
                     0 -> {
-                        ReportCategoryScreen(recordTotal, mainCategoryViewModel,subCategoryViewModel, userSettings, currencyList)
+                        ReportCategoryScreen(recordTotal, mainCategoryViewModel,subCategoryViewModel, userSettings, currencyList, navController, accounts, recordViewModel)
                     }
 
                     1 -> {

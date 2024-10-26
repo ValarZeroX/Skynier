@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,7 +49,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController
 import app.skynier.skynier.R
+import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.RecordEntity
@@ -54,7 +60,10 @@ import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.database.entities.UserSettingsEntity
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.textColorBasedOnAmount
+import app.skynier.skynier.ui.record.RecordDialog
+import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
+import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
@@ -62,6 +71,11 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import java.text.DecimalFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun ReportCategoryScreen(
@@ -70,12 +84,16 @@ fun ReportCategoryScreen(
     subCategoryViewModel: SubCategoryViewModel,
     userSettings: UserSettingsEntity?,
     currencyList: List<CurrencyEntity>,
+    navController: NavHostController,
+    accounts: List<AccountEntity>,
+    recordViewModel: RecordViewModel,
 ) {
     val context = LocalContext.current
     val mainCategories by mainCategoryViewModel.mainCategories.observeAsState(emptyList())
     val subCategories by subCategoryViewModel.subCategories.observeAsState(emptyList())
     var selectedMainCategoryId by rememberSaveable { mutableStateOf<Int?>(null) }
     var selectedCategoryType by rememberSaveable { mutableIntStateOf(0) }
+    var selectSubCategoryId by rememberSaveable { mutableIntStateOf(0) }
 
 
     Log.d("currencyList", "$currencyList")
@@ -94,6 +112,13 @@ fun ReportCategoryScreen(
     // 獲取使用者的主要貨幣代碼
     val primaryCurrencyCode = userSettings?.currency ?: "USD"
         val primaryCurrencyRate = currencyList.find { it.currency == primaryCurrencyCode }?.exchangeRate ?: 1.0
+
+    var showReportCategoryListDialog by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        subCategoryViewModel.loadAllSubCategoriesAndGroupByMainCategory()
+    }
+
 
     Log.d("primaryCurrencyCode", primaryCurrencyCode)
     Log.d("primaryCurrencyRate", "$primaryCurrencyRate")
@@ -270,6 +295,8 @@ fun ReportCategoryScreen(
                     }
                     ListItem(
                     modifier = Modifier.clickable {
+                        selectSubCategoryId = subCategoryId
+                        showReportCategoryListDialog = true
                     },
                         headlineContent = { Text(text = "$categoryName (${records.size})") },
                         trailingContent = {
@@ -309,7 +336,173 @@ fun ReportCategoryScreen(
                     HorizontalDivider()
                 }
             }
+            if (showReportCategoryListDialog) {
+                ReportCategoryListDialog(
+                    recordTotal = recordTotal,
+                    mainCategoryViewModel = mainCategoryViewModel,
+                    subCategoryViewModel = subCategoryViewModel,
+                    userSettings = userSettings,
+                    currencyList = currencyList,
+                    selectedMainCategoryId = selectedMainCategoryId,
+                    selectedCategoryType = selectedCategoryType,
+                    selectSubCategoryId = selectSubCategoryId,
+                    onDismissRequest = { showReportCategoryListDialog = false },
+                    navController = navController,
+                    accounts = accounts,
+                    recordViewModel = recordViewModel
+                )
+            }
         }
+    }
+}
+
+@Composable
+fun ReportCategoryListDialog(
+    recordTotal: List<RecordEntity>,
+    mainCategoryViewModel: MainCategoryViewModel,
+    subCategoryViewModel: SubCategoryViewModel,
+    userSettings: UserSettingsEntity?,
+    currencyList: List<CurrencyEntity>,
+    selectedMainCategoryId: Int?,
+    selectedCategoryType: Int,
+    selectSubCategoryId: Int,
+    onDismissRequest: () -> Unit,
+    navController: NavHostController,
+    accounts: List<AccountEntity>,
+    recordViewModel: RecordViewModel
+) {
+    val subCategoriesByMainCategory by subCategoryViewModel.subCategoriesByMainCategory.observeAsState(
+        emptyMap()
+    )
+    var showRecordDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedRecord by remember { mutableStateOf<RecordEntity?>(null) }
+
+    val filteredRecords = when (selectedCategoryType) {
+        0 -> recordTotal.filter { it.type == 1 && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // Expenses
+        1 -> recordTotal.filter { it.type == 2 && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // Income
+        2 -> recordTotal.filter { (it.type == 3 ||  it.type == 4) && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // 轉出
+//            3 -> recordTotal.filter { it.type == 4  && it.mainCategoryId == selectedMainCategoryId} // 轉入
+        else -> emptyList()
+    }
+    Log.d("filteredRecords", "$filteredRecords")
+//    val categoryName = subCategory?.let {
+//        val resourceId = context.resources.getIdentifier(
+//            it.subCategoryNameKey,
+//            "string",
+//            context.packageName
+//        )
+//        if (resourceId != 0) {
+//            context.getString(resourceId) // 如果語系字串存在，顯示語系的值
+//        } else {
+//            it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+//        }
+//    } ?: "Unknown"
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(5.dp)
+                .heightIn(max = 800.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.account_category),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                HorizontalDivider()
+                LazyColumn(
+//                    modifier = Modifier.height(200.dp) // 設定滾輪的高度
+                ) {
+                    items(filteredRecords) { record ->
+                        val subCategory =
+                            subCategoryViewModel.subCategories.value?.find { it.subCategoryId == record.subCategoryId }
+                        val categoryName = subCategory?.let {
+                            val resourceId = LocalContext.current.resources.getIdentifier(
+                                it.subCategoryNameKey,
+                                "string",
+                                LocalContext.current.packageName
+                            )
+                            if (resourceId != 0) {
+                                LocalContext.current.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                            } else {
+                                it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+                            }
+                        } ?: "Unknown"
+                        val recordCurrencyRate =
+                            currencyList.find { it.currency == record.currency }?.exchangeRate
+                                ?: 1.0
+                        val primaryCurrencyRate =
+                            currencyList.find { it.currency == userSettings?.currency }?.exchangeRate
+                                ?: 1.0
+                        val convertedAmount =
+                            record.amount / recordCurrencyRate * primaryCurrencyRate
+                        val decimalFormat = DecimalFormat("#,###.##")
+                        val formattedValue = decimalFormat.format(convertedAmount)
+                        var textColor =
+                            textColorBasedOnAmount(userSettings?.textColor ?: 0, convertedAmount)
+                        if (selectedCategoryType == 0) {
+                            textColor =
+                                textColorBasedOnAmount(userSettings?.textColor ?: 0, 0 - convertedAmount)
+                        }
+
+                        val timestamp = record.datetime // 假设这是 Long 类型的毫秒时间戳
+                        val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd E HH:mm", Locale.getDefault())
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            ListItem(
+                                modifier = Modifier.clickable {
+                                    selectedRecord = record
+                                    showRecordDialog = true
+                                },
+                                headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
+                                trailingContent = {
+                                    Text(
+                                        text = "$$formattedValue",
+                                        color = textColor,
+                                        fontSize = 14.sp
+                                    )
+                                },
+                                supportingContent = {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = record.description,
+                                            fontSize = 12.sp,
+                                            color = Gray,
+                                            maxLines = 2
+                                        )
+                                    }
+                                }
+                            )
+                            Text(
+                                text = dateTime.format(formatter),
+                                fontSize = 10.sp,
+                                color = Gray,
+                                modifier = Modifier.align(Alignment.End)
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (showRecordDialog) {
+        RecordDialog(
+            record = selectedRecord,
+            onDismissRequest = { showRecordDialog = false },
+            userSettings,
+            subCategoriesByMainCategory,
+            accounts,
+            navController,
+            recordViewModel
+        )
     }
 }
 
