@@ -60,7 +60,10 @@ import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.database.entities.UserSettingsEntity
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.textColorBasedOnAmount
+import app.skynier.skynier.ui.record.MergedTransferEntity
 import app.skynier.skynier.ui.record.RecordDialog
+import app.skynier.skynier.ui.record.RecordMergeDialog
+import app.skynier.skynier.ui.record.mergeTransferRecords
 import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.MainCategoryViewModel
 import app.skynier.skynier.viewmodels.RecordViewModel
@@ -111,7 +114,8 @@ fun ReportCategoryScreen(
 
     // 獲取使用者的主要貨幣代碼
     val primaryCurrencyCode = userSettings?.currency ?: "USD"
-        val primaryCurrencyRate = currencyList.find { it.currency == primaryCurrencyCode }?.exchangeRate ?: 1.0
+    val primaryCurrencyRate =
+        currencyList.find { it.currency == primaryCurrencyCode }?.exchangeRate ?: 1.0
 
     var showReportCategoryListDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -131,7 +135,8 @@ fun ReportCategoryScreen(
             else -> emptyList()
         }
         val convertedRecords = filteredRecords.map { record ->
-            val recordCurrencyRate = currencyList.find { it.currency == record.currency }?.exchangeRate ?: 1.0
+            val recordCurrencyRate =
+                currencyList.find { it.currency == record.currency }?.exchangeRate ?: 1.0
             val convertedAmount = record.amount / recordCurrencyRate * primaryCurrencyRate
             record.copy(amount = convertedAmount) // 使用轉換後的金額創建新記錄
         }
@@ -233,7 +238,8 @@ fun ReportCategoryScreen(
             else -> emptyList()
         }
         val convertedRecords = filteredRecords.map { record ->
-            val recordCurrencyRate = currencyList.find { it.currency == record.currency }?.exchangeRate ?: 1.0
+            val recordCurrencyRate =
+                currencyList.find { it.currency == record.currency }?.exchangeRate ?: 1.0
             val convertedAmount = record.amount / recordCurrencyRate * primaryCurrencyRate
             record.copy(amount = convertedAmount) // 使用轉換後的金額創建新記錄
         }
@@ -294,10 +300,10 @@ fun ReportCategoryScreen(
                             textColorBasedOnAmount(userSettings?.textColor ?: 0, 0 - totalAmount)
                     }
                     ListItem(
-                    modifier = Modifier.clickable {
-                        selectSubCategoryId = subCategoryId
-                        showReportCategoryListDialog = true
-                    },
+                        modifier = Modifier.clickable {
+                            selectSubCategoryId = subCategoryId
+                            showReportCategoryListDialog = true
+                        },
                         headlineContent = { Text(text = "$categoryName (${records.size})") },
                         trailingContent = {
                             Text(
@@ -376,15 +382,34 @@ fun ReportCategoryListDialog(
     )
     var showRecordDialog by rememberSaveable { mutableStateOf(false) }
     var selectedRecord by remember { mutableStateOf<RecordEntity?>(null) }
+    var showRecordMergeDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedMergeRecord by remember { mutableStateOf<MergedTransferEntity?>(null) }
 
     val filteredRecords = when (selectedCategoryType) {
         0 -> recordTotal.filter { it.type == 1 && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // Expenses
         1 -> recordTotal.filter { it.type == 2 && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // Income
-        2 -> recordTotal.filter { (it.type == 3 ||  it.type == 4) && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // 轉出
+        2 -> recordTotal.filter { (it.type == 3 || it.type == 4) && it.mainCategoryId == selectedMainCategoryId && it.subCategoryId == selectSubCategoryId } // 轉出
 //            3 -> recordTotal.filter { it.type == 4  && it.mainCategoryId == selectedMainCategoryId} // 轉入
         else -> emptyList()
     }
+
+//    if (selectedCategoryType == 2) {
+        val mergedTransferRecords = remember(filteredRecords) {
+            val transfersOut = filteredRecords.filter { it.type == 3 }
+            val transfersIn = filteredRecords.filter { it.type == 4 }
+            transfersOut.mapNotNull { outRecord ->
+                transfersIn.find { inRecord ->
+                    // 可以根據具體條件匹配，比如相同的金額和日期
+                    inRecord.datetime == outRecord.datetime
+                }?.let { inRecord ->
+                    mergeTransferRecords(outRecord, inRecord) // 如果找到匹配的轉入記錄，合併
+                }
+            }
+        }
+        Log.d("mergedTransferRecords", "$mergedTransferRecords")
+//    }
     Log.d("filteredRecords", "$filteredRecords")
+
 //    val categoryName = subCategory?.let {
 //        val resourceId = context.resources.getIdentifier(
 //            it.subCategoryNameKey,
@@ -401,7 +426,8 @@ fun ReportCategoryListDialog(
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.padding(5.dp)
+            modifier = Modifier
+                .padding(5.dp)
                 .heightIn(max = 800.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -417,83 +443,190 @@ fun ReportCategoryListDialog(
                     )
                 }
                 HorizontalDivider()
-                LazyColumn(
-//                    modifier = Modifier.height(200.dp) // 設定滾輪的高度
-                ) {
-                    items(filteredRecords) { record ->
-                        val subCategory =
-                            subCategoryViewModel.subCategories.value?.find { it.subCategoryId == record.subCategoryId }
-                        val categoryName = subCategory?.let {
-                            val resourceId = LocalContext.current.resources.getIdentifier(
-                                it.subCategoryNameKey,
-                                "string",
-                                LocalContext.current.packageName
-                            )
-                            if (resourceId != 0) {
-                                LocalContext.current.getString(resourceId) // 如果語系字串存在，顯示語系的值
-                            } else {
-                                it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
-                            }
-                        } ?: "Unknown"
-                        val recordCurrencyRate =
-                            currencyList.find { it.currency == record.currency }?.exchangeRate
-                                ?: 1.0
-                        val primaryCurrencyRate =
-                            currencyList.find { it.currency == userSettings?.currency }?.exchangeRate
-                                ?: 1.0
-                        val convertedAmount =
-                            record.amount / recordCurrencyRate * primaryCurrencyRate
-                        val decimalFormat = DecimalFormat("#,###.##")
-                        val formattedValue = decimalFormat.format(convertedAmount)
-                        var textColor =
-                            textColorBasedOnAmount(userSettings?.textColor ?: 0, convertedAmount)
-                        if (selectedCategoryType == 0) {
-                            textColor =
-                                textColorBasedOnAmount(userSettings?.textColor ?: 0, 0 - convertedAmount)
-                        }
-
-                        val timestamp = record.datetime // 假设这是 Long 类型的毫秒时间戳
-                        val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
-                        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd E HH:mm", Locale.getDefault())
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            ListItem(
-                                modifier = Modifier.clickable {
-                                    selectedRecord = record
-                                    showRecordDialog = true
-                                },
-                                headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
-                                trailingContent = {
-                                    Text(
-                                        text = "$$formattedValue",
-                                        color = textColor,
-                                        fontSize = 14.sp
-                                    )
-                                },
-                                supportingContent = {
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            text = record.description,
-                                            fontSize = 12.sp,
-                                            color = Gray,
-                                            maxLines = 2
-                                        )
-                                    }
+                if (selectedCategoryType == 2) {
+                    LazyColumn {
+                        items(mergedTransferRecords) { record ->
+                            val subCategory =
+                                subCategoryViewModel.subCategories.value?.find { it.subCategoryId == record.subCategoryId }
+                            val categoryName = subCategory?.let {
+                                val resourceId = LocalContext.current.resources.getIdentifier(
+                                    it.subCategoryNameKey,
+                                    "string",
+                                    LocalContext.current.packageName
+                                )
+                                if (resourceId != 0) {
+                                    LocalContext.current.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                                } else {
+                                    it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
                                 }
+                            } ?: "Unknown"
+                            val recordCurrencyRate =
+                                currencyList.find { it.currency == record.outCurrency }?.exchangeRate
+                                    ?: 1.0
+                            val primaryCurrencyRate =
+                                currencyList.find { it.currency == userSettings?.currency }?.exchangeRate
+                                    ?: 1.0
+                            val convertedAmount =
+                                record.outAmount / recordCurrencyRate * primaryCurrencyRate
+                            val decimalFormat = DecimalFormat("#,###.##")
+                            val formattedValue = decimalFormat.format(convertedAmount)
+                            val textColor =
+                                textColorBasedOnAmount(
+                                    userSettings?.textColor ?: 0,
+                                    convertedAmount
+                                )
+//                            if (selectedCategoryType == 0) {
+//                                textColor =
+//                                    textColorBasedOnAmount(
+//                                        userSettings?.textColor ?: 0,
+//                                        0 - convertedAmount
+//                                    )
+//                            }
+
+                            val timestamp = record.datetime // 假设这是 Long 类型的毫秒时间戳
+                            val dateTime = LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(timestamp),
+                                ZoneId.systemDefault()
                             )
-                            Text(
-                                text = dateTime.format(formatter),
-                                fontSize = 10.sp,
-                                color = Gray,
-                                modifier = Modifier.align(Alignment.End)
+                            val formatter = DateTimeFormatter.ofPattern(
+                                "yyyy/MM/dd E HH:mm",
+                                Locale.getDefault()
                             )
-                            HorizontalDivider()
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                ListItem(
+                                    modifier = Modifier.clickable {
+                                        selectedMergeRecord = record
+                                        showRecordMergeDialog = true
+                                    },
+                                    headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
+                                    trailingContent = {
+                                        Text(
+                                            text = "$$formattedValue",
+                                            color = textColor,
+                                            fontSize = 14.sp
+                                        )
+                                    },
+                                    supportingContent = {
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                text = record.description,
+                                                fontSize = 12.sp,
+                                                color = Gray,
+                                                maxLines = 2
+                                            )
+                                        }
+                                    }
+                                )
+                                Text(
+                                    text = dateTime.format(formatter),
+                                    fontSize = 10.sp,
+                                    color = Gray,
+                                    modifier = Modifier.align(Alignment.End)
+                                )
+                                HorizontalDivider()
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn {
+                        items(filteredRecords) { record ->
+                            val subCategory =
+                                subCategoryViewModel.subCategories.value?.find { it.subCategoryId == record.subCategoryId }
+                            val categoryName = subCategory?.let {
+                                val resourceId = LocalContext.current.resources.getIdentifier(
+                                    it.subCategoryNameKey,
+                                    "string",
+                                    LocalContext.current.packageName
+                                )
+                                if (resourceId != 0) {
+                                    LocalContext.current.getString(resourceId) // 如果語系字串存在，顯示語系的值
+                                } else {
+                                    it.subCategoryNameKey // 如果語系字串不存在，顯示原始值
+                                }
+                            } ?: "Unknown"
+                            val recordCurrencyRate =
+                                currencyList.find { it.currency == record.currency }?.exchangeRate
+                                    ?: 1.0
+                            val primaryCurrencyRate =
+                                currencyList.find { it.currency == userSettings?.currency }?.exchangeRate
+                                    ?: 1.0
+                            val convertedAmount =
+                                record.amount / recordCurrencyRate * primaryCurrencyRate
+                            val decimalFormat = DecimalFormat("#,###.##")
+                            val formattedValue = decimalFormat.format(convertedAmount)
+                            var textColor =
+                                textColorBasedOnAmount(
+                                    userSettings?.textColor ?: 0,
+                                    convertedAmount
+                                )
+                            if (selectedCategoryType == 0) {
+                                textColor =
+                                    textColorBasedOnAmount(
+                                        userSettings?.textColor ?: 0,
+                                        0 - convertedAmount
+                                    )
+                            }
+
+                            val timestamp = record.datetime // 假设这是 Long 类型的毫秒时间戳
+                            val dateTime = LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(timestamp),
+                                ZoneId.systemDefault()
+                            )
+                            val formatter = DateTimeFormatter.ofPattern(
+                                "yyyy/MM/dd E HH:mm",
+                                Locale.getDefault()
+                            )
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                ListItem(
+                                    modifier = Modifier.clickable {
+                                        selectedRecord = record
+                                        showRecordDialog = true
+                                    },
+                                    headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
+                                    trailingContent = {
+                                        Text(
+                                            text = "$$formattedValue",
+                                            color = textColor,
+                                            fontSize = 14.sp
+                                        )
+                                    },
+                                    supportingContent = {
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                text = record.description,
+                                                fontSize = 12.sp,
+                                                color = Gray,
+                                                maxLines = 2
+                                            )
+                                        }
+                                    }
+                                )
+                                Text(
+                                    text = dateTime.format(formatter),
+                                    fontSize = 10.sp,
+                                    color = Gray,
+                                    modifier = Modifier.align(Alignment.End)
+                                )
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }
             }
         }
     }
-    if (showRecordDialog) {
+    if (showRecordMergeDialog && selectedCategoryType == 2) {
+        RecordMergeDialog(
+            record = selectedMergeRecord,
+            onDismissRequest = { showRecordMergeDialog = false },
+            userSettings,
+            subCategoriesByMainCategory,
+            accounts,
+            navController,
+            recordViewModel
+        )
+    }
+    if (showRecordDialog && selectedCategoryType != 2) {
         RecordDialog(
             record = selectedRecord,
             onDismissRequest = { showRecordDialog = false },
