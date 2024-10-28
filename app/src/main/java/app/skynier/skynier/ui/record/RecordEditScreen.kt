@@ -949,7 +949,8 @@ fun RecordEditScreen(
                         onAssetSelected = { selectedAccount ->
                             selectedAsset = selectedAccount // 更新选中的资产
                             showAsset = false
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showTransferAssetFrom) {
@@ -965,7 +966,8 @@ fun RecordEditScreen(
 //                            val conversionRate = toCurrencyRate / fromCurrencyRate
 //                            val convertedAmount = fromAmount * conversionRate
 //                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showTransferAssetTo) {
@@ -975,7 +977,8 @@ fun RecordEditScreen(
                         onAssetSelected = { selectedAccount ->
                             selectedTransferAssetTo = selectedAccount // 更新选中的资产
                             showTransferAssetTo = false
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showCategory) {
@@ -988,7 +991,8 @@ fun RecordEditScreen(
                             // 选择子分类后执行的操作
                             selectedSubCategories = selectedSubCategory
                             showCategory = false
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showDatePicker) {

@@ -119,7 +119,8 @@ fun AccountScreen(
                     itemsIndexed(
                         accounts,
                         key = { _, accounts -> accounts.accountId }) { _, accounts ->
-                        val accountBalance = accountBalances[accounts.accountId] ?: 0.0
+                        val recordAccountBalance = accountBalances[accounts.accountId] ?: 0.0
+                        val accountBalance = recordAccountBalance + accounts.initialBalance
                         val decimalFormat = DecimalFormat("#,###.##")
                         val formattedValue = decimalFormat.format(accountBalance)
                         val textColor =

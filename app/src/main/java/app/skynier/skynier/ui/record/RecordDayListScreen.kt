@@ -122,7 +122,6 @@ fun RecordDayListScreen(
 
             // 顯示日期標題
             item {
-                HorizontalDivider()
                 Row {
                     Text(
                         text = date.format(dayFormatter),

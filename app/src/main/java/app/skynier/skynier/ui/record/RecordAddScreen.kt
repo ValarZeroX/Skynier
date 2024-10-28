@@ -931,7 +931,8 @@ fun RecordAddScreen(
                         onAssetSelected = { selectedAccount ->
                             selectedAsset = selectedAccount // 更新选中的资产
                             showAsset = false
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showTransferAssetFrom) {
@@ -947,7 +948,8 @@ fun RecordAddScreen(
 //                            val conversionRate = toCurrencyRate / fromCurrencyRate
 //                            val convertedAmount = fromAmount * conversionRate
 //                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showTransferAssetTo) {
@@ -965,7 +967,8 @@ fun RecordAddScreen(
 
 //                            Log.d()
                             showTransferAssetTo = false
-                        }
+                        },
+                        navController = navController
                     )
                 }
 
@@ -984,7 +987,8 @@ fun RecordAddScreen(
                             // 选择子分类后执行的操作
                             selectedSubCategories = selectedSubCategory
                             showCategory = false
-                        }
+                        },
+                        navController = navController
                     )
                 }
                 if (showDatePicker) {
@@ -1018,7 +1022,8 @@ fun CategoryDialog(
     subCategories: List<SubCategoryEntity>,
     subCategoryViewModel: SubCategoryViewModel,
     onDismiss: () -> Unit,
-    onSubCategorySelected: (SubCategoryEntity) -> Unit
+    onSubCategorySelected: (SubCategoryEntity) -> Unit,
+    navController: NavHostController
 ) {
     var isShowingSubCategories by remember { mutableStateOf(false) }
     var selectedMainCategoryId by remember { mutableStateOf<Int?>(null) }
@@ -1029,16 +1034,28 @@ fun CategoryDialog(
             modifier = Modifier.padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically // 垂直居中对齐
                 ) {
                     Text(
-                        text = if (isShowingSubCategories) stringResource(id = R.string.select_subcategory) else stringResource(id = R.string.select_category),
+                        text = if (isShowingSubCategories)
+                            stringResource(id = R.string.select_subcategory)
+                        else
+                            stringResource(id = R.string.select_category),
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
+                    Spacer(modifier = Modifier.weight(1f)) // 占据剩余空间，将 IconButton 推到右边
+                    IconButton(onClick = {
+                        navController.navigate("main_category")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Add"
+                        )
+                    }
                 }
                 HorizontalDivider()
 
@@ -1257,7 +1274,8 @@ fun CategoryDialog(
 fun AssetDialog(
     accounts: List<AccountEntity>,
     onDismiss: () -> Unit,
-    onAssetSelected: (AccountEntity) -> Unit
+    onAssetSelected: (AccountEntity) -> Unit,
+    navController: NavHostController
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -1265,13 +1283,25 @@ fun AssetDialog(
             modifier = Modifier.padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = stringResource(id = R.string.select_asset), modifier = Modifier.padding(bottom = 8.dp))
+                    Text(
+                        text = stringResource(id = R.string.select_asset),
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = {
+                        navController.navigate("account_add")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Add"
+                        )
+                    }
                 }
                 HorizontalDivider()
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -1360,7 +1390,6 @@ fun RecordAddScreenHeader(
                     contentDescription = "Add"
                 )
             }
-
         }
     )
 }

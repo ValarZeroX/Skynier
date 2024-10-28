@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -38,6 +40,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
+import app.skynier.skynier.library.CustomDatePickerDialog
+import app.skynier.skynier.library.DatePicker
+import app.skynier.skynier.library.MonthPickerDialog
+import app.skynier.skynier.library.YearPickerDialog
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
@@ -47,6 +53,7 @@ import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.UserSettingsViewModel
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -81,27 +88,38 @@ fun ReportMainScreen(
 // 根據 selectedFilter 計算要查詢的日期範圍
     when (selectedFilter) {
         "Day" -> {
-            startMonthDateMillis = selectedDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-            endMonthDateMillis = selectedDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+            startMonthDateMillis =
+                selectedDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+            endMonthDateMillis = selectedDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault())
+                .toEpochSecond() * 1000
         }
+
         "Month" -> {
             val firstDayOfMonth = selectedDate.withDayOfMonth(1)
             val lastDayOfMonth = selectedDate.withDayOfMonth(selectedDate.lengthOfMonth())
-            startMonthDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-            endMonthDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+            startMonthDateMillis =
+                firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+            endMonthDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault())
+                .toEpochSecond() * 1000
         }
+
         "Year" -> {
             val firstDayOfYear = selectedDate.withDayOfYear(1)
             val lastDayOfYear = selectedDate.withDayOfYear(selectedDate.lengthOfYear())
-            startMonthDateMillis = firstDayOfYear.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-            endMonthDateMillis = lastDayOfYear.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+            startMonthDateMillis =
+                firstDayOfYear.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+            endMonthDateMillis = lastDayOfYear.atTime(23, 59, 59).atZone(ZoneId.systemDefault())
+                .toEpochSecond() * 1000
         }
+
         else -> {
             // 自訂範圍，這裡假設是選擇月
             val firstDayOfMonth = selectedDate.withDayOfMonth(1)
             val lastDayOfMonth = selectedDate.withDayOfMonth(selectedDate.lengthOfMonth())
-            startMonthDateMillis = firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-            endMonthDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+            startMonthDateMillis =
+                firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+            endMonthDateMillis = lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault())
+                .toEpochSecond() * 1000
         }
     }
 
@@ -126,6 +144,9 @@ fun ReportMainScreen(
                 navController,
                 selectedDate,
                 selectedFilter,
+                onDateSelected = { newDate ->
+                    selectedDate = newDate
+                },
                 onClickPrev = {
                     selectedDate = when (selectedFilter) {
                         "Day" -> selectedDate.minusDays(1)
@@ -159,12 +180,21 @@ fun ReportMainScreen(
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text(stringResource(id = R.string.list)) }
+                        text = { Text(stringResource(id = R.string.asset)) }
                     )
                 }
                 when (selectedTabIndex) {
                     0 -> {
-                        ReportCategoryScreen(recordTotal, mainCategoryViewModel,subCategoryViewModel, userSettings, currencyList, navController, accounts, recordViewModel)
+                        ReportCategoryScreen(
+                            recordTotal,
+                            mainCategoryViewModel,
+                            subCategoryViewModel,
+                            userSettings,
+                            currencyList,
+                            navController,
+                            accounts,
+                            recordViewModel
+                        )
                     }
 
                     1 -> {
@@ -194,6 +224,7 @@ fun ReportMainScreenHeader(
     navController: NavHostController,
     localDate: LocalDate,
     selectedFilter: String,
+    onDateSelected: (LocalDate) -> Unit,
     onClickNext: () -> Unit,
     onClickPrev: () -> Unit,
     onFilterClick: () -> Unit,
@@ -203,10 +234,14 @@ fun ReportMainScreenHeader(
         "Day" -> DateTimeFormatter.ofPattern("MMMM d, yyyy", currentLocale)
         "Month" -> DateTimeFormatter.ofPattern("MMMM, yyyy", currentLocale)
         "Year" -> DateTimeFormatter.ofPattern("yyyy", currentLocale)
-        "Custom" -> DateTimeFormatter.ofPattern("MMM, yyyy ~ MMM, yyyy", currentLocale)
         else -> DateTimeFormatter.ofPattern("MMMM, yyyy", currentLocale)
     }
     val formattedDate = localDate.format(dateFormatter)
+
+
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showMonthPicker by rememberSaveable { mutableStateOf(false) }
+    var showYearPicker by rememberSaveable { mutableStateOf(false) }
     CenterAlignedTopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -215,7 +250,25 @@ fun ReportMainScreenHeader(
                         Icon(Icons.Default.ChevronLeft, contentDescription = "Previous period")
                     }
                 }
-                Text(text = formattedDate)
+
+                Box(
+                    modifier = Modifier.clickable {
+                        when (selectedFilter) {
+                            "Day" -> showDatePicker = true
+                            "Month" -> showMonthPicker = true
+                            "Year" -> showYearPicker = true
+                        }
+                    }
+                ) {
+                    Row {
+                        Text(text = formattedDate)
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = "Calendar Month",
+//                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
                 if (selectedFilter != "Custom") {
                     IconButton(onClick = onClickNext) {
                         Icon(Icons.Default.ChevronRight, contentDescription = "Next period")
@@ -232,6 +285,44 @@ fun ReportMainScreenHeader(
             }
         }
     )
+    if (showDatePicker) {
+        CustomDatePickerDialog(
+            initialDate = localDate,
+            onDateSelected = { selectedDateMillis ->
+                val selectedLocalDate = Instant.ofEpochMilli(selectedDateMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                onDateSelected(selectedLocalDate) // 通知父组件日期已更新
+                showDatePicker = false
+            },
+            onDismiss = {
+                showDatePicker = false
+            }
+        )
+    }
+    if (showMonthPicker) {
+        MonthPickerDialog(
+            initialYear = localDate.year,
+            initialMonth = localDate.monthValue - 1,
+            onMonthSelected = { year, month ->
+                val selectedDate = LocalDate.of(year, month + 1, 1)
+                onDateSelected(selectedDate)
+                showMonthPicker = false
+            },
+            onDismiss = { showMonthPicker = false }
+        )
+    }
+    if (showYearPicker) {
+        YearPickerDialog(
+            initialYear = localDate.year,
+            onYearSelected = { year ->
+                val selectedDate = LocalDate.of(year, 1, 1)
+                onDateSelected(selectedDate)
+                showYearPicker = false
+            },
+            onDismiss = { showYearPicker = false }
+        )
+    }
 }
 
 @Composable
@@ -243,11 +334,11 @@ fun FilterDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text(text = "選擇日期範圍")
+            Text(text = stringResource(id = R.string.select_date_range))
         },
         text = {
             Column {
-                val filters = listOf("Day", "Month", "Year", "Custom")
+                val filters = listOf("Day", "Month", "Year")
                 filters.forEach { filter ->
                     Row(
                         modifier = Modifier
@@ -271,7 +362,7 @@ fun FilterDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("確認")
+                Text(stringResource(id = R.string.confirm))
             }
         }
     )

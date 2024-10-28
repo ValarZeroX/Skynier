@@ -144,4 +144,20 @@
     <string name="calendar">日曆</string>
     <string name="list">列表</string>
     <string name="enter_search_content">輸入要搜尋的內容</string>
+    <string name="select_year">選擇年份</string>
+    <string-array name="months">
+        <item>一月</item>
+        <item>二月</item>
+        <item>三月</item>
+        <item>四月</item>
+        <item>五月</item>
+        <item>六月</item>
+        <item>七月</item>
+        <item>八月</item>
+        <item>九月</item>
+        <item>十月</item>
+        <item>十一月</item>
+        <item>十二月</item>
+    </string-array>
+    <string name="select_date_range">選擇日期範圍</string>
 </resources>

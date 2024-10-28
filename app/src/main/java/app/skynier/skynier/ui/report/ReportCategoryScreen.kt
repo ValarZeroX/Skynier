@@ -98,9 +98,6 @@ fun ReportCategoryScreen(
     var selectedCategoryType by rememberSaveable { mutableIntStateOf(0) }
     var selectSubCategoryId by rememberSaveable { mutableIntStateOf(0) }
 
-
-    Log.d("currencyList", "$currencyList")
-
     LaunchedEffect(Unit) {
         mainCategoryViewModel.loadAllMainCategories()
         if (selectedMainCategoryId != null) {
@@ -108,7 +105,12 @@ fun ReportCategoryScreen(
         }
     }
     if (recordTotal.isEmpty()) {
-        Text("No data available", fontSize = 16.sp)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No data available", fontSize = 16.sp)
+        }
         return
     }
 
@@ -123,9 +125,6 @@ fun ReportCategoryScreen(
         subCategoryViewModel.loadAllSubCategoriesAndGroupByMainCategory()
     }
 
-
-    Log.d("primaryCurrencyCode", primaryCurrencyCode)
-    Log.d("primaryCurrencyRate", "$primaryCurrencyRate")
     if (selectedMainCategoryId == null) {
         val filteredRecords = when (selectedCategoryType) {
             0 -> recordTotal.filter { it.type == 1 } // Expenses
@@ -252,7 +251,7 @@ fun ReportCategoryScreen(
             ) {
                 AssistChip(
                     onClick = { selectedMainCategoryId = null },
-                    label = { Text("返回") },
+                    label = { Text(stringResource(id = R.string.back)) },
                     leadingIcon = {
                         Icon(
                             Icons.Filled.ArrowBackIosNew,
@@ -394,19 +393,19 @@ fun ReportCategoryListDialog(
     }
 
 //    if (selectedCategoryType == 2) {
-        val mergedTransferRecords = remember(filteredRecords) {
-            val transfersOut = filteredRecords.filter { it.type == 3 }
-            val transfersIn = filteredRecords.filter { it.type == 4 }
-            transfersOut.mapNotNull { outRecord ->
-                transfersIn.find { inRecord ->
-                    // 可以根據具體條件匹配，比如相同的金額和日期
-                    inRecord.datetime == outRecord.datetime
-                }?.let { inRecord ->
-                    mergeTransferRecords(outRecord, inRecord) // 如果找到匹配的轉入記錄，合併
-                }
+    val mergedTransferRecords = remember(filteredRecords) {
+        val transfersOut = filteredRecords.filter { it.type == 3 }
+        val transfersIn = filteredRecords.filter { it.type == 4 }
+        transfersOut.mapNotNull { outRecord ->
+            transfersIn.find { inRecord ->
+                // 可以根據具體條件匹配，比如相同的金額和日期
+                inRecord.datetime == outRecord.datetime
+            }?.let { inRecord ->
+                mergeTransferRecords(outRecord, inRecord) // 如果找到匹配的轉入記錄，合併
             }
         }
-        Log.d("mergedTransferRecords", "$mergedTransferRecords")
+    }
+    Log.d("mergedTransferRecords", "$mergedTransferRecords")
 //    }
     Log.d("filteredRecords", "$filteredRecords")
 
@@ -492,38 +491,41 @@ fun ReportCategoryListDialog(
                                 "yyyy/MM/dd E HH:mm",
                                 Locale.getDefault()
                             )
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                ListItem(
-                                    modifier = Modifier.clickable {
-                                        selectedMergeRecord = record
-                                        showRecordMergeDialog = true
-                                    },
-                                    headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
-                                    trailingContent = {
-                                        Text(
-                                            text = "$$formattedValue",
-                                            color = textColor,
-                                            fontSize = 14.sp
-                                        )
-                                    },
-                                    supportingContent = {
-                                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Box(
+                                modifier = Modifier.clickable {
+                                    selectedMergeRecord = record
+                                    showRecordMergeDialog = true
+                                },
+                            ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    ListItem(
+                                        headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
+                                        trailingContent = {
                                             Text(
-                                                text = record.description,
-                                                fontSize = 12.sp,
-                                                color = Gray,
-                                                maxLines = 2
+                                                text = "$$formattedValue",
+                                                color = textColor,
+                                                fontSize = 14.sp
                                             )
+                                        },
+                                        supportingContent = {
+                                            Column(modifier = Modifier.fillMaxWidth()) {
+                                                Text(
+                                                    text = record.description,
+                                                    fontSize = 12.sp,
+                                                    color = Gray,
+                                                    maxLines = 2
+                                                )
+                                            }
                                         }
-                                    }
-                                )
-                                Text(
-                                    text = dateTime.format(formatter),
-                                    fontSize = 10.sp,
-                                    color = Gray,
-                                    modifier = Modifier.align(Alignment.End)
-                                )
-                                HorizontalDivider()
+                                    )
+                                    Text(
+                                        text = dateTime.format(formatter),
+                                        fontSize = 10.sp,
+                                        color = Gray,
+                                        modifier = Modifier.align(Alignment.End)
+                                    )
+                                    HorizontalDivider()
+                                }
                             }
                         }
                     }
@@ -576,38 +578,41 @@ fun ReportCategoryListDialog(
                                 "yyyy/MM/dd E HH:mm",
                                 Locale.getDefault()
                             )
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                ListItem(
-                                    modifier = Modifier.clickable {
-                                        selectedRecord = record
-                                        showRecordDialog = true
-                                    },
-                                    headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
-                                    trailingContent = {
-                                        Text(
-                                            text = "$$formattedValue",
-                                            color = textColor,
-                                            fontSize = 14.sp
-                                        )
-                                    },
-                                    supportingContent = {
-                                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Box(
+                                modifier = Modifier.clickable {
+                                    selectedRecord = record
+                                    showRecordDialog = true
+                                },
+                            ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    ListItem(
+                                        headlineContent = { Text(text = record.name.ifEmpty { categoryName }) },
+                                        trailingContent = {
                                             Text(
-                                                text = record.description,
-                                                fontSize = 12.sp,
-                                                color = Gray,
-                                                maxLines = 2
+                                                text = "$$formattedValue",
+                                                color = textColor,
+                                                fontSize = 14.sp
                                             )
+                                        },
+                                        supportingContent = {
+                                            Column(modifier = Modifier.fillMaxWidth()) {
+                                                Text(
+                                                    text = record.description,
+                                                    fontSize = 12.sp,
+                                                    color = Gray,
+                                                    maxLines = 2
+                                                )
+                                            }
                                         }
-                                    }
-                                )
-                                Text(
-                                    text = dateTime.format(formatter),
-                                    fontSize = 10.sp,
-                                    color = Gray,
-                                    modifier = Modifier.align(Alignment.End)
-                                )
-                                HorizontalDivider()
+                                    )
+                                    Text(
+                                        text = dateTime.format(formatter),
+                                        fontSize = 10.sp,
+                                        color = Gray,
+                                        modifier = Modifier.align(Alignment.End)
+                                    )
+                                    HorizontalDivider()
+                                }
                             }
                         }
                     }
