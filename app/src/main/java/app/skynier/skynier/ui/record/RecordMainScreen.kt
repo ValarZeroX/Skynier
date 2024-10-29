@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -135,11 +136,19 @@ fun RecordMainScreen(
             RecordMainScreenHeader(
                 navController,
                 selectedDate,
+//                onClickPrev = {
+//                    selectedDate = selectedDate.minusMonths(1)
+//                },
+//                onClickNext = {
+//                    selectedDate = selectedDate.plusMonths(1)
+//                },
                 onClickPrev = {
-                    selectedDate = selectedDate.minusMonths(1)
+                    val previousMonthDate = selectedDate.minusMonths(1).withDayOfMonth(1)
+                    selectedDate = previousMonthDate
                 },
                 onClickNext = {
-                    selectedDate = selectedDate.plusMonths(1)
+                    val nextMonthDate = selectedDate.plusMonths(1).withDayOfMonth(1)
+                    selectedDate = nextMonthDate
                 },
                 searchText = searchText,
                 onSearchTextChange = { searchText = it },

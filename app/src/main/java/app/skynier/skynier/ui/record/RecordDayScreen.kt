@@ -57,6 +57,7 @@ import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.database.entities.UserSettingsEntity
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.textColor
+import app.skynier.skynier.ui.layouts.CalendarPager
 import app.skynier.skynier.ui.layouts.CustomCalendar
 import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.viewmodels.RecordViewModel
@@ -116,7 +117,7 @@ fun RecordDayScreen(
 
 
     Column {
-        CustomCalendar(
+        CalendarPager(
             selectedDate = selectedDate,
             onDateSelected = onDateSelected,
             startFromSunday = true,

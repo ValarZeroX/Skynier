@@ -1,9 +1,13 @@
 package app.skynier.skynier.ui.layouts
 
 import android.util.Log
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,19 +16,26 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,23 +43,81 @@ import app.skynier.skynier.ui.theme.Blue
 import app.skynier.skynier.ui.theme.Gray
 import app.skynier.skynier.ui.theme.Red
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.temporal.ChronoUnit
 import java.util.Calendar
 import java.util.Locale
 import kotlin.math.ceil
 
+
+@Composable
+fun CalendarPager(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    startFromSunday: Boolean,
+    highlightDays: Map<LocalDate, Boolean>,
+) {
+    val pageCount = 5000 // 或其他合适的值
+    val initialPage = pageCount / 2
+
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { pageCount }
+    )
+    LaunchedEffect(selectedDate) {
+        val currentMonth = YearMonth.now().plusMonths((pagerState.currentPage - initialPage).toLong())
+        val selectedMonth = YearMonth.from(selectedDate)
+        val monthDifference = ChronoUnit.MONTHS.between(currentMonth, selectedMonth).toInt()
+        val targetPage = pagerState.currentPage + monthDifference
+
+        if (targetPage != pagerState.currentPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+    LaunchedEffect(pagerState.currentPage) {
+        val monthOffset = (pagerState.currentPage - initialPage).toLong()
+        val newYearMonth = YearMonth.now().plusMonths(monthOffset)
+        val newDate = LocalDate.of(newYearMonth.year, newYearMonth.monthValue, 1)
+
+        if (YearMonth.from(selectedDate) != newYearMonth) {
+            onDateSelected(newDate)
+        }
+    }
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier.fillMaxWidth()
+    ) { pageIndex ->
+        val monthOffset = (pageIndex - initialPage).toLong()
+        val currentYearMonth = YearMonth.now().plusMonths(monthOffset)
+        val displayedDate = LocalDate.of(currentYearMonth.year, currentYearMonth.monthValue, 1)
+
+        CustomCalendar(
+            selectedDate = selectedDate,
+            currentMonthDate = displayedDate,
+            onDateSelected = onDateSelected,
+            startFromSunday = startFromSunday,
+            highlightDays = highlightDays
+        )
+    }
+}
+
 @Composable
 fun CustomCalendar(
     selectedDate: LocalDate = LocalDate.now(),
+    currentMonthDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
     startFromSunday: Boolean,
     highlightDays: Map<LocalDate, Boolean>
 ) {
     val today = LocalDate.now()
-    val daysInMonth = selectedDate.lengthOfMonth() // 當前月有幾天
-    val firstDayOfMonth = selectedDate.withDayOfMonth(1).dayOfWeek.value % 7 // 當前月的第一天是星期幾（1是星期一）
+    val daysInMonth = currentMonthDate.lengthOfMonth() // 當前月有幾天
+    val firstDayOfMonth = currentMonthDate.withDayOfMonth(1).dayOfWeek.value % 7 // 當前月的第一天是星期幾（1是星期一）
     val weekdays = getWeekDays(startFromSunday)
 
-    Column(modifier = Modifier.padding(6.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(6.dp)
+    ) {
         // 顯示星期標題
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             weekdays.forEach { day ->
@@ -68,10 +137,9 @@ fun CustomCalendar(
                         val day = dayIndex - firstDayOfMonth + 1
 
                         if (day in 1..daysInMonth) {
-                            val date = selectedDate.withDayOfMonth(day)
+                            val date = currentMonthDate.withDayOfMonth(day)
                             val isSelected = date == selectedDate
                             val isToday = date == today
-                            // 根據 recordData 判斷該日期是否有資料
                             val hasRecord = highlightDays[date] == true
                             Column(
                                 modifier = Modifier
@@ -81,18 +149,20 @@ fun CustomCalendar(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                       .size(40.dp)
+                                        .size(40.dp)
                                         .clip(CircleShape)
                                         .clickable(
                                             onClick = { onDateSelected(date) },
                                             indication = ripple(bounded = true),
                                             interactionSource = remember { MutableInteractionSource() },
                                         )
-                                        .padding(4.dp).border(
+                                        .padding(4.dp)
+                                        .border(
                                             width = 2.dp, // 边框宽度
                                             color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
                                             shape = CircleShape // 边框形状为圆形
-                                        ).aspectRatio(1f)
+                                        )
+                                        .aspectRatio(1f)
                                         .background(
                                             color = if (isToday) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
                                             shape = CircleShape // 设置为圆形背景

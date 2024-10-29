@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -127,6 +128,7 @@ fun ReportMainScreen(
         startMonthDateMillis,
         endMonthDateMillis,
     ).observeAsState(emptyList())
+
     val currencyList by currencyViewModel.currencies.observeAsState(emptyList())
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     LaunchedEffect(Unit) {
@@ -279,7 +281,7 @@ fun ReportMainScreenHeader(
         actions = {
             IconButton(onClick = onFilterClick) {
                 Icon(
-                    imageVector = Icons.Filled.FilterList,
+                    imageVector = Icons.Filled.DateRange,
                     contentDescription = "Filter Options"
                 )
             }
