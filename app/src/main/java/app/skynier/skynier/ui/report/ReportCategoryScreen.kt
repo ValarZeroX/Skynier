@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -141,13 +142,13 @@ fun ReportCategoryScreen(
         }
         // 顯示主類別
         val categoryMap = convertedRecords.groupBy { it.mainCategoryId }
+
         Column {
             ReportCategoryTypeSwitch(
                 selectedCategoryType = selectedCategoryType,
                 onCategoryTypeSelected = { newType -> selectedCategoryType = newType },
             )
             ReportCategoryPieChart(categoryMap, selectedCategoryType, mainCategories)
-
             LazyColumn {
                 items(categoryMap.entries.toList()) { (mainCategoryId, records) ->
                     val mainCategory = mainCategories.find { it.mainCategoryId == mainCategoryId }
@@ -244,7 +245,7 @@ fun ReportCategoryScreen(
         }
         // 顯示主類別
         val categoryMap = convertedRecords.groupBy { it.subCategoryId }
-
+        var subCategoryName by rememberSaveable { mutableStateOf("") }
         Column {
             Row(
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp)
@@ -301,6 +302,7 @@ fun ReportCategoryScreen(
                     ListItem(
                         modifier = Modifier.clickable {
                             selectSubCategoryId = subCategoryId
+                            subCategoryName = categoryName
                             showReportCategoryListDialog = true
                         },
                         headlineContent = { Text(text = "$categoryName (${records.size})") },
@@ -354,7 +356,8 @@ fun ReportCategoryScreen(
                     onDismissRequest = { showReportCategoryListDialog = false },
                     navController = navController,
                     accounts = accounts,
-                    recordViewModel = recordViewModel
+                    recordViewModel = recordViewModel,
+                    subCategoryName = subCategoryName
                 )
             }
         }
@@ -374,7 +377,8 @@ fun ReportCategoryListDialog(
     onDismissRequest: () -> Unit,
     navController: NavHostController,
     accounts: List<AccountEntity>,
-    recordViewModel: RecordViewModel
+    recordViewModel: RecordViewModel,
+    subCategoryName: String
 ) {
     val subCategoriesByMainCategory by subCategoryViewModel.subCategoriesByMainCategory.observeAsState(
         emptyMap()
@@ -437,7 +441,7 @@ fun ReportCategoryListDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = stringResource(id = R.string.account_category),
+                        text = subCategoryName,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -811,6 +815,7 @@ fun ReportCategoryPieChart(
             override fun getFormattedValue(value: Float) =
                 formatter.format(value / 100f)
         }
+        sliceSpace = 3f
     }
 
     val pieData = PieData(dataSet)
@@ -824,7 +829,7 @@ fun ReportCategoryPieChart(
                     this.legend.isEnabled = false
                     this.setUsePercentValues(true)
                     this.isDrawHoleEnabled = true
-                    this.holeRadius = 60f
+//                    this.holeRadius = 60f
                     this.setHoleColor(m3Surface)
                     this.setDrawCenterText(true)
                     this.setCenterTextSize(18f)
@@ -927,6 +932,7 @@ fun ReportSubCategoryPieChart(
             override fun getFormattedValue(value: Float) =
                 formatter.format(value / 100f)
         }
+        sliceSpace = 3f
     }
 
     val pieData = PieData(dataSet)
@@ -940,7 +946,7 @@ fun ReportSubCategoryPieChart(
                     this.legend.isEnabled = false
                     this.setUsePercentValues(true)
                     this.isDrawHoleEnabled = true
-                    this.holeRadius = 60f
+//                    this.holeRadius = 60f
                     this.setHoleColor(m3Surface)
                     this.setDrawCenterText(true)
                     this.setCenterTextSize(18f)

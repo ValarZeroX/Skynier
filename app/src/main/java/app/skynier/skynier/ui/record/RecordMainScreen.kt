@@ -1,7 +1,7 @@
 package app.skynier.skynier.ui.record
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,11 +14,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -44,12 +44,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
+import app.skynier.skynier.library.MonthPickerDialog
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
@@ -78,9 +78,6 @@ fun RecordMainScreen(
     userSettingsViewModel: UserSettingsViewModel,
 ) {
 
-
-//    val selectedDate by remember { mutableStateOf(LocalDate.now()) }
-//    val localDate = LocalDate.now()
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -98,6 +95,8 @@ fun RecordMainScreen(
         firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
     val endMonthDateMillis =
         lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+
     val recordsMonth by recordViewModel.getDateSerialNumberMapByDateRange(
         startMonthDateMillis,
         endMonthDateMillis,
@@ -143,7 +142,10 @@ fun RecordMainScreen(
                     selectedDate = selectedDate.plusMonths(1)
                 },
                 searchText = searchText,
-                onSearchTextChange = { searchText = it }
+                onSearchTextChange = { searchText = it },
+                onDateSelected = { newDate ->
+                    selectedDate = newDate
+                },
             )
         }
     ) { innerPadding ->
@@ -164,7 +166,7 @@ fun RecordMainScreen(
                 when (selectedTabIndex) {
                     0 -> {
                         Column {
-//                            RecordDashboard(recordTotal,userSettings)
+                            RecordDashboard(recordTotal,userSettings)
                             HorizontalDivider()
                             RecordDayScreen(
                                 selectedDate,
@@ -183,6 +185,8 @@ fun RecordMainScreen(
                     }
 
                     1 -> {
+                        RecordDashboard(recordTotal,userSettings)
+                        HorizontalDivider()
                         RecordDayListScreen(
                             recordTotal = filteredRecords,
                             userSettings,
@@ -206,13 +210,15 @@ fun RecordMainScreenHeader(
     onClickNext: () -> Unit,
     onClickPrev: () -> Unit,
     searchText: String,
-    onSearchTextChange: (String) -> Unit
+    onSearchTextChange: (String) -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
 ) {
     var showSearchBar by rememberSaveable { mutableStateOf(false) }
 
     val currentLocale = Locale.getDefault()
     val dateFormatter = DateTimeFormatter.ofPattern("MMMM, yyyy", currentLocale)
     val formattedDate = localDate.format(dateFormatter)
+    var showMonthPicker by rememberSaveable { mutableStateOf(false) }
 
     CenterAlignedTopAppBar(
         title = {
@@ -268,7 +274,20 @@ fun RecordMainScreenHeader(
                     IconButton(onClick = onClickPrev) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month")
                     }
-                    Text(text = formattedDate)
+                    Box(
+                        modifier = Modifier.clickable {
+                            showMonthPicker = true
+                        }
+                    ) {
+                        Row {
+                            Text(text = formattedDate)
+                            Icon(
+                                imageVector = Icons.Default.CalendarMonth,
+                                contentDescription = "Calendar Month",
+//                            tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                     IconButton(onClick = onClickNext) {
                         Icon(Icons.Default.ChevronRight, contentDescription = "Next month")
                     }
@@ -298,4 +317,16 @@ fun RecordMainScreenHeader(
             }
         }
     )
+    if (showMonthPicker) {
+        MonthPickerDialog(
+            initialYear = localDate.year,
+            initialMonth = localDate.monthValue - 1,
+            onMonthSelected = { year, month ->
+                val selectedDate = LocalDate.of(year, month + 1, 1)
+                onDateSelected(selectedDate)
+                showMonthPicker = false
+            },
+            onDismiss = { showMonthPicker = false }
+        )
+    }
 }

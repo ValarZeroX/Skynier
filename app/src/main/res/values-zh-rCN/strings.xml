@@ -160,4 +160,5 @@
         <item>十二月</item>
     </string-array>
     <string name="select_date_range">选择日期范围</string>
+    <string name="total">总计</string>
 </resources>

@@ -361,14 +361,14 @@ fun FilterDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(id = R.string.confirm))
-            }
+//            TextButton(onClick = onDismissRequest) {
+//                Text(stringResource(id = R.string.confirm))
+//            }
         }
     )
 }
 
 
-enum class DateFilterOption {
-    DAY, MONTH, YEAR, CUSTOM
-}
+//enum class DateFilterOption {
+//    DAY, MONTH, YEAR, CUSTOM
+//}

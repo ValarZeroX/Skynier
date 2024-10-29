@@ -172,7 +172,7 @@ fun AccountScreen(
                                     Row {
                                         Box(
                                             modifier = Modifier
-                                                .width(70.dp)
+                                                .width(60.dp)
                                                 .fillMaxHeight()
                                                 .background(Blue)
                                                 .clickable {
@@ -198,7 +198,7 @@ fun AccountScreen(
                                         }
                                         Box(
                                             modifier = Modifier
-                                                .width(70.dp)
+                                                .width(60.dp)
                                                 .fillMaxHeight()
                                                 .background(Red)
                                                 .clickable {
@@ -268,7 +268,7 @@ fun AccountScreen(
                                         accountIcon?.let {
                                             Box(
                                                 modifier = Modifier
-                                                    .size(46.dp)
+                                                    .size(36.dp)
                                                     .background(
                                                         Color(android.graphics.Color.parseColor("#${accounts.accountBackgroundColor}")),
                                                         CircleShape
@@ -278,7 +278,7 @@ fun AccountScreen(
                                                 Icon(
                                                     imageVector = it.icon,
                                                     contentDescription = accounts.accountIconColor,
-                                                    modifier = Modifier.size(28.dp), // Set icon size
+                                                    modifier = Modifier.size(20.dp), // Set icon size
                                                     tint = Color(android.graphics.Color.parseColor("#${accounts.accountIconColor}"))
                                                 )
                                             }

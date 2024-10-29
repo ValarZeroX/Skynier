@@ -159,4 +159,5 @@
         <item>December</item>
     </string-array>
     <string name="select_date_range">Select Date Range</string>
+    <string name="total">Total</string>
 </resources>

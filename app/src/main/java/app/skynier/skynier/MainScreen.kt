@@ -137,7 +137,7 @@ fun Navigation(
     recordViewModel: RecordViewModel,
 ) {
     NavHost(navController = navController, startDestination = "account") {
-        composable("report") { ReportScreen() }
+//        composable("report") { ReportScreen() }
         composable("settings") { SettingsScreen(navController) }
         composable("theme") { ThemeScreen(navController) }
         composable("record_add") {
@@ -287,19 +287,4 @@ fun Navigation(
     }
 }
 
-//@Composable
-//fun HomeScreen() {
-//    Text(
-//        text = "在 WordPress 網站展示漂亮的中文字型，一直是每位網站管理者優先處理的工作之一，在 google fonts – 如何為佈景主題新增中文字型這一篇文章，已經跟大家分享了如何的幫自",
-//        style = MaterialTheme.typography.bodyLarge
-//    )
-//}
-
-@Composable
-fun ReportScreen() {
-    Text(
-        text = "Report Page Noto Sans Traditional Chinese",
-        style = MaterialTheme.typography.bodyLarge
-    )
-}
 

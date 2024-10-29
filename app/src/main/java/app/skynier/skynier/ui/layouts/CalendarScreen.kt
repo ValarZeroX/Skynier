@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +48,7 @@ fun CustomCalendar(
     val firstDayOfMonth = selectedDate.withDayOfMonth(1).dayOfWeek.value % 7 // 當前月的第一天是星期幾（1是星期一）
     val weekdays = getWeekDays(startFromSunday)
 
-    Column(modifier = Modifier.padding(10.dp)) {
+    Column(modifier = Modifier.padding(6.dp)) {
         // 顯示星期標題
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             weekdays.forEach { day ->
@@ -75,26 +76,12 @@ fun CustomCalendar(
                             Column(
                                 modifier = Modifier
                                     .weight(1f),
-//                                    .clickable(
-//                                        onClick = { onDateSelected(date) },
-//                                        indication = ripple(bounded = true),
-//                                        interactionSource = remember { MutableInteractionSource() },
-//                                    )
-//                                    .padding(4.dp).border(
-//                                        width = 2.dp, // 边框宽度
-//                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
-//                                        shape = CircleShape // 边框形状为圆形
-//                                    ).aspectRatio(1f)
-//                                    .background(
-//                                        color = if (isToday) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
-//                                        shape = CircleShape // 设置为圆形背景
-//                                    ),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Box(
                                     modifier = Modifier
-//                                        .weight(1f)
+                                       .size(40.dp)
                                         .clip(CircleShape)
                                         .clickable(
                                             onClick = { onDateSelected(date) },
@@ -117,18 +104,6 @@ fun CustomCalendar(
                                         color = if (hasRecord) MaterialTheme.colorScheme.onBackground else Gray,
                                     )
                                 }
-                                // 顯示日期
-
-
-                                // 顯示對應日期的資料
-//                                recordData[date]?.let { record ->
-//                                    Text(
-//                                        text = record,
-////                                        style = MaterialTheme.typography.caption,
-//                                        color = Gray
-//                                    )
-//                                }
-
                             }
                         } else {
                             // 空格子
