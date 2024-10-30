@@ -106,9 +106,9 @@ fun RecordDayListScreen(
         emptyMap()
     )
     // 排序日期
-    val sortedMergeDates = recordByMergeDate.keys.sorted()
-    val sortedDates = recordsByDate.keys.sorted()
-    val combinedDates = (sortedDates + sortedMergeDates).distinct().sorted()
+    val sortedMergeDates = recordByMergeDate.keys.sortedDescending()
+    val sortedDates = recordsByDate.keys.sortedDescending()
+    val combinedDates = (sortedDates + sortedMergeDates).distinct().sortedDescending()
 
     var showRecordDialog by rememberSaveable { mutableStateOf(false) }
     var selectedRecord by remember { mutableStateOf<RecordEntity?>(null) }

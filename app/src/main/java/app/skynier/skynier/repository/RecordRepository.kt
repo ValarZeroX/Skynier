@@ -42,4 +42,8 @@ class RecordRepository(private val recordDao: RecordDao) {
     suspend fun deleteRecordById(recordId: Int) {
         recordDao.deleteRecordById(recordId) // 假设你的 DAO 中有这个方法
     }
+
+    fun getRecordsByDateRangeAccountId(startDate: Long, endDate: Long, accountId: Int): LiveData<List<RecordEntity>> {
+        return recordDao.getRecordsByDateRangeAccountId(startDate, endDate, accountId)
+    }
 }

@@ -224,6 +224,9 @@ fun AccountScreen(
                                 }
                             ) {
                                 ListItem(
+                                    modifier = Modifier.clickable {
+                                        navController.navigate("account_records/${accounts.accountId}")
+                                    },
                                     headlineContent = {
                                         Row {
                                             Text(text = accounts.accountName)

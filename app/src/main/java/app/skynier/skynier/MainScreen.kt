@@ -3,9 +3,7 @@ package app.skynier.skynier
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.skynier.skynier.ui.account.AccountAddScreen
 import app.skynier.skynier.ui.account.AccountEditScreen
+import app.skynier.skynier.ui.account.AccountRecordScreen
 import app.skynier.skynier.ui.account.AccountScreen
 import app.skynier.skynier.ui.layouts.NavigationBarScreen
 import app.skynier.skynier.ui.record.RecordAddScreen
@@ -282,6 +281,22 @@ fun Navigation(
                 currencyViewModel,
                 recordViewModel,
                 userSettingsViewModel
+            )
+        }
+        composable("account_records/{accountId}") {backStackEntry ->
+            val accountId = backStackEntry.arguments?.getString("accountId")?.toIntOrNull() ?: 0
+            AccountRecordScreen(
+                navController,
+                skynierViewModel,
+                categoryViewModel,
+                mainCategoryViewModel,
+                subCategoryViewModel,
+                accountCategoryViewModel,
+                accountViewModel,
+                currencyViewModel,
+                recordViewModel,
+                userSettingsViewModel,
+                accountId
             )
         }
     }

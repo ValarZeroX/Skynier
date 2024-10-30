@@ -67,6 +67,10 @@ class RecordViewModel(private val repository: RecordRepository) : ViewModel() {
         return repository.getRecordsByCategory(mainCategoryId, subCategoryId)
     }
 
+    fun getRecordsByDateRangeAccountId(startDate: Long, endDate: Long, accountId: Int): LiveData<List<RecordEntity>> {
+        return repository.getRecordsByDateRangeAccountId(startDate, endDate, accountId)
+    }
+
     fun getRecordsByDateRange(startDate: Long, endDate: Long): LiveData<List<RecordEntity>> {
         return repository.getRecordsByDateRange(startDate, endDate)
     }

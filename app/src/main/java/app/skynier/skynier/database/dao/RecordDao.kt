@@ -39,4 +39,6 @@ interface RecordDao {
     @Query("DELETE FROM record WHERE recordId = :recordId")
     suspend fun deleteRecordById(recordId: Int)
 
+    @Query("SELECT * FROM record  WHERE datetime BETWEEN :startDate AND :endDate AND accountId = :accountId ORDER BY datetime DESC")
+    fun getRecordsByDateRangeAccountId(startDate: Long, endDate: Long, accountId: Int): LiveData<List<RecordEntity>>
 }
