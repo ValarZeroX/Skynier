@@ -161,4 +161,6 @@
     </string-array>
     <string name="select_date_range">選擇日期範圍</string>
     <string name="total">總計</string>
+    <string name="transfer_in">轉入</string>
+    <string name="transfer_out">轉出</string>
 </resources>

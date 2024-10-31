@@ -12,24 +12,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,38 +32,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.RecordEntity
+import app.skynier.skynier.database.entities.UserSettingsEntity
 import app.skynier.skynier.library.CustomDatePickerDialog
 import app.skynier.skynier.library.MonthPickerDialog
-import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.YearPickerDialog
 import app.skynier.skynier.library.textColor
-import app.skynier.skynier.ui.record.MergedTransferEntity
 import app.skynier.skynier.ui.record.RecordDayListScreen
-import app.skynier.skynier.ui.record.RecordDialog
-import app.skynier.skynier.ui.record.RecordMergeDialog
-import app.skynier.skynier.ui.record.mergeTransferRecords
 import app.skynier.skynier.ui.report.FilterDialog
-import app.skynier.skynier.ui.report.ReportMainScreenHeader
-import app.skynier.skynier.ui.theme.Blue
-import app.skynier.skynier.ui.theme.Gray
-import app.skynier.skynier.ui.theme.Red
 import app.skynier.skynier.viewmodels.AccountCategoryViewModel
 import app.skynier.skynier.viewmodels.AccountViewModel
 import app.skynier.skynier.viewmodels.CategoryViewModel
@@ -79,24 +59,13 @@ import app.skynier.skynier.viewmodels.RecordViewModel
 import app.skynier.skynier.viewmodels.SkynierViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.UserSettingsViewModel
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.HorizontalBarChart
-import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.components.Description
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.formatter.ValueFormatter
 import java.text.DecimalFormat
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.abs
 
 @Composable
 fun AccountRecordScreen(
@@ -112,6 +81,7 @@ fun AccountRecordScreen(
     userSettingsViewModel: UserSettingsViewModel,
     accountId: Int,
 ) {
+
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var selectedFilter by rememberSaveable { mutableStateOf("Month") } // Default to "Month"
 
@@ -169,9 +139,9 @@ fun AccountRecordScreen(
         endMonthDateMillis,
     ).observeAsState(emptyList())
 
-//    val filteredRecords = recordTotal.filter {
-//        it.accountId == accountId
-//    }
+    val filteredRecordByCount = recordTotal.filter {
+        it.accountId == accountId
+    }
 
     val filteredRecords = recordTotal.filter {
         it.accountId == accountId
@@ -207,7 +177,17 @@ fun AccountRecordScreen(
     }
     val accounts by accountViewModel.accounts.observeAsState(emptyList())
 
-
+    var selectedTypeFilter by rememberSaveable { mutableStateOf<Int?>(null) }
+    Log.d("selectedTypeFilter", "$selectedTypeFilter")
+    val filteredRecordsByType = if (selectedTypeFilter != null) {
+        if (selectedTypeFilter == 3 || selectedTypeFilter == 4) {
+            finalFilteredRecords.filter { it.type == 3 || it.type == 4 }
+        } else {
+            finalFilteredRecords.filter { it.type == selectedTypeFilter }
+        }
+    } else {
+        finalFilteredRecords
+    }
     Scaffold(
         topBar = {
             AccountRecordScreenHeader(
@@ -241,9 +221,16 @@ fun AccountRecordScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             Column {
-//                AccountRecordHorizontalBarChart(recordTotal, modifier = Modifier.height(300.dp).fillMaxWidth())
+                AccountRecordBarChart(
+                    filteredRecordByCount,
+                    userSettings,
+                    selectedTypeFilter = selectedTypeFilter,
+                    onTypeSelected = { type ->
+                        selectedTypeFilter = type
+                    }
+                )
                 RecordDayListScreen(
-                    recordTotal = finalFilteredRecords,
+                    recordTotal = filteredRecordsByType,
                     userSettings,
                     subCategoryViewModel,
                     accounts,
@@ -269,86 +256,167 @@ fun AccountRecordScreen(
 }
 
 @Composable
-fun AccountRecordHorizontalBarChart(recordTotal: List<RecordEntity>, modifier: Modifier = Modifier) {
-    AndroidView(factory = { context ->
-        HorizontalBarChart(context).apply {
-            val entries = mutableListOf<BarEntry>()
-            val labels = mutableListOf<String>()
+fun AccountRecordBarChart(
+    records: List<RecordEntity>,
+    userSettings: UserSettingsEntity?,
+    selectedTypeFilter: Int?,
+    onTypeSelected: (Int?) -> Unit
+) {
+    // 將記錄根據類型分組，並計算每個類型的金額總和和筆數
+    val groupedRecords = records.groupBy { it.type }
+    val expense = groupedRecords[1]?.sumOf { it.amount } ?: 0.0
+    val income = groupedRecords[2]?.sumOf { it.amount } ?: 0.0
+    val transferOut = groupedRecords[3]?.sumOf { it.amount } ?: 0.0
+    val transferIn = groupedRecords[4]?.sumOf { it.amount } ?: 0.0
 
-            val countMap = mutableMapOf<String, Pair<Float, Int>>(
-                "支出" to Pair(0f, 0),
-                "收入" to Pair(0f, 0),
-                "轉出" to Pair(0f, 0),
-                "轉入" to Pair(0f, 0)
+    val expenseCount = groupedRecords[1]?.size ?: 0
+    val incomeCount = groupedRecords[2]?.size ?: 0
+    val transferOutCount = groupedRecords[3]?.size ?: 0
+    val transferInCount = groupedRecords[4]?.size ?: 0
+
+    val total = income + transferIn - expense - transferOut
+
+    // 找出最大絕對值
+    val maxAmount = listOf(
+        expense,
+        income,
+        transferOut,
+        transferIn,
+        total
+    ).maxOfOrNull { abs(it) } ?: 1.0
+
+    var textColorExpense = MaterialTheme.colorScheme.onBackground
+    var textColorIncome = MaterialTheme.colorScheme.onBackground
+    userSettings?.let {
+        textColorExpense = textColor(it.textColor, 1)
+        textColorIncome= textColor(it.textColor, 2)
+    }
+    // 使用 Column 佈局顯示不同類型的數據
+    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
+        // 顯示每個類型的數據
+        if (expenseCount > 0) {
+            RecordBarChartItem(
+                label = stringResource(id = R.string.expense),
+                count = expenseCount,
+                amount = -expense,
+                color = textColorExpense,
+                maxAmount = maxAmount,
+                type = 1,
+                isSelected = selectedTypeFilter == 1,
+                onClick = onTypeSelected
             )
-
-            // 累計每個類型的金額和筆數
-            recordTotal.forEach { record ->
-                when (record.type) {
-                    1 -> {
-                        val currentValue = countMap["支出"]!!
-                        countMap["支出"] = Pair(currentValue.first + record.amount.toFloat(), currentValue.second + 1)
-                    }
-                    2 -> {
-                        val currentValue = countMap["收入"]!!
-                        countMap["收入"] = Pair(currentValue.first + record.amount.toFloat(), currentValue.second + 1)
-                    }
-                    3 -> {
-                        val currentValue = countMap["轉出"]!!
-                        countMap["轉出"] = Pair(currentValue.first + record.amount.toFloat(), currentValue.second + 1)
-                    }
-                    4 -> {
-                        val currentValue = countMap["轉入"]!!
-                        countMap["轉入"] = Pair(currentValue.first + record.amount.toFloat(), currentValue.second + 1)
-                    }
-                }
-            }
-
-            // 為每個類型創建 BarEntry
-            countMap.entries.forEachIndexed { index, entry ->
-                val (amount, count) = entry.value
-                entries.add(BarEntry(index.toFloat(), amount))
-                labels.add("${entry.key} ($count)")
-            }
-
-            val dataSet = BarDataSet(entries, "").apply {
-                colors = listOf(
-                    Color(0xFFDC3545).toArgb(),  // Example color: Red
-                    Color(0xFF6B5B95).toArgb(),  // Example color: Purple
-                    Color(0xFF88B04B).toArgb(),  // Example color: Green
-                    Color(0xFFF7CAC9).toArgb()   // Example color: Pink
-                )
-                valueTextSize = 12f
-            }
-
-            val data = BarData(dataSet)
-            data.barWidth = 0.8f // 設定條形寬度
-
-            this.data = data
-            description.isEnabled = false
-
-            // 設定 X 軸的標籤
-            xAxis.apply {
-                valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String {
-                        return labels.getOrNull(value.toInt()) ?: ""
-                    }
-                }
-                textSize = 12f
-                position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM_INSIDE
-                setDrawGridLines(false)
-            }
-
-            // 設定 Y 軸
-            axisLeft.isEnabled = false
-            axisRight.textSize = 12f
-            axisRight.setDrawGridLines(false)
-
-            legend.isEnabled = false
-
-            invalidate() // 刷新圖表
         }
-    }, modifier = modifier)
+        if (incomeCount > 0) {
+            RecordBarChartItem(
+                label = stringResource(id = R.string.income),
+                count = incomeCount,
+                amount = income,
+                color = textColorIncome,
+                maxAmount = maxAmount,
+                type = 2,
+                isSelected = selectedTypeFilter == 2,
+                onClick = onTypeSelected
+            )
+        }
+        if (transferOutCount > 0) {
+            RecordBarChartItem(
+                label = stringResource(id = R.string.transfer_out),
+                count = transferOutCount,
+                amount = -transferOut,
+                color = textColorExpense, // 橘色
+                maxAmount = maxAmount,
+                type = 3,
+                isSelected = selectedTypeFilter == 3,
+                onClick = onTypeSelected
+            )
+        }
+        if (transferInCount > 0) {
+            RecordBarChartItem(
+                label = stringResource(id = R.string.transfer_in),
+                count = transferInCount,
+                amount = transferIn,
+                color = textColorIncome, // 金黃色
+                maxAmount = maxAmount,
+                type = 4,
+                isSelected = selectedTypeFilter == 4,
+                onClick = onTypeSelected
+            )
+        }
+        if (expenseCount + incomeCount + transferOutCount + transferInCount > 0) {
+            RecordBarChartItem(
+                label = stringResource(id = R.string.total),
+                count = expenseCount + incomeCount + transferOutCount + transferInCount,
+                amount = total,
+                color = Color(0xFF800080), // 紫色
+                maxAmount = maxAmount,
+                type = null,
+                isSelected = selectedTypeFilter == null,
+                onClick = onTypeSelected
+            )
+        }
+    }
+}
+
+@Composable
+fun RecordBarChartItem(
+    label: String,
+    count: Int,
+    amount: Double,
+    color: Color,
+    maxAmount: Double,
+    type: Int?,
+    isSelected: Boolean,
+    onClick: (Int?) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 2.dp).background(if (isSelected) color.copy(alpha = 0.1f) else Color.Transparent)
+            .clickable { onClick(type) }
+    ) {
+        // 顯示標籤和筆數
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(6f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(color = color, shape = CircleShape)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = "$label ($count)", fontSize = 14.sp)
+        }
+        // 計算條狀圖的相對寬度比例
+        val percentage = (kotlin.math.abs(amount) / maxAmount).coerceIn(0.0, 1.0)
+        // 顯示條狀圖
+        Box(
+            modifier = Modifier
+                .padding(start = 10.dp)
+                .height(10.dp)
+                .weight(8f)
+        ) {
+            Box (
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .height(10.dp)
+                    .fillMaxWidth(fraction = percentage.toFloat()) // 根據百分比來決定條狀圖的寬度
+                    .background(color = color.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
+            )
+        }
+        // 顯示金額
+        Box(
+            modifier = Modifier
+                .weight(8f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Text(
+                text = "${if (amount >= 0) "+" else "-"}\$${"%,.0f".format(kotlin.math.abs(amount))}",
+                color = color,
+                fontSize = 14.sp,
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -464,5 +532,13 @@ fun AccountRecordScreenHeader(
             },
             onDismiss = { showYearPicker = false }
         )
+    }
+}
+
+fun formatAmount(amount: Float): String {
+    return when {
+        amount >= 1_000_000_000 -> DecimalFormat("#.#B").format(amount / 1_000_000_000) // 十億以上顯示為 B
+        amount >= 1_000_000 -> DecimalFormat("#.#M").format(amount / 1_000_000) // 百萬以上顯示為 M
+        else -> DecimalFormat("#,###").format(amount) // 其他顯示為原始數字
     }
 }

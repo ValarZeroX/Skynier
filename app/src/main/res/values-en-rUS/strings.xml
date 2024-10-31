@@ -161,4 +161,6 @@
     </string-array>
     <string name="select_date_range">Select Date Range</string>
     <string name="total">Total</string>
+    <string name="transfer_in">TI</string>
+    <string name="transfer_out">TO</string>
 </resources>
