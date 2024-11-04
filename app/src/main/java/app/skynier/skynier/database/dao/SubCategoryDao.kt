@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import app.skynier.skynier.database.entities.MainCategoryEntity
+import app.skynier.skynier.database.entities.RecordEntity
 import app.skynier.skynier.database.entities.SubCategoryEntity
 
 @Dao
@@ -32,4 +33,7 @@ interface SubCategoryDao {
 
     @Update
     suspend fun updateAll(subCategory: List<SubCategoryEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSubCategories(subCategory: List<SubCategoryEntity>)
 }

@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import app.skynier.skynier.database.entities.MainCategoryEntity
 import app.skynier.skynier.database.entities.RecordEntity
 
 @Dao
@@ -41,4 +42,10 @@ interface RecordDao {
 
     @Query("SELECT * FROM record  WHERE datetime BETWEEN :startDate AND :endDate AND accountId = :accountId ORDER BY datetime DESC")
     fun getRecordsByDateRangeAccountId(startDate: Long, endDate: Long, accountId: Int): LiveData<List<RecordEntity>>
+
+    @Query("SELECT * FROM record ORDER BY datetime DESC")
+    suspend fun getAllRecordsSync(): List<RecordEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRecords(record: List<RecordEntity>)
 }

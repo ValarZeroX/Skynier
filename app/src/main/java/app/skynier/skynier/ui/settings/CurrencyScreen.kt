@@ -31,9 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import app.skynier.skynier.R
 import app.skynier.skynier.database.entities.CurrencyEntity
 import app.skynier.skynier.database.entities.UserSettingsEntity
 import app.skynier.skynier.library.CurrencyUtils
@@ -106,7 +108,7 @@ fun CurrencyScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "主幣別",
+                            text = stringResource(R.string.primary_currency),
                             modifier = Modifier
                                 .padding(start = 16.dp)
                                 .weight(1f),
@@ -146,7 +148,7 @@ fun CurrencyScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "匯率",
+                            text = stringResource(R.string.currency_rate),
                             modifier = Modifier
                                 .padding(start = 16.dp)
                                 .weight(1f),
@@ -305,7 +307,7 @@ fun CurrencyScreen(
 fun CurrencyScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
-            Text("幣別匯率")
+            Text(stringResource(R.string.settings_currency))
         },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {

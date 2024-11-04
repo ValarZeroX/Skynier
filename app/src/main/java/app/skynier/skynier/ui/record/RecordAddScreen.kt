@@ -222,8 +222,11 @@ fun RecordAddScreen(
         mutableStateOf("0")
     }
 
-    val fromCurrencyRate = currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate ?: 1.0
-    val toCurrencyRate = currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
+    val fromCurrencyRate =
+        currencyList.find { it.currency == selectedTransferAssetFrom?.currency }?.exchangeRate
+            ?: 1.0
+    val toCurrencyRate =
+        currencyList.find { it.currency == selectedTransferAssetTo?.currency }?.exchangeRate ?: 1.0
 
     var toExchangeRate by remember {
         mutableStateOf(String.format(Locale.US, "%.4f", toCurrencyRate))
@@ -250,7 +253,7 @@ fun RecordAddScreen(
             RecordAddScreenHeader(
                 navController,
                 onAddClick = {
-                    if (selectedTabIconIndex == 0 || selectedTabIconIndex == 1) {
+                    if (selectedAsset != null && (selectedTabIconIndex == 0 || selectedTabIconIndex == 1)) {
                         recordViewModel.insertRecord(
                             RecordEntity(
                                 accountId = selectedAsset!!.accountId,
@@ -269,7 +272,7 @@ fun RecordAddScreen(
                                 objectType = "",
                             )
                         )
-                    } else {
+                    } else if (selectedTransferAssetFrom != null && selectedTransferAssetTo != null) {
                         //轉出
                         recordViewModel.insertRecord(
                             RecordEntity(
@@ -353,7 +356,7 @@ fun RecordAddScreen(
                                 onClick = {
                                     selectedAsset?.let {
                                         showTransferAssetFrom = true
-                                    }?: run {
+                                    } ?: run {
                                         navController.navigate("account_add")
                                     }
                                 }) {
@@ -383,7 +386,7 @@ fun RecordAddScreen(
                                 onClick = {
                                     selectedAsset?.let {
                                         showTransferAssetTo = true
-                                    }?: run {
+                                    } ?: run {
                                         navController.navigate("account_add")
                                     }
                                 }) {
@@ -427,10 +430,12 @@ fun RecordAddScreen(
                                             } else {
                                                 newInput
                                             }
-                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
-                                            val convertedAmount = fromAmount * conversionRate
-                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                        val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                        val conversionRate =
+                                            toExchangeRate.toDouble() / fromCurrencyRate
+                                        val convertedAmount = fromAmount * conversionRate
+                                        transferAmountTo =
+                                            String.format(Locale.US, "%.2f", convertedAmount)
                                     }
                                 },
                                 label = { Text("From") }, // 添加标签
@@ -558,10 +563,14 @@ fun RecordAddScreen(
                                                 } else {
                                                     newInput
                                                 }
-                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val toRate = toExchangeRate.takeIf { it.isNotBlank() }
+                                                ?.toDouble() ?: 1.0
+                                            val fromAmount =
+                                                transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate = toRate / fromCurrencyRate
                                             val convertedAmount = fromAmount * conversionRate
-                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                            transferAmountTo =
+                                                String.format(Locale.US, "%.2f", convertedAmount)
                                         }
                                     },
                                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -578,10 +587,13 @@ fun RecordAddScreen(
                                         }
                                         if (!focusState.isFocused && toExchangeRate.isNotEmpty()) {
                                             // 執行換算邏輯當失去焦點時
-                                            val fromAmount = transferAmountFrom.toDoubleOrNull() ?: 0.0
-                                            val conversionRate = toExchangeRate.toDouble() / fromCurrencyRate
+                                            val fromAmount =
+                                                transferAmountFrom.toDoubleOrNull() ?: 0.0
+                                            val conversionRate =
+                                                toExchangeRate.toDouble() / fromCurrencyRate
                                             val convertedAmount = fromAmount * conversionRate
-                                            transferAmountTo = String.format(Locale.US, "%.2f", convertedAmount)
+                                            transferAmountTo =
+                                                String.format(Locale.US, "%.2f", convertedAmount)
                                         }
                                     },
                                     textStyle = LocalTextStyle.current.copy(
@@ -808,7 +820,7 @@ fun RecordAddScreen(
                                 onClick = {
                                     selectedAsset?.let {
                                         showAsset = true
-                                    }?: run {
+                                    } ?: run {
                                         navController.navigate("account_add")
                                     }
                                 }) {
@@ -1366,7 +1378,7 @@ fun AssetDialog(
 fun RecordAddScreenHeader(
     navController: NavHostController,
     onAddClick: () -> Unit
-    ) {
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(stringResource(id = R.string.add_record))

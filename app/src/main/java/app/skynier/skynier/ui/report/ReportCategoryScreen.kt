@@ -110,7 +110,7 @@ fun ReportCategoryScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("No data available", fontSize = 16.sp)
+            Text(stringResource(id = R.string.no_data_available), fontSize = 16.sp)
         }
         return
     }
@@ -761,7 +761,7 @@ fun ReportCategoryPieChart(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "No data available", fontSize = 16.sp)
+            Text(stringResource(id = R.string.no_data_available), fontSize = 16.sp)
         }
         return
     }

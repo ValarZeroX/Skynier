@@ -182,7 +182,7 @@ fun ReportMainScreen(
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text(stringResource(id = R.string.asset)) }
+                        text = { Text(stringResource(R.string.rank)) }
                     )
                 }
                 when (selectedTabIndex) {
@@ -200,7 +200,16 @@ fun ReportMainScreen(
                     }
 
                     1 -> {
-
+                        ReportAssetScreen(
+                            recordTotal,
+                            mainCategoryViewModel,
+                            subCategoryViewModel,
+                            userSettings,
+                            currencyList,
+                            navController,
+                            accounts,
+                            recordViewModel
+                        )
                     }
                 }
             }

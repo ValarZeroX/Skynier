@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -139,6 +140,9 @@ fun AccountRecordScreen(
         endMonthDateMillis,
     ).observeAsState(emptyList())
 
+
+
+
     val filteredRecordByCount = recordTotal.filter {
         it.accountId == accountId
     }
@@ -178,7 +182,6 @@ fun AccountRecordScreen(
     val accounts by accountViewModel.accounts.observeAsState(emptyList())
 
     var selectedTypeFilter by rememberSaveable { mutableStateOf<Int?>(null) }
-    Log.d("selectedTypeFilter", "$selectedTypeFilter")
     val filteredRecordsByType = if (selectedTypeFilter != null) {
         if (selectedTypeFilter == 3 || selectedTypeFilter == 4) {
             finalFilteredRecords.filter { it.type == 3 || it.type == 4 }
@@ -221,6 +224,15 @@ fun AccountRecordScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             Column {
+                if (recordTotal.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(stringResource(id = R.string.no_data_available), fontSize = 16.sp)
+                    }
+                    return@Box
+                }
                 AccountRecordBarChart(
                     filteredRecordByCount,
                     userSettings,

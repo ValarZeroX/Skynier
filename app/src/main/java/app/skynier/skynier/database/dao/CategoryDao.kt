@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.CategoryEntity
 
 @Dao
@@ -25,4 +26,7 @@ interface CategoryDao {
 
     @Query("SELECT * FROM category")
     suspend fun getAllCategories(): List<CategoryEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCategories(category: List<CategoryEntity>)
 }

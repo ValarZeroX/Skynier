@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Skynier</string>
+    <string name="app_name">MoneyRecord</string>
     <string name="tab_setting">設定</string>
     <string name="category">類別</string>
     <string name="main_category">主類別</string>
@@ -163,4 +163,13 @@
     <string name="total">總計</string>
     <string name="transfer_in">轉入</string>
     <string name="transfer_out">轉出</string>
+    <string name="no_data_available">沒有可用的資料</string>
+    <string name="rank">排名</string>
+    <string name="settings_currency">幣別匯率</string>
+    <string name="settings_preferences">偏好</string>
+    <string name="primary_currency">主幣別</string>
+    <string name="currency_rate">幣別匯率</string>
+    <string name="backup">備份</string>
+    <string name="settings_export_csv">匯出CSV</string>
+    <string name="settings_import_csv">匯入CSV</string>
 </resources>

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import app.skynier.skynier.database.entities.SubCategoryEntity
 import app.skynier.skynier.database.entities.UserSettingsEntity
 
 @Dao

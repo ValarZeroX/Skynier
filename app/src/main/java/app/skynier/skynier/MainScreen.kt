@@ -1,5 +1,7 @@
 package app.skynier.skynier
 
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -51,6 +53,7 @@ fun MainScreen(
     currencyApiViewModel: CurrencyApiViewModel,
     userSettingsViewModel: UserSettingsViewModel,
     recordViewModel: RecordViewModel,
+    csvImportLauncher: ActivityResultLauncher<Intent>,
 ) {
     val selectedItemIndex = rememberSaveable { mutableIntStateOf(0) }
     val navController = rememberNavController()
@@ -75,7 +78,8 @@ fun MainScreen(
                 accountCategoryViewModel,
                 currencyApiViewModel,
                 userSettingsViewModel,
-                recordViewModel
+                recordViewModel,
+                csvImportLauncher
             )
         }
     }
@@ -134,10 +138,11 @@ fun Navigation(
     currencyApiViewModel: CurrencyApiViewModel,
     userSettingsViewModel: UserSettingsViewModel,
     recordViewModel: RecordViewModel,
+    csvImportLauncher: ActivityResultLauncher<Intent>,
 ) {
     NavHost(navController = navController, startDestination = "account") {
 //        composable("report") { ReportScreen() }
-        composable("settings") { SettingsScreen(navController) }
+        composable("settings") { SettingsScreen(navController, csvImportLauncher) }
         composable("theme") { ThemeScreen(navController) }
         composable("record_add") {
             RecordAddScreen(

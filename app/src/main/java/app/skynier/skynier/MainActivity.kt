@@ -1,13 +1,18 @@
 package app.skynier.skynier
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.skynier.skynier.api.RetrofitInstance
+import app.skynier.skynier.csv.importDataFromCSV
 import app.skynier.skynier.database.AppDatabase
 import app.skynier.skynier.repository.AccountCategoryRepository
 import app.skynier.skynier.repository.AccountRepository
@@ -38,6 +43,7 @@ import app.skynier.skynier.viewmodels.SubCategoryViewModel
 import app.skynier.skynier.viewmodels.SubCategoryViewModelFactory
 import app.skynier.skynier.viewmodels.UserSettingsViewModel
 import app.skynier.skynier.viewmodels.UserSettingsViewModelFactory
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var mainCategoryViewModel: MainCategoryViewModel
@@ -49,9 +55,23 @@ class MainActivity : ComponentActivity() {
     private lateinit var currencyApiViewModel: CurrencyApiViewModel
     private lateinit var userSettingsViewModel: UserSettingsViewModel
     private lateinit var recordViewModel: RecordViewModel
+    private lateinit var csvImportLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+        csvImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    lifecycleScope.launch {
+                        importDataFromCSV(applicationContext, uri)
+                        // 在这里调用你的CSV导入函数，比如 importStockRecordsFromCSV(applicationContext, uri)
+                    }
+                }
+            }
+        }
 
         // 数据库和 Repository 的初始化
         val database = AppDatabase.getDatabase(this)
@@ -117,7 +137,8 @@ class MainActivity : ComponentActivity() {
                     accountCategoryViewModel,
                     currencyApiViewModel,
                     userSettingsViewModel,
-                    recordViewModel
+                    recordViewModel,
+                    csvImportLauncher,
                 )
             }
         }

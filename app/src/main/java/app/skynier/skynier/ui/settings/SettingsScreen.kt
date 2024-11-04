@@ -1,5 +1,8 @@
 package app.skynier.skynier.ui.settings
 
+import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,17 +21,24 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
+import kotlinx.coroutines.launch
+import app.skynier.skynier.csv.exportCSV
+import java.io.File
 
 @Composable
 fun SettingsScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    csvImportLauncher: ActivityResultLauncher<Intent>,
 ){
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             SettingsScreenHeader(navController)
@@ -39,7 +49,7 @@ fun SettingsScreen(
                 item {
                     Row(modifier = Modifier.padding(start = 10.dp)) {
                         Text(
-                            text = "設定",
+                            text = stringResource(id = R.string.tab_setting),
                             fontSize = 24.sp
                         )
                     }
@@ -47,11 +57,11 @@ fun SettingsScreen(
                 }
                 item {
                     ListItem(
-                        headlineContent = { Text("類別") },
+                        headlineContent = { Text(stringResource(id = R.string.category)) },
                         trailingContent = {
                             Icon(
                                 imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "類別",
+                                contentDescription = stringResource(id = R.string.category),
                             )
                         },
                         modifier = Modifier.clickable {
@@ -76,37 +86,85 @@ fun SettingsScreen(
                 item {
                     Row(modifier = Modifier.padding(start = 10.dp)) {
                         Text(
-                            text = "偏好",
+                            text = stringResource(R.string.settings_preferences),
                             fontSize = 24.sp
                         )
                     }
                     HorizontalDivider()
                 }
+//                item {
+//                    ListItem(
+//                        headlineContent = { Text("主題顏色") },
+//                        trailingContent = {
+//                            Icon(
+//                                imageVector = Icons.Filled.ChevronRight,
+//                                contentDescription = "主題顏色",
+//                            )
+//                        },
+//                        modifier = Modifier.clickable {
+//                            navController.navigate("theme")
+//                        }
+//                    )
+//                }
                 item {
                     ListItem(
-                        headlineContent = { Text("主題顏色") },
+                        headlineContent = { Text(stringResource(R.string.settings_currency)) },
                         trailingContent = {
                             Icon(
                                 imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "主題顏色",
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            navController.navigate("theme")
-                        }
-                    )
-                }
-                item {
-                    ListItem(
-                        headlineContent = { Text("幣別匯率") },
-                        trailingContent = {
-                            Icon(
-                                imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "幣別匯率",
+                                contentDescription = stringResource(R.string.settings_currency),
                             )
                         },
                         modifier = Modifier.clickable {
                             navController.navigate("currency")
+                        }
+                    )
+                }
+                item {
+                    Row(modifier = Modifier.padding(start = 10.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.backup),
+                            fontSize = 24.sp
+                        )
+                    }
+                    HorizontalDivider()
+                }
+                item{
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_export_csv)) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = stringResource(R.string.settings_export_csv),
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            coroutineScope.launch {
+                                val csvFile = exportCSV(navController.context)
+                                if (csvFile.exists()) {
+                                    shareCSVFile(navController.context, csvFile)
+                                }
+                            }
+                        }
+                    )
+                }
+                item{
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_import_csv)) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = stringResource(R.string.settings_import_csv),
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            coroutineScope.launch {
+                                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                                    addCategory(Intent.CATEGORY_OPENABLE)
+                                    type = "text/csv"
+                                }
+                                csvImportLauncher.launch(intent)
+                            }
                         }
                     )
                 }
@@ -120,7 +178,7 @@ fun SettingsScreen(
 fun SettingsScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
-            Text("設定")
+            Text(stringResource(R.string.tab_setting))
         },
 //        navigationIcon = {
 //            IconButton(onClick = { navController.popBackStack() }) {
@@ -132,4 +190,14 @@ fun SettingsScreenHeader(navController: NavHostController) {
 //
 //        },
     )
+}
+
+fun shareCSVFile(context: Context, file: File) {
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/csv"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    context.startActivity(Intent.createChooser(intent, "Share CSV via"))
 }

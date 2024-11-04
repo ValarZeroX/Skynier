@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skynier</string>
+    <string name="app_name">MoneyRecord</string>
     <string name="tab_setting">Settings</string>
     <string name="category">Category</string>
     <string name="main_category">Main Category</string>
@@ -162,4 +162,13 @@
     <string name="total">Total</string>
     <string name="transfer_in">TI</string>
     <string name="transfer_out">TO</string>
+    <string name="no_data_available">No data available</string>
+    <string name="rank">Rank</string>
+    <string name="settings_currency">Currency Rates</string>
+    <string name="settings_preferences">Preferences</string>
+    <string name="primary_currency">Primary Currency</string>
+    <string name="currency_rate">Currency Rate</string>
+    <string name="settings_export_csv">Export CSV</string>
+    <string name="settings_import_csv">Import CSV</string>
+    <string name="backup">Backup</string>
 </resources>

@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Delete
+import androidx.room.OnConflictStrategy
+import app.skynier.skynier.database.entities.AccountCategoryEntity
 import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.database.entities.MainCategoryEntity
 
@@ -37,4 +39,7 @@ interface AccountDao {
 
     @Update
     suspend fun updateAll(account: List<AccountEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAccounts(account: List<AccountEntity>)
 }
