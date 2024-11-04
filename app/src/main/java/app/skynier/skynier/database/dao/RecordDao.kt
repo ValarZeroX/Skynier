@@ -48,4 +48,7 @@ interface RecordDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecords(record: List<RecordEntity>)
+
+    @Query("DELETE FROM record WHERE accountId = :accountId")
+    suspend fun deleteRecordsByAccountId(accountId: Int)
 }

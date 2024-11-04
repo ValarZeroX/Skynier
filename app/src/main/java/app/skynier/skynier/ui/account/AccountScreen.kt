@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -34,10 +35,12 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.skynier.skynier.R
+import app.skynier.skynier.database.entities.AccountEntity
 import app.skynier.skynier.library.SharedOptions
 import app.skynier.skynier.library.SwipeBox
 import app.skynier.skynier.library.textColorBasedOnAmount
@@ -105,6 +109,18 @@ fun AccountScreen(
     }
 
     val accountBalances by recordViewModel.getAllAccountsBalances().observeAsState(emptyMap())
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedAccountForDeletion by remember { mutableStateOf<AccountEntity?>(null) }
+    var associatedRecordCount by remember { mutableIntStateOf(0) }
+    LaunchedEffect(selectedAccountForDeletion) {
+        selectedAccountForDeletion?.let { account ->
+            // Fetch the number of records associated with the account
+            recordViewModel.getRecordsByAccount(account.accountId).observeForever { records ->
+                associatedRecordCount = records.size
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -203,7 +219,8 @@ fun AccountScreen(
                                                 .background(Red)
                                                 .clickable {
                                                     //彈跳Dialog視窗告知該帳戶有幾筆交易紀錄
-
+                                                    selectedAccountForDeletion = accounts
+                                                    showDeleteDialog = true
                                                 }
                                         ) {
                                             Column(
@@ -295,12 +312,62 @@ fun AccountScreen(
                 }
             }
         }
+        if (showDeleteDialog && selectedAccountForDeletion != null) {
+            AccountDeleteDialog(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    selectedAccountForDeletion = null
+                },
+                onConfirm = {
+                    // Handle the deletion
+                    selectedAccountForDeletion?.let { account ->
+                        // Delete the account
+                        accountViewModel.deleteAccount(account)
+                        // Delete associated records
+                        recordViewModel.deleteRecordsByAccountId(account.accountId)
+                    }
+                    showDeleteDialog = false
+                    selectedAccountForDeletion = null
+                },
+                accountName = selectedAccountForDeletion?.accountName ?: "",
+                recordCount = associatedRecordCount
+            )
+        }
     }
 }
 
 @Composable
-fun AccountDeleteDialog() {
-
+fun AccountDeleteDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    accountName: String,
+    recordCount: Int
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(text = stringResource(id = R.string.delete_asset))
+        },
+        text = {
+            Text(
+                text = stringResource(
+                    id = R.string.delete_asset_confirmation,
+                    accountName,
+                    recordCount
+                )
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(id = R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(id = R.string.cancel))
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -113,6 +113,10 @@ class RecordViewModel(private val repository: RecordRepository) : ViewModel() {
 
         return result
     }
+
+    fun deleteRecordsByAccountId(accountId: Int) = viewModelScope.launch {
+        repository.deleteRecordsByAccountId(accountId)
+    }
 }
 
 class RecordViewModelFactory(private val repository: RecordRepository) : ViewModelProvider.Factory {

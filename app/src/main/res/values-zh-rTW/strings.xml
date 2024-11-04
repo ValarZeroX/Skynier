@@ -172,4 +172,6 @@
     <string name="backup">備份</string>
     <string name="settings_export_csv">匯出CSV</string>
     <string name="settings_import_csv">匯入CSV</string>
+    <string name="delete_asset">刪除資產</string>
+    <string name="delete_asset_confirmation">刪除資產「%1$s」將同時刪除 %2$d 筆相關記錄。您確定要繼續嗎？</string>
 </resources>

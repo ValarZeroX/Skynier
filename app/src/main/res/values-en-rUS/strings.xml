@@ -172,4 +172,6 @@
     <string name="settings_export_csv">Export CSV</string>
     <string name="settings_import_csv">Import CSV</string>
     <string name="backup">Backup</string>
+    <string name="delete_asset">Delete Asset</string>
+    <string name="delete_asset_confirmation">Deleting asset "%1$s" will also delete %2$d associated records. Do you want to proceed?</string>
 </resources>
