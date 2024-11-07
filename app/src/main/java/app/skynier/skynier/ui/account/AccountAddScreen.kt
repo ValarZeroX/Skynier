@@ -261,7 +261,7 @@ fun AccountAddScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { showCategoryPicker = true } // 點擊打開Dialog
-                        .padding(vertical = 10.dp),
+                        .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -283,7 +283,7 @@ fun AccountAddScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { showCurrencyPicker = true } // 點擊打開Dialog
-                        .padding(vertical = 10.dp),
+                        .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -304,7 +304,7 @@ fun AccountAddScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 10.dp),
+                        .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

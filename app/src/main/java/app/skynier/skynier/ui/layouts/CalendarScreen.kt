@@ -149,7 +149,7 @@ fun CustomCalendar(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp)
+                                        .size(48.dp)
                                         .clip(CircleShape)
                                         .clickable(
                                             onClick = { onDateSelected(date) },
